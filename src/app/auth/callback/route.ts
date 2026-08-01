@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { getPublicSupabaseEnvironment, getSiteUrl } from "@/lib/env";
-import { safeNextPath } from "@/lib/registration";
 import { createBoundedFetch } from "@/lib/bounded-fetch";
 import { classifyOAuthCallbackFailure, type AuthFailureReason } from "@/lib/auth-error";
 
@@ -16,8 +15,9 @@ export async function GET(request: NextRequest) {
   const code = url.searchParams.get("code") ?? "";
   const providerError = url.searchParams.get("error");
   const providerErrorCode = url.searchParams.get("error_code");
-  const next = safeNextPath(url.searchParams.get("next"));
-  const destination = new URL(next, getSiteUrl());
+  // The OAuth callback is security-sensitive: never let callback parameters
+  // choose where an authenticated user is sent.
+  const destination = new URL("/register", getSiteUrl());
   const response = NextResponse.redirect(destination);
   const { url: supabaseUrl, key } = getPublicSupabaseEnvironment();
   const supabase = createServerClient(supabaseUrl, key, {

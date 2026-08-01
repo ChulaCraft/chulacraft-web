@@ -49,4 +49,14 @@ describe("OAuth callback", () => {
     expect(exchangeCodeForSession).toHaveBeenCalledWith("valid-code");
     expect(response.headers.get("location")).toBe("https://example.test/register");
   });
+
+  it("ignores internal next targets", async () => {
+    exchangeCodeForSession.mockResolvedValue({ error: null });
+
+    const response = await GET(
+      new NextRequest("https://example.test/auth/callback?code=valid-code&next=/about")
+    );
+
+    expect(response.headers.get("location")).toBe("https://example.test/register");
+  });
 });
