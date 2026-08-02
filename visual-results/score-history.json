@@ -1,0 +1,38 @@
+{
+  "cycles": [
+    {
+      "cycle": 1,
+      "overall": 80,
+      "perPage": { "home": 82, "about": 73, "register": 78, "authError": 86, "notFound": 88 }
+    },
+    {
+      "cycle": 2,
+      "overall": 91,
+      "perPage": { "home": 90, "about": 92, "register": 93, "authError": 91, "notFound": 91 }
+    },
+    {
+      "cycle": 3,
+      "overall": 91,
+      "partial": true,
+      "scope": "home-mobile-responsive-polish",
+      "verdict": "fix-supported"
+    },
+    {
+      "cycle": 4,
+      "overall": 92,
+      "perPage": { "home": 92, "about": 90, "register": 94, "authError": 92, "notFound": 92 },
+      "reviewerScores": [92, 91],
+      "average": 91.5,
+      "finalBlind": true
+    },
+    {
+      "cycle": 5,
+      "overall": 91,
+      "perPage": { "home": 90.5, "about": 90.5, "register": 92.5, "authError": 91, "notFound": 91.5 },
+      "reviewerScores": [90, 92],
+      "average": 91,
+      "postCleanup": true,
+      "finalBlind": true
+    }
+  ]
+}

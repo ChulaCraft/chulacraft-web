@@ -1,0 +1,96 @@
+.page {
+  min-height: 100vh;
+  padding: 42px 24px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 28px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(32, 26, 43, 0.42), rgba(32, 26, 43, 0.9)),
+    url("/images/about-bg.png") center / cover no-repeat,
+    var(--ink);
+}
+
+.page > a {
+  min-width: 0;
+  align-items: center;
+}
+
+.page > a img {
+  width: min(236px, 66vw);
+}
+
+.card {
+  --pixel-cut: 10px;
+  position: relative;
+  width: min(480px, 100%);
+  padding: 40px;
+  border: 1px solid var(--pink);
+  clip-path: var(--pixel-shape);
+  background: rgba(32, 26, 43, 0.94);
+  box-shadow: inset 0 0 0 2px rgba(255, 214, 231, 0.05), 8px 8px 0 rgba(20, 15, 29, 0.4);
+  text-align: center;
+}
+
+.card::before,
+.card::after {
+  content: "+";
+  position: absolute;
+  top: 12px;
+  color: var(--pink);
+  font: 700 16px/1 var(--font-rajdhani), sans-serif;
+}
+
+.card::before {
+  left: 14px;
+}
+
+.card::after {
+  right: 14px;
+}
+
+.code {
+  width: 64px;
+  height: 48px;
+  margin: 0 auto;
+  border: 1px solid var(--pink);
+  display: grid;
+  place-items: center;
+  color: var(--pink-soft);
+  background: rgba(255, 111, 174, 0.12);
+  font: 700 20px/1 var(--font-rajdhani), sans-serif;
+}
+
+.card h1 {
+  margin: 18px 0 12px;
+  font: 700 clamp(31px, 7vw, 40px)/0.98 var(--font-rajdhani), sans-serif;
+  text-transform: uppercase;
+}
+
+.card p {
+  margin: 0 auto 26px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.card a {
+  min-width: 168px;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 22px 18px;
+    gap: 20px;
+    background-position: 35% center;
+  }
+
+  .page > a img {
+    width: min(210px, 62vw);
+  }
+
+  .card {
+    padding: 34px 20px 30px;
+  }
+}

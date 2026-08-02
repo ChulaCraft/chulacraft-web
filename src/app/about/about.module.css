@@ -1,0 +1,479 @@
+.page {
+  min-height: 100vh;
+  overflow-x: clip;
+  background: var(--ink);
+}
+
+.scenicPage {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 76px);
+  padding: 38px 28px 64px;
+  background-color: #2b2240;
+  background-image:
+    linear-gradient(180deg, rgba(39, 31, 65, 0.14), rgba(32, 26, 43, 0.28) 72%, #201a2b 100%),
+    url("/images/about-bg.png");
+  background-position: center top;
+  background-size: cover;
+}
+
+.scenicPage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(24, 18, 35, 0.2), transparent 30%, transparent 70%, rgba(24, 18, 35, 0.2)),
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 214, 231, 0.018) 3px 4px);
+}
+
+.about {
+  width: min(100%, 930px);
+  margin-inline: auto;
+}
+
+.heroHeading {
+  max-width: 650px;
+  margin: 0 auto 22px;
+  text-align: center;
+  text-shadow: 2px 2px 0 rgba(32, 26, 43, 0.78);
+}
+
+.heroHeading h1,
+.missionItem h2,
+.sectionHeading h2,
+.roleGrid h3,
+.statStrip dt {
+  font-family: var(--font-rajdhani), sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.heroHeading h1 {
+  margin: 0 0 12px;
+  color: #fff8f2;
+  font-size: clamp(42px, 5vw, 58px);
+  line-height: 0.95;
+  letter-spacing: 0.015em;
+}
+
+.heroHeading h1 span,
+.sectionHeading h2 span {
+  display: inline-block;
+  margin-inline: 14px;
+  color: var(--pink);
+  font-size: 0.58em;
+  vertical-align: 0.15em;
+}
+
+.heroHeading p {
+  margin: 0;
+  color: #fff5fb;
+  font-size: 13px;
+  line-height: 1.62;
+}
+
+.missionStage {
+  min-height: 292px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(390px, 0.82fr);
+  align-items: center;
+}
+
+.missionCard,
+.communityPanel {
+  position: relative;
+  border: 1px solid rgba(255, 111, 174, 0.48);
+  clip-path: var(--pixel-shape);
+  background: rgba(32, 26, 43, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 214, 231, 0.035),
+    0 12px 32px rgba(19, 14, 28, 0.25);
+  backdrop-filter: blur(5px);
+}
+
+.missionCard {
+  grid-column: 2;
+  padding: 11px 22px;
+}
+
+.missionCard::before,
+.communityPanel::before {
+  content: "+";
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  color: var(--pink);
+  font: 700 11px/1 var(--font-rajdhani), sans-serif;
+}
+
+.missionItem {
+  min-height: 78px;
+  padding: 13px 0;
+  display: grid;
+  grid-template-columns: 43px minmax(0, 1fr);
+  align-items: center;
+  gap: 15px;
+}
+
+.missionItem + .missionItem {
+  border-top: 1px solid rgba(255, 111, 174, 0.2);
+}
+
+.missionIcon {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--pink);
+  color: var(--pink-soft);
+  background: rgba(255, 111, 174, 0.13);
+  transform: rotate(45deg);
+}
+
+.missionIcon svg {
+  width: 22px;
+  height: 22px;
+  transform: rotate(-45deg);
+}
+
+.world::before,
+.world::after,
+.heart::before,
+.heart::after {
+  content: "";
+  position: absolute;
+  background: var(--pink-soft);
+  transform: rotate(-45deg);
+}
+
+.world::before {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--pink-soft);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.world::after {
+  width: 2px;
+  height: 20px;
+  box-shadow: 6px 0 0 -0.5px rgba(255, 214, 231, 0.55), -6px 0 0 -0.5px rgba(255, 214, 231, 0.55);
+}
+
+.heart::before {
+  width: 15px;
+  height: 15px;
+  clip-path: polygon(50% 88%, 5% 43%, 5% 22%, 22% 5%, 42% 5%, 50% 18%, 58% 5%, 78% 5%, 95% 22%, 95% 43%);
+}
+
+.heart::after {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-shadow: 8px 0 var(--pink-soft);
+}
+
+.missionItem h2 {
+  margin: 0 0 4px;
+  color: var(--pink-soft);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+}
+
+.missionItem p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.48;
+}
+
+.statStrip {
+  margin: 12px 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid rgba(255, 111, 174, 0.46);
+  background: rgba(35, 28, 47, 0.9);
+  clip-path: var(--pixel-shape);
+  backdrop-filter: blur(5px);
+}
+
+.statStrip > div {
+  min-height: 78px;
+  padding: 15px 10px 13px;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.statStrip > div + div {
+  border-left: 1px solid rgba(255, 111, 174, 0.42);
+}
+
+.statStrip dt {
+  color: var(--pink-soft);
+  font-size: clamp(17px, 2vw, 23px);
+  line-height: 1;
+}
+
+.statStrip dd {
+  margin: 6px 0 0;
+  color: #f4ddeb;
+  font: 700 9px/1 var(--font-rajdhani), sans-serif;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.communityPanel {
+  padding: 22px 24px 25px;
+}
+
+.sectionHeading {
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.sectionHeading h2 {
+  margin: 0 0 5px;
+  color: #fff8f2;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.sectionHeading h2 span {
+  margin-inline: 9px;
+}
+
+.sectionHeading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.roleGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.roleGrid article {
+  min-width: 0;
+  padding: 12px 9px 10px;
+  border: 1px solid rgba(255, 111, 174, 0.3);
+  text-align: center;
+  background: rgba(53, 42, 67, 0.88);
+}
+
+.avatar {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 10px;
+  display: block;
+  overflow: hidden;
+  border: 2px solid rgba(255, 214, 231, 0.34);
+  background: #ca799b;
+  image-rendering: pixelated;
+  box-shadow: inset 0 -11px rgba(43, 33, 56, 0.52);
+}
+
+.avatar::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 13px;
+  width: 38px;
+  height: 35px;
+  background: #f3b59f;
+  box-shadow: inset 0 8px rgba(76, 49, 62, 0.72);
+}
+
+.avatar::after {
+  content: "";
+  position: absolute;
+  top: 31px;
+  left: 23px;
+  width: 5px;
+  height: 5px;
+  background: #34283f;
+  box-shadow: 13px 0 #34283f, 5px 10px 0 -1px #9c536f, 8px 10px 0 -1px #9c536f;
+}
+
+.avatar i {
+  position: absolute;
+  z-index: 1;
+  top: 9px;
+  left: 9px;
+  width: 46px;
+  height: 9px;
+  background: #503647;
+  box-shadow: 0 6px #503647;
+}
+
+.violet { background: #7d668f; }
+.violet i { background: #332a3d; box-shadow: 0 6px #332a3d; }
+.amber { background: #b77b68; }
+.amber i { background: #6f3f2f; box-shadow: 0 6px #6f3f2f; }
+.blue { background: #667990; }
+.blue i { background: #3e3346; box-shadow: 0 6px #3e3346; }
+
+.roleGrid h3 {
+  margin: 0 0 3px;
+  overflow-wrap: anywhere;
+  color: var(--pink-soft);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.roleGrid p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+@media (max-width: 760px) {
+  .scenicPage {
+    min-height: calc(100vh - 68px);
+    padding: 30px 24px 50px;
+    background-position: 38% top;
+    background-size: auto 1000px;
+    background-repeat: no-repeat;
+  }
+
+  .heroHeading {
+    margin-bottom: 24px;
+  }
+
+  .missionStage {
+    min-height: 0;
+    display: block;
+  }
+
+  .missionCard {
+    width: min(100%, 510px);
+    margin-inline: auto;
+  }
+
+  .roleGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .scenicPage {
+    padding: 25px 15px 42px;
+    background-position: 34% top;
+    background-size: auto 812px;
+  }
+
+  .heroHeading {
+    margin-bottom: 20px;
+  }
+
+  .heroHeading h1 {
+    margin-bottom: 12px;
+    font-size: clamp(39px, 11vw, 48px);
+  }
+
+  .heroHeading h1 span {
+    margin-inline: 5px;
+  }
+
+  .heroHeading p {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .missionCard {
+    padding: 9px 16px;
+  }
+
+  .missionItem {
+    min-height: 75px;
+    grid-template-columns: 39px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .missionIcon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .missionItem p {
+    font-size: 10.5px;
+  }
+
+  .statStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .statStrip > div {
+    min-height: 65px;
+    padding: 11px 6px;
+  }
+
+  .statStrip > div:nth-child(3) {
+    border-left: 0;
+  }
+
+  .statStrip > div:nth-child(n + 3) {
+    border-top: 1px solid rgba(255, 111, 174, 0.42);
+  }
+
+  .statStrip dt {
+    font-size: 18px;
+  }
+
+  .communityPanel {
+    padding: 21px 13px 16px;
+  }
+
+  .sectionHeading h2 {
+    font-size: 22px;
+  }
+
+  .roleGrid {
+    gap: 8px;
+  }
+
+  .roleGrid article {
+    padding-inline: 5px;
+  }
+
+  .avatar {
+    width: 58px;
+    height: 58px;
+  }
+
+  .avatar::before {
+    top: 11px;
+    left: 11px;
+    width: 36px;
+    height: 33px;
+  }
+
+  .avatar::after {
+    top: 28px;
+    left: 21px;
+  }
+
+  .avatar i {
+    top: 8px;
+    left: 7px;
+    width: 44px;
+  }
+}
+
+@media (max-width: 360px) {
+  .scenicPage {
+    padding-inline: 10px;
+  }
+
+  .heroHeading p {
+    font-size: 11px;
+  }
+}

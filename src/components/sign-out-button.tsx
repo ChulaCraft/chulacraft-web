@@ -13,5 +13,5 @@ export function SignOutButton() {
     router.replace("/");
     router.refresh();
   }
-  return <button className="text-button" onClick={signOut} disabled={loading}>{loading ? "Signing out…" : "Sign out"}</button>;
+  return <button type="button" className="text-button" onClick={signOut} disabled={loading} aria-busy={loading}>{loading ? "Signing out…" : "Sign out"}</button>;
 }

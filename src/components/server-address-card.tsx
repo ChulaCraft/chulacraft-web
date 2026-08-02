@@ -2,26 +2,40 @@
 
 import { useState } from "react";
 
-export function ServerAddressCard({ address }: { address?: string }) {
+type ServerAddressCardProps = {
+  address?: string;
+  className?: string;
+};
+
+export function ServerAddressCard({ address, className }: ServerAddressCardProps) {
   const [feedback, setFeedback] = useState("");
   const configured = Boolean(address);
 
   async function copyAddress() {
     if (!address) return;
+
     try {
       await navigator.clipboard.writeText(address);
-      setFeedback("Server address copied.");
+      setFeedback("Server address copied!");
     } catch {
-      setFeedback("Could not copy the address. Select it and copy manually.");
+      setFeedback("Could not copy automatically. Select the address and copy it manually.");
     }
   }
 
-  return <aside className="server-card" aria-label="Server information">
-    <span className="card-label">MINECRAFT JAVA</span>
-    <strong>{address || "Server address coming soon"}</strong>
-    <p>{configured ? "Use this address in Minecraft Java Edition." : "Sign in to register your account."}</p>
-    {configured && <button className="copy-address" type="button" onClick={copyAddress}>Copy server IP</button>}
-    <div className="online-indicator"><i /> Registration is available</div>
-    <p className="sr-only" role="status" aria-live="polite">{feedback}</p>
-  </aside>;
+  return (
+    <aside className={className} aria-label="Minecraft server information">
+      <div>
+        <span>Minecraft Java</span>
+        <strong>{configured ? address : "Server address coming soon"}</strong>
+      </div>
+      {configured && (
+        <button type="button" onClick={copyAddress} aria-describedby="copy-feedback">
+          Copy IP
+        </button>
+      )}
+      <p id="copy-feedback" aria-live="polite" aria-atomic="true">
+        {feedback || (configured ? "Online and ready to join" : "Server details will be posted here")}
+      </p>
+    </aside>
+  );
 }
