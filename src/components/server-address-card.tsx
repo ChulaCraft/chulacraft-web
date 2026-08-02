@@ -33,8 +33,14 @@ export function ServerAddressCard({ address, className }: ServerAddressCardProps
           Copy IP
         </button>
       )}
-      <p id="copy-feedback" aria-live="polite" aria-atomic="true">
-        {feedback || (configured ? "Online and ready to join" : "Server details will be posted here")}
+      <p
+        id="copy-feedback"
+        aria-live="polite"
+        aria-atomic="true"
+        // Keep the online marker off transient clipboard feedback.
+        data-status={!feedback && configured ? "online" : undefined}
+      >
+        {feedback || (configured ? "Online · Java 1.21.11" : "Server details will be posted here")}
       </p>
     </aside>
   );

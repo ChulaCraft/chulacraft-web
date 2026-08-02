@@ -6,6 +6,9 @@
 }
 
 .hero {
+  --server-status-color: #39ff14;
+  --server-status-dot: 0.5rem;
+  --server-status-gap: 0.5rem;
   position: relative;
   isolation: isolate;
   min-height: clamp(720px, calc(100svh - 76px), 900px);
@@ -174,6 +177,24 @@
   color: #d8cbe1;
   font-size: 11px;
   line-height: 1.35;
+}
+
+.serverCard p[data-status="online"] {
+  display: flex;
+  align-items: center;
+  gap: var(--server-status-gap);
+}
+
+.serverCard p[data-status="online"]::before {
+  width: var(--server-status-dot);
+  height: var(--server-status-dot);
+  flex: 0 0 var(--server-status-dot);
+  border-radius: 50%;
+  content: "";
+  background: var(--server-status-color);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--server-status-color) 28%, transparent),
+    0 0 10px color-mix(in srgb, var(--server-status-color) 72%, transparent);
 }
 
 .features {
