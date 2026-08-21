@@ -47,7 +47,7 @@ describe("OAuth callback", () => {
     );
 
     expect(exchangeCodeForSession).toHaveBeenCalledWith("valid-code");
-    expect(response.headers.get("location")).toBe("https://example.test/register");
+    expect(response.headers.get("location")).toBe("https://example.test/welcome");
   });
 
   it("ignores internal next targets", async () => {
@@ -57,6 +57,6 @@ describe("OAuth callback", () => {
       new NextRequest("https://example.test/auth/callback?code=valid-code&next=/about")
     );
 
-    expect(response.headers.get("location")).toBe("https://example.test/register");
+    expect(response.headers.get("location")).toBe("https://example.test/welcome");
   });
 });

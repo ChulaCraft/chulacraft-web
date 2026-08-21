@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { getChulaSSOAppId, getChulaSSOAppSecret, getPublicSupabaseEnvironment, getSiteUrl } from "@/lib/env";
 import { createBoundedFetch } from "@/lib/bounded-fetch";
-import { classifyOAuthCallbackFailure, safeAuthFailureReason, type AuthFailureReason } from "@/lib/auth-error";
+import type { AuthFailureReason } from "@/lib/auth-error";
 import { createClient } from "@/lib/supabase/server";
 
 function authErrorResponse(reason: AuthFailureReason) {
@@ -49,9 +49,9 @@ export async function GET(request: NextRequest) {
     headers.append("DeeAppId", getChulaSSOAppId());
     headers.append("DeeAppSecret", getChulaSSOAppSecret());
     headers.append("DeeTicket", ticket);
-    let f = await fetch("https://account.it.chula.ac.th/serviceValidation", { headers });
+    const f = await fetch("https://account.it.chula.ac.th/serviceValidation", { headers });
     if (f.ok) {
-      let profile: ProfilePayload = await f.json();
+      const profile: ProfilePayload = await f.json();
       const destination = new URL("/welcome", getSiteUrl());
       const response = NextResponse.redirect(destination);
       const { url: supabaseUrl, key } = getPublicSupabaseEnvironment();
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         global: { fetch: createBoundedFetch() },
         cookies: { getAll: () => request.cookies.getAll(), setAll: (cookies) => cookies.forEach(({ name, value, options }) => response.cookies.set(name, value, options)) }
       });
-      let data = {
+      const data = {
         cu_uid: profile.uid,
         cu_username: profile.username,
         cu_firstname: profile.firstname,
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
     } else {
       return authErrorResponse("provider_error")
     }
-  } catch (e) {
+  } catch {
     return authErrorResponse("start_failed");
   }
 }

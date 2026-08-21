@@ -33,6 +33,16 @@
       "average": 91,
       "postCleanup": true,
       "finalBlind": true
+    },
+    {
+      "cycle": 6,
+      "date": "2026-08-22",
+      "overall": 92.4,
+      "perPage": { "home": 93, "about": 92, "registerCombinedStates": 95, "authError": 89, "notFound": 93 },
+      "verdict": "PASS",
+      "finalBlind": true,
+      "captureSet": "visual-results/cycle-01",
+      "screenshots": 24
     }
   ]
 }

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Brand } from "@/components/brand";
-import { AuthButton } from "@/components/auth-button";
 import { DiscordIcon } from "@/components/icons";
 import { discordCommunityUrl } from "@/lib/site-links";
 import { User } from "@supabase/supabase-js";
@@ -12,7 +11,9 @@ export async function SiteHeader({ user = undefined }: { user?: User | null }) {
     const supabase = await createClient();
     try {
       ({ data: { user } } = await supabase.auth.getUser());
-    } catch {}
+    } catch {
+      user = null;
+    }
   }
   return <header className="site-header"><div className="header-inner">
     <Brand showTagline={false} />

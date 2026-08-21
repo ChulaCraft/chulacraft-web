@@ -5,7 +5,8 @@ export function DiscordIcon({ className }: IconProps) {
 }
 
 export function CUIcon({ className }: IconProps) {
-  let fillStyle = {fill: "#de5c8e"};
+  void className;
+  const fillStyle = {fill: "#de5c8e"};
   return <svg id="13f7bbaa-5f3b-4b75-bb58-dc8ef8524eff" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="47.98" height="24" viewBox="0 0 47.98 24">
       <title>cu-logo</title>
       <path style={fillStyle} d="M36,18.75A6.75,6.75,0,0,0,42.73,12V0h-3V12a3.75,3.75,0,1,1-7.5,0h0V0h-3V12A6.75,6.75,0,0,0,36,18.75Z"/>

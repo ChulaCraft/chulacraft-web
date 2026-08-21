@@ -2,7 +2,7 @@
 
 The `web` directory contains the public registration application for the
 Chulacraft Minecraft Java Edition server. It lets a player authenticate with
-Discord, validates the player's Minecraft profile, and stores a desired
+Discord or Chula SSO, validates the player's Minecraft profile, and stores a desired
 whitelist registration in Supabase.
 
 The web application does not connect directly to Paper or RCON. A separate
@@ -13,9 +13,9 @@ to the server.
 
 | Layer | Technology | Responsibility |
 | --- | --- | --- |
-| UI and server routes | Next.js App Router, React, TypeScript | Landing page, Discord callback, protected registration page, and registration API |
+| UI and server routes | Next.js App Router, React, TypeScript | Landing page, authentication callbacks, protected registration page, and registration API |
 | Hosting | Vercel | HTTPS, Next.js runtime, deployments, and public environment variables |
-| Authentication | Supabase Auth with Discord OAuth | Discord identity, browser session, and secure cookies |
+| Authentication | Supabase Auth with Discord OAuth and Chula SSO | Player identity, browser session, and secure cookies |
 | Database | Supabase Postgres | Registration state, uniqueness rules, RLS, and durable rate limiting |
 | Profile validation | Minecraft Services API | Resolves a Java username to its canonical username and UUID |
 | Server synchronization | `../minecraft/whitelist-worker` | Polls Supabase and changes the Paper whitelist through private RCON |
@@ -48,7 +48,7 @@ Minecraft host.
    `/auth/callback` on this application.
 3. The callback exchanges the one-time authorization code for a Supabase
    session and writes the session cookies.
-4. The player is redirected to `/register`.
+4. The player is redirected to `/welcome`, the protected registration page.
 5. `src/proxy.ts` refreshes Supabase sessions for application routes.
 
 The Discord application callback is the Supabase callback, not the Vercel
@@ -107,8 +107,10 @@ offline. The worker reconciles desired registrations again when it starts.
 | --- | --- |
 | `/` | Public landing page and Discord sign-in |
 | `/auth/callback` | OAuth code exchange and session-cookie creation |
+| `/auth/cucallback` | Chula SSO ticket validation and session creation |
 | `/auth/error` | Safe user-facing OAuth failure messages |
-| `/register` | Protected registration and current sync status |
+| `/register` | Public sign-in page; authenticated users redirect to `/welcome` |
+| `/welcome` | Protected registration and current sync status |
 | `/api/registration` | Authenticated registration read/write API |
 | `src/lib/supabase/` | Browser, server, and session-refresh clients |
 | `src/lib/registration.ts` | Username validation, safe redirects, and status messages |

@@ -2,7 +2,6 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Brand } from "@/components/brand";
 import { RegistrationPanel } from "@/components/registration-panel";
-import { SignOutButton } from "@/components/sign-out-button";
 import type { RegistrationView } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "./register.module.css";
