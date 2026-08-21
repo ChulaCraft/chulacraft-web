@@ -29,8 +29,8 @@ export function getSiteUrl() {
 }
 
 export function getChulaSSOAppId() {
-  if (!process.env.CHULA_SSO_APP_ID) throw new Error("Chula SSO is not currently supported");
-  return process.env.CHULA_SSO_APP_ID;
+  if (!process.env.NEXT_PUBLIC_CHULA_SSO_APP_ID) throw new Error("Chula SSO is not currently supported");
+  return process.env.NEXT_PUBLIC_CHULA_SSO_APP_ID;
 }
 
 export function getChulaSSOAppSecret() {

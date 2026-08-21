@@ -6,6 +6,7 @@ import { SignOutButton } from "@/components/sign-out-button";
 import type { RegistrationView } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "./register.module.css";
+import { SiteHeader } from "@/components/site-header";
 
 function ServiceUnavailable() {
   return (
@@ -74,10 +75,7 @@ export default async function WelcomePage() {
   return (
     <main className={`${styles.page} auth-scene`}>
       <div className={`${styles.backdrop} auth-scene-backdrop`} />
-      <header className={`${styles.header} auth-scene-header`}>
-        <Brand />
-        <SignOutButton />
-      </header>
+      <SiteHeader user={user} />
 
       <div className={styles.shell}>
         <section className={styles.intro} aria-labelledby="register-title">
