@@ -4,7 +4,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Chulacraft | Minecraft Server",
-  description: "Register your Minecraft Java Edition account for Chulacraft."
+  description: "Register your Minecraft Java Edition account for Chulacraft.",
+  icons: {
+    icon: "/images/chulacraft-logo.webp",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

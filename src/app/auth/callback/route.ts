@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const providerErrorCode = url.searchParams.get("error_code");
   // The OAuth callback is security-sensitive: never let callback parameters
   // choose where an authenticated user is sent.
-  const destination = new URL("/register", getSiteUrl());
+  const destination = new URL("/welcome", getSiteUrl());
   const response = NextResponse.redirect(destination);
   const { url: supabaseUrl, key } = getPublicSupabaseEnvironment();
   const supabase = createServerClient(supabaseUrl, key, {
