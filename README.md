@@ -1,237 +1,288 @@
-# Chulacraft web architecture
+# ChulaCraft Web
 
-The `web` directory contains the public registration application for the
-Chulacraft Minecraft Java Edition server. It lets a player authenticate with
-Discord or Chula SSO, validates the player's Minecraft profile, and stores a desired
-whitelist registration in Supabase.
+Public website, authentication gateway, and whitelist-registration portal for the ChulaCraft Minecraft Java Edition community.
 
-The web application does not connect directly to Paper or RCON. A separate
-worker on the Minecraft host reads registrations from Supabase and applies them
-to the server.
+Players can explore the server, sign in, submit a Java Edition username, and follow its synchronization status. The app validates Minecraft profiles and stores the desired whitelist state in Supabase. It does **not** connect directly to Paper or RCON; a separate worker on the Minecraft host is responsible for applying database changes to the server.
 
-## Runtime stack
+## What is included
+
+- Responsive landing, about, registration, error, and custom 404 pages
+- Discord OAuth through Supabase Auth
+- Chula SSO ticket callback and CU profile metadata handling
+- Authenticated Minecraft Java username registration
+- Canonical profile lookup through the Minecraft Services API
+- Supabase Postgres schema with RLS, uniqueness constraints, RPC-based writes, and durable per-user rate limiting
+- Pending, synchronized, failed, and revoked registration states
+- Unit tests with Vitest and multi-viewport browser audits with Playwright
+- Security headers, bounded Supabase/Minecraft requests, and safe authentication redirects
+
+## Architecture
 
 | Layer | Technology | Responsibility |
 | --- | --- | --- |
-| UI and server routes | Next.js App Router, React, TypeScript | Landing page, authentication callbacks, protected registration page, and registration API |
-| Hosting | Vercel | HTTPS, Next.js runtime, deployments, and public environment variables |
-| Authentication | Supabase Auth with Discord OAuth and Chula SSO | Player identity, browser session, and secure cookies |
-| Database | Supabase Postgres | Registration state, uniqueness rules, RLS, and durable rate limiting |
-| Profile validation | Minecraft Services API | Resolves a Java username to its canonical username and UUID |
-| Server synchronization | `../minecraft/whitelist-worker` | Polls Supabase and changes the Paper whitelist through private RCON |
-
-## System boundary
+| Web application | Next.js 16 App Router, React 19, TypeScript | Pages, authentication callbacks, registration API, and session refresh |
+| Hosting | Vercel-compatible Node.js runtime | HTTPS, deployments, and public build-time configuration |
+| Authentication | Supabase Auth | Discord OAuth sessions, cookies, and user metadata |
+| Database | Supabase Postgres | Registrations, row-level security, synchronization state, and durable rate limiting |
+| Profile validation | Minecraft Services API | Resolves a Java username to its canonical name and UUID |
+| Server synchronization | External whitelist worker | Polls Supabase and applies changes to Paper through private RCON |
 
 ```mermaid
 flowchart LR
-    Player[Player browser] -->|HTTPS| Web[Next.js on Vercel]
-    Web -->|OAuth and session| Auth[Supabase Auth]
-    Auth <-->|Discord OAuth| Discord[Discord]
-    Web -->|Profile lookup| Mojang[Minecraft Services API]
-    Web -->|RLS queries and RPCs| DB[(Supabase Postgres)]
-    Worker[Private whitelist worker] -->|Backend key| DB
-    Worker -->|Docker-only RCON| Paper[Paper server]
-    Player -.->|Poll registration status| Web
+  Player[Player browser] -->|HTTPS| Web[Next.js application]
+  Web -->|OAuth and session| Auth[Supabase Auth]
+  Auth <-->|Discord OAuth| Discord[Discord]
+  Web <-->|Ticket validation| Chula[Chula SSO]
+  Web -->|Profile lookup| Minecraft[Minecraft Services API]
+  Web -->|RLS queries and RPCs| DB[(Supabase Postgres)]
+  Worker[External whitelist worker] -->|Service-role access| DB
+  Worker -->|Private RCON| Paper[Paper server]
+  Player -.->|Poll registration status| Web
 ```
 
-Only the browser-facing Supabase URL and publishable key are present in the web
-deployment. The Supabase backend key and RCON password exist only on the
-Minecraft host.
+Only browser-safe Supabase configuration belongs in the web deployment. The Supabase service-role key and RCON password belong on the private Minecraft host, not in this repository or Vercel.
 
-## Request lifecycle
+## Request flows
 
-### 1. Discord sign-in
+### Discord authentication
 
-1. `AuthButton` calls `supabase.auth.signInWithOAuth()` with Discord as the
-   provider.
-2. The browser returns through Supabase's provider callback and then to
-   `/auth/callback` on this application.
-3. The callback exchanges the one-time authorization code for a Supabase
-   session and writes the session cookies.
-4. The player is redirected to `/welcome`, the protected registration page.
+1. The browser calls `supabase.auth.signInWithOAuth({ provider: "discord" })`.
+2. Discord returns to Supabase at `https://<project-ref>.supabase.co/auth/v1/callback`.
+3. Supabase redirects to `/auth/callback` with a one-time code.
+4. The callback exchanges the code for a cookie-backed session and redirects to `/welcome`.
 5. `src/proxy.ts` refreshes Supabase sessions for application routes.
 
-The Discord application callback is the Supabase callback, not the Vercel
-application callback:
+The application callback is deliberately fixed to `/welcome`; arbitrary `next` parameters are ignored.
 
-```text
-https://xtqpulleqbvoroxzheor.supabase.co/auth/v1/callback
-```
+### Chula SSO
 
-### 2. Registration
+1. `/register` builds a Chula login URL whose service callback is `/auth/cucallback`.
+2. Chula returns a ticket to the callback.
+3. The callback validates the ticket with Chula's `serviceValidation` endpoint.
+4. For an existing Supabase session, CU profile fields are stored in user metadata.
+5. The route otherwise attempts to provision a Supabase magic-link session and then redirects to `/welcome`.
 
-The protected registration page loads only the current user's safe registration
-fields. Submitting a username sends `POST /api/registration`, which:
+Chula SSO currently assumes an HTTPS callback, including in the browser-side URL builder. See [Current implementation caveats](#current-implementation-caveats) before treating CU-only registration as production-ready.
 
-1. Verifies the Supabase session with `auth.getUser()`.
+### Minecraft registration
+
+`POST /api/registration` performs the following checks in order:
+
+1. Verifies the current Supabase user.
 2. Applies a best-effort in-memory IP limit.
-3. Calls `consume_registration_attempt()` for the authoritative per-user limit
-   of five attempts in ten minutes.
-4. Validates the Java username format: 3-16 letters, numbers, or underscores.
-5. Resolves the canonical username and UUID through the Minecraft Services API.
-6. Calls the authenticated `register_minecraft_profile` database function.
-7. Returns only the safe registration view to the browser.
+3. Calls `consume_registration_attempt()` for the authoritative limit of five attempts per authenticated user in ten minutes.
+4. Accepts only 3–16 letters, numbers, or underscores.
+5. Resolves the canonical username and UUID through `api.minecraftservices.com`.
+6. Calls the security-definer `register_minecraft_profile` database function.
+7. Returns only the safe browser registration view.
 
-The database function derives the owner from `auth.uid()` and the Discord
-identity stored by Supabase. The request never supplies a user ID or Discord ID.
-Unique constraints allow one registration per Discord account and one owner per
-Minecraft UUID.
+The request never supplies its owner ID. The database derives ownership from `auth.uid()`. Uniqueness constraints allow one registration per user and one owner per Minecraft UUID.
 
-### 3. Whitelist synchronization
+### Whitelist synchronization
 
-A newly created row starts with:
+New records begin with:
 
 ```text
 desired_whitelisted = true
 sync_status = pending
 ```
 
-While a registration is not synchronized, the browser requests
-`GET /api/registration` every 3.5 seconds. Separately, the private worker polls
-Supabase every 8 seconds by default, sends `whitelist add <username>` through
-RCON, and updates the row.
+While a record is pending or failed, the browser polls `GET /api/registration` every 3.5 seconds. The external worker is expected to process due rows and update their synchronization fields.
 
-| State | Meaning shown to the player |
+| State | Meaning |
 | --- | --- |
 | `pending` | Saved in Supabase and waiting for the Minecraft host |
-| `synced` | Paper accepted the whitelist operation |
-| `failed` | The worker could not complete the operation and will retry |
+| `synced` | The worker reports that Paper accepted the desired state |
+| `failed` | The last worker attempt failed and may be retried |
 | `desired_whitelisted = false` | An operator revoked the registration |
 
-This asynchronous design keeps registrations durable when the home server is
-offline. The worker reconciles desired registrations again when it starts.
+This asynchronous boundary keeps registrations durable while the Minecraft host is unavailable.
 
-## Routes and important modules
+## Routes
 
-| Path or module | Purpose |
+| Route | Purpose |
 | --- | --- |
-| `/` | Public landing page and Discord sign-in |
-| `/auth/callback` | OAuth code exchange and session-cookie creation |
-| `/auth/cucallback` | Chula SSO ticket validation and session creation |
-| `/auth/error` | Safe user-facing OAuth failure messages |
-| `/register` | Public sign-in page; authenticated users redirect to `/welcome` |
-| `/welcome` | Protected registration and current sync status |
+| `/` | Public landing page, Discord sign-in, community link, and server-address card |
+| `/about` | Community mission, values, and server overview |
+| `/register` | Public Discord or Chula sign-in page; authenticated users redirect to `/welcome` |
+| `/welcome` | Protected Minecraft registration and synchronization status |
+| `/auth/callback` | Discord/Supabase authorization-code exchange |
+| `/auth/cucallback` | Chula ticket validation and CU profile handling |
+| `/auth/error` | Safe user-facing authentication failure page |
 | `/api/registration` | Authenticated registration read/write API |
-| `src/lib/supabase/` | Browser, server, and session-refresh clients |
-| `src/lib/registration.ts` | Username validation, safe redirects, and status messages |
-| `src/lib/env.ts` | Required public Supabase configuration and canonical site URL |
-| `supabase/migrations/` | Tables, constraints, RLS, grants, triggers, and RPCs |
-| `OPERATOR_RUNBOOK.md` | Launch, recovery, and incident procedures |
+| Any unknown route | Custom Minecraft-themed 404 page |
 
-## Database security model
+## Repository structure
 
-The migration
-`supabase/migrations/202607270001_minecraft_registrations.sql` is the source of
-truth for the data model.
+```text
+.
+├── public/                     Static images and local Minecraftia font
+├── src/
+│   ├── app/                    App Router pages, auth callbacks, and API route
+│   ├── components/             Shared navigation, auth, registration, and UI components
+│   ├── lib/                    Environment, validation, error, timeout, and Supabase helpers
+│   └── proxy.ts                Supabase session-refresh proxy
+├── supabase/
+│   ├── migrations/             Postgres schema, grants, RLS, triggers, and RPCs
+│   ├── tests/                  Database security and privilege test cases
+│   └── config.toml             Local Supabase CLI configuration
+├── tests/visual/               Playwright multi-viewport rendering audits
+├── visual-results/             Checked-in visual review artifacts
+├── OPERATOR_RUNBOOK.md         Deployment, recovery, and incident procedures
+├── playwright.config.ts        Browser-audit configuration and Supabase stub server
+└── vitest.config.ts            Unit-test configuration
+```
 
-- Row Level Security allows authenticated players to read only their own row.
-- Browser roles can select only `minecraft_username`,
-  `desired_whitelisted`, `sync_status`, and `updated_at`.
-- Browser roles cannot insert or update table rows directly.
-- `register_minecraft_profile` is the only player registration write path.
-- The function is idempotent for an identical replay by the same user.
-- Conflicts do not reveal which user owns a Discord or Minecraft account.
-- Worker-only retry, error, Discord, and UUID fields require the backend role.
-- `registration_attempt_windows` is private and accessible only through its
-  authenticated rate-limit function.
+## Requirements
 
-The web host must never receive a Supabase secret/service-role key, Discord
-client secret, or RCON password.
+- Node.js 20.9 or newer (required by the installed Next.js version)
+- npm (the repository is locked with `package-lock.json`)
+- A Supabase project with Auth and Postgres enabled
+- A Discord application/provider for Discord login
+- Chula SSO application credentials for the Chula sign-in button, which is always rendered on `/register`
+- Supabase CLI only when running the local database stack or applying migrations from the CLI
+- Playwright's Chromium browser when running the visual suite
 
-## Environment variables
+## Environment
 
-Copy `.env.example` to `.env.local` for local development:
+Copy the committed template; never copy or commit a populated `.env` file.
+
+```bash
+cp .env.example .env.local
+```
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_REPLACE_ME
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS=mc.ratchaphon.com
+NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS=mc.example.com
+
+NEXT_PUBLIC_CHULA_SSO_APP_ID=
+CHULA_SSO_APP_SECRET=
 ```
 
-| Variable | Required | Description |
+| Variable | Required | Used for |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Public Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes | Public browser-safe Supabase key |
-| `NEXT_PUBLIC_SITE_URL` | Yes in production | Canonical origin used for server-side redirects |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes | Browser-safe Supabase publishable key |
+| `NEXT_PUBLIC_SITE_URL` | Recommended; required for a stable production origin | Canonical server-side auth and redirect origin |
 | `NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS` | No | Address displayed and copied on the landing page |
+| `NEXT_PUBLIC_CHULA_SSO_APP_ID` | For Chula SSO | Chula application identifier exposed to the browser URL builder |
+| `CHULA_SSO_APP_SECRET` | For Chula SSO | Server-only credential sent to Chula ticket validation |
 
-For the custom production hostname, set:
+If `NEXT_PUBLIC_SITE_URL` is absent, the server tries `VERCEL_PROJECT_PRODUCTION_URL`, then `VERCEL_URL`, then `http://localhost:3000`. These Vercel variables are platform-provided and do not belong in `.env.example`.
 
-```env
-NEXT_PUBLIC_SITE_URL=https://mc.ratchaphon.com
-NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS=mc.ratchaphon.com
-```
-
-`NEXT_PUBLIC_` values are included in the Next.js build. Redeploy after changing
-them in Vercel.
+All `NEXT_PUBLIC_` values are embedded into the client build where used. Redeploy after changing production values. `CHULA_SSO_APP_SECRET` must never receive the `NEXT_PUBLIC_` prefix.
 
 ## Local development
 
-Prerequisites:
+Install dependencies and start Next.js:
 
-- Node.js compatible with the version configured by the Vercel project
-- A Supabase project with Discord Auth configured
-- The SQL migration applied to that project
-
-From this directory:
-
-```powershell
-Copy-Item .env.example .env.local
+```bash
 npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000`. Supabase Auth URL Configuration must include:
+Open <http://localhost:3000>.
+
+For a local Supabase stack:
+
+```bash
+supabase start
+supabase db reset
+```
+
+The first registration migration creates:
+
+- `minecraft_registrations`
+- `registration_attempt_windows`
+- `consume_registration_attempt()`
+- `register_minecraft_profile(uuid, text)`
+- update/reset triggers, grants, and RLS policies
+
+The migration at `supabase/migrations/20260821183459_chula_sso_identities.sql` is currently empty and makes no database changes.
+
+### Supabase Auth configuration
+
+For local Discord sign-in, allow:
 
 ```text
 http://localhost:3000/auth/callback
 ```
 
-## Production configuration
+For production, configure the canonical site and callback:
 
-1. Add the production hostname to the Vercel project.
-2. Configure the exact CNAME record Vercel recommends.
-3. Set the four public environment variables in Vercel.
-4. In Supabase Auth URL Configuration, set:
+```text
+Site URL:     https://your-domain.example
+Redirect URL: https://your-domain.example/auth/callback
+```
 
-   ```text
-   Site URL: https://mc.ratchaphon.com
-   Redirect URL: https://mc.ratchaphon.com/auth/callback
-   ```
+The redirect URI configured in the Discord application itself must be the Supabase provider callback:
 
-5. Keep the Discord application redirect set to the Supabase provider callback.
-6. Redeploy the web project and complete one real registration smoke test.
+```text
+https://<project-ref>.supabase.co/auth/v1/callback
+```
 
-During a domain migration, the old Vercel `/auth/callback` URL can remain in the
-Supabase redirect allowlist temporarily. Remove it when the custom hostname has
-been verified.
+## Commands
 
-## Verification
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Next.js development server |
+| `npm run build` | Create a production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | Run ESLint across the repository |
+| `npm run typecheck` | Run TypeScript without emitting files |
+| `npm test` | Run Vitest unit tests once |
+| `npm run test:visual:list` | List Playwright visual-audit cases |
+| `npm run test:visual` | Build the app and audit six routes across four viewport projects |
 
-Run the complete local check from `web`:
+The visual suite starts a local Supabase stub on port `3211`, builds the app, serves it on port `3210`, checks rendering/runtime errors and horizontal overflow, and writes screenshots/artifacts under `visual-results/`.
 
-```powershell
+Recommended verification:
+
+```bash
 npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run test:visual:list
 ```
 
-The Supabase concurrency, RLS, and role tests require a real authenticated test
-project. See `supabase/README.md` for those cases.
+Run `npm run test:visual` when changing layouts, assets, routing behavior, or authentication-page rendering. The SQL cases in `supabase/tests/database_security.test.sql` require an auth-enabled Supabase test project and are not executed by `npm test`.
 
-## Operational behavior
+## Deployment
 
-- A pending registration does not mean port forwarding failed. It means the
-  worker has not yet marked the database row as synchronized.
-- The browser never needs network access to the home server.
-- The worker uses capped retry backoff for Supabase and RCON failures.
-- RCON is bound to localhost and the Docker network; it must never be exposed to
-  the Internet.
-- Only Minecraft TCP port `25565` should be forwarded to the home host.
-- Existing manual whitelist entries are preserved unless an operator explicitly
-  creates and revokes a matching managed registration.
+1. Apply the reviewed Supabase migration to the target project.
+2. Enable and configure the Discord provider in Supabase Auth.
+3. Set the web environment variables in Vercel or the chosen Node.js host.
+4. Add the production domain and exact auth redirect URLs.
+5. Build and deploy the application.
+6. Smoke-test sign-in, a real Minecraft lookup, registration creation, and worker synchronization.
 
-For launch order, troubleshooting, backups, revocation, and secret rotation, see
-`OPERATOR_RUNBOOK.md`.
+`next.config.ts` sends `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy` headers. It also permits optimized remote images only from Discord's CDN hosts.
+
+## Security and operational boundaries
+
+- Browser users can select only `minecraft_username`, `desired_whitelisted`, `sync_status`, and `updated_at` for their own row.
+- Registration writes go through a security-definer RPC; direct browser writes are not granted.
+- The authoritative registration-attempt window is private and derives its user from `auth.uid()`.
+- The IP limiter is only best effort and trusts the deployment proxy's first `X-Forwarded-For` value.
+- Supabase requests are bounded to eight seconds by default, and the Minecraft profile lookup is bounded to seven seconds.
+- The web host must not receive the Supabase service-role key or RCON password.
+- RCON should remain private to the Minecraft host/network. Only the Minecraft gameplay port should be publicly exposed.
+- Revoking or re-approving a registration resets synchronization state so the worker can reconcile the new desired state.
+
+See `OPERATOR_RUNBOOK.md` for launch order, recovery, troubleshooting, backups, revocation, and secret rotation. Its `minecraft/...` paths refer to the external Minecraft-host deployment tree, which is not included in this repository.
+
+## Current implementation caveats
+
+These are code-backed constraints in the current repository, not intended architecture:
+
+- `register_minecraft_profile` still requires a Discord identity from `auth.identities`. A CU-only Supabase user cannot complete Minecraft registration with the current migration.
+- The unauthenticated Chula callback attempts `supabase.auth.admin.generateLink()` using the normal server client, which is configured with the public publishable key. Supabase admin APIs require trusted server credentials, but no such credential is defined for this web app. New CU-only user provisioning therefore needs a secure backend design before production use.
+- The Chula callback URL builder forces `https://`, so the button is not usable against the default plain-HTTP local development origin without additional HTTPS setup.
+- Chula ticket validation currently uses an unbounded upstream `fetch`; unlike Supabase and Minecraft requests, it has no timeout or cancellation signal.
+- Chula callback failures are routed through an error page whose current copy is Discord-specific.
+- The whitelist worker and Paper/RCON integration are external to this repository; this codebase can only store and display synchronization state.
+
+Until those items are resolved, Discord OAuth is the complete registration path represented by the database schema.
