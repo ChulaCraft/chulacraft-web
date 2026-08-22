@@ -1,11 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { getPublicSupabaseEnvironment } from "@/lib/env";
+import { getSecretSupabaseEnvironment } from "@/lib/env";
 import { createBoundedFetch } from "@/lib/bounded-fetch";
 
 export async function createClient() {
   const cookieStore = await cookies();
-  const { url, key } = getPublicSupabaseEnvironment();
+  const { url, key } = getSecretSupabaseEnvironment();
 
   return createServerClient(url, key, {
     global: { fetch: createBoundedFetch() },

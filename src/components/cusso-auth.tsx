@@ -1,24 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { CUIcon } from "@/components/icons";
-import { getChulaLoginURL } from "@/lib/env";
+import { getChulaLoginURL } from "@/lib/cusso/client";
 
 export function CussoAuthButton({ compact = false }: { compact?: boolean }) {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const login_url = getChulaLoginURL(`https://${window.location.host}/auth/cucallback`);
 
-  async function signIn() {
-    setLoading(true);
-    try {
-      router.replace(getChulaLoginURL(`https://${window.location.host}/auth/cucallback`));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return <button type="button" className={compact ? "button button-header-signup" : "button button-discord"} onClick={signIn} disabled={loading} aria-busy={loading}>
-    {!compact && <CUIcon />} {loading ? "Loading…" : compact ? "Sign Up Now!" : "Sign Up with CU SSO"}
-  </button>;
+  return <a href={login_url}><button type="button" className={compact ? "button button-header-signup" : "button button-discord"}>
+    {!compact && <CUIcon />} {compact ? "Sign Up Now!" : "Sign Up with CU SSO"}
+  </button></a>;
 }

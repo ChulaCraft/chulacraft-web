@@ -3,7 +3,8 @@ export type AuthFailureReason =
   | "provider_error"
   | "callback_missing_code"
   | "session_exchange_failed"
-  | "start_failed";
+  | "start_failed"
+  | "other";
 
 export function classifyOAuthCallbackFailure(
   error: string | null,
@@ -21,6 +22,7 @@ export function safeAuthFailureReason(value: string | undefined): AuthFailureRea
     case "callback_missing_code":
     case "session_exchange_failed":
     case "start_failed":
+    case "other":
       return value;
     default:
       return "provider_error";
@@ -39,5 +41,7 @@ export function authFailureMessage(reason: AuthFailureReason) {
       return "Discord authorized the account, but the secure session could not be created. Please start again in the same browser.";
     case "start_failed":
       return "The Discord sign-in request could not be started. Please refresh the page and try again.";
+    case "other":
+      return "An error occured";
   }
 }

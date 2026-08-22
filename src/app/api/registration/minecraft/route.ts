@@ -47,10 +47,14 @@ export async function GET() {
   catch { return NextResponse.json({ error: "Authentication is temporarily unavailable." }, { status: 503 }); }
   if (!user) return NextResponse.json({ error: "Sign in is required." }, { status: 401 });
   let data;
-  let error;
-  try { ({ data, error } = await supabase.from("minecraft_registrations").select("minecraft_username, desired_whitelisted, sync_status, updated_at").maybeSingle()); }
-  catch { return NextResponse.json({ error: "Could not load registration." }, { status: 503 }); }
-  if (error) return NextResponse.json({ error: "Could not load registration." }, { status: 503 });
+  try {
+    let error;
+    ({ data, error } = await supabase.from("minecraft_registrations")
+        .select("minecraft_username, desired_whitelisted, sync_status, updated_at").eq("user_id", user.id).maybeSingle());
+    if (error) throw new Error(error.message);
+  } catch {
+    return NextResponse.json({ error: "Could not load registration." }, { status: 503 });
+  }
   return NextResponse.json({ registration: data ? safeView(data) : null });
 }
 
