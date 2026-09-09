@@ -5,6 +5,7 @@ import { createBoundedFetch } from "@/lib/bounded-fetch";
 import type { AuthFailureReason } from "@/lib/auth-error";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTicket } from "@/lib/cusso/server";
+import jwt from 'jsonwebtoken';
 
 function authErrorResponse(reason: AuthFailureReason, message?: string) {
   const destination = new URL("/auth/error", getSiteUrl());
@@ -41,32 +42,37 @@ export async function GET(request: NextRequest) {
       let user = await supabase.auth.admin.getUserById(q_res.data.sp_user_id);
       if (!user.data.user) return authErrorResponse("other", "User not found or deleted.");
 
-      // TODO: FIX THIS SHIT (should use jwt)
       // su
-      const userEmail = user.data.user.email;
-      if (!userEmail) {
-        return authErrorResponse("other", "Cannot 'su' into a user that has no registered email address.");
-      }
+      const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET!;
+      const expirationSeconds = 60 * 60; // 1 Hour
       
-      // === BEGIN SU IMPLEMENTATION ===
-      // TypeScript is now happy because userEmail is guaranteed to be a string
-      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email: userEmail, 
+      const supabaseCompatiblePayload = {
+        aud: 'authenticated',
+        role: 'authenticated', // Crucial for Postgres RLS access control
+        sub: user.data.user.id, // The standard identifier in your table
+        email: user.data.user.email,
+        exp: Math.floor(Date.now() / 1000) + expirationSeconds,
+        app_metadata: { provider: 'custom_pipeline' },
+        user_metadata: {}
+      };
+
+      const supabaseJWT = jwt.sign(supabaseCompatiblePayload, SUPABASE_JWT_SECRET);
+
+      // 4. GENERATE THE NATIVE COOKIE CONTAINER 
+      // Supabase stores access tokens and fake refresh tokens as a stringified array/JSON sequence.
+      const cookieData = JSON.stringify([supabaseJWT, "custom-refresh-bypass-token"]);
+      const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL!.split('.')[0].replace('https://', '');
+      const cookieName = `sb-${projectRef}-auth-token`;
+
+      // 5. RESPOND WITH SECURE HTTP COOKIES
+      
+      response.cookies.set(cookieName, cookieData, {
+        path: '/',
+        maxAge: expirationSeconds,
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: false, // Must be false so the client SDK can read it to synchronize storage states
+        sameSite: 'lax',
       });
-
-      if (linkError || !linkData?.properties?.hashed_token) {
-        return authErrorResponse("other", `Failed to generate su ticket: ${linkError?.message}`);
-      }
-
-      const { data: sessionData, error: authError } = await supabase.auth.verifyOtp({
-        token_hash: linkData.properties.hashed_token,
-        type: 'email',
-      });
-
-      if (authError || !sessionData?.session) {
-        return authErrorResponse("other", `Failed to establish session: ${authError?.message}`);
-      }
 
       return response;
     }
