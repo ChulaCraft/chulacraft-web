@@ -30,9 +30,9 @@ import { GET } from "./route";
 
 const profile = { uid: "6500000021", username: "somchai", firstname: "Somchai", lastname: "J", email: "s@student.chula.ac.th", disable: false };
 
-// Default: a flow this browser started (state cookie matches the callback's state param).
-async function location(query: string, cookie: string | null = "cu_state=login:n1") {
-  const url = `https://site.test/auth/cucallback?state=n1&${query}`;
+// Default: a flow this browser started (it holds the cu_state cookie).
+async function location(query: string, cookie: string | null = "cu_state=login") {
+  const url = `https://site.test/auth/cucallback?${query}`;
   const response = await GET(new NextRequest(url, cookie ? { headers: { cookie } } : undefined));
   return response.headers.get("location");
 }
@@ -46,7 +46,7 @@ describe("Chula SSO callback", () => {
 
   it("rejects tickets this browser didn't request", async () => {
     expect(await location("ticket=t", null)).toBe("https://site.test/auth/error?reason=start_failed");
-    expect(await location("ticket=t", "cu_state=login:other")).toBe("https://site.test/auth/error?reason=start_failed");
+    expect(await location("ticket=t", "cu_state=bogus")).toBe("https://site.test/auth/error?reason=start_failed");
     expect(m.resolveTicket).not.toHaveBeenCalled();
   });
 
@@ -65,14 +65,14 @@ describe("Chula SSO callback", () => {
     expect(await location("ticket=t")).toBe("https://site.test/welcome");
     expect(m.rpc).not.toHaveBeenCalled();
 
-    expect(await location("ticket=t", "cu_state=link:n1")).toBe("https://site.test/dashboard?linked=cu");
+    expect(await location("ticket=t", "cu_state=link")).toBe("https://site.test/dashboard?linked=cu");
     expect(m.rpc).toHaveBeenCalledWith("link_cu_sso", expect.objectContaining({ p_user_id: "u1", p_chula_uid: profile.uid }));
   });
 
   it("reports a Chula account that is linked elsewhere", async () => {
     m.getUser.mockResolvedValue({ data: { user: { id: "u1" } } });
     m.rpc.mockResolvedValue({ error: { message: "CU_ALREADY_LINKED" } });
-    expect(await location("ticket=t", "cu_state=link:n1")).toBe("https://site.test/auth/error?reason=cu_already_linked");
+    expect(await location("ticket=t", "cu_state=link")).toBe("https://site.test/auth/error?reason=cu_already_linked");
   });
 
   it("refuses signed-out sign-in for an unlinked Chula account", async () => {

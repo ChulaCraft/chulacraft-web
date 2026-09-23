@@ -1,17 +1,16 @@
-import { randomUUID } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { getChulaLoginURL } from "@/lib/cusso/client";
 import { getSiteUrl } from "@/lib/env";
 
-// Every Chula flow starts here. The nonce is both in an httpOnly cookie and in
-// the callback URL, so a ticket planted by someone else can neither sign the
-// victim into the attacker's account nor link the attacker's Chula account to
-// the victim's. The cookie also carries the intent (`link` or `login`).
+// Every Chula flow starts here. Chula SSO ignores our `service` URL and always
+// returns to the callback registered for the app (no query params survive), so
+// the only proof that this browser started the flow is this short-lived
+// httpOnly cookie. It also carries the intent (`link` or `login`).
+// ponytail: cookie-only check; a ticket planted within the 10-minute window of a
+// flow the victim started still gets through. Add a nonce if Chula ever echoes state.
 export async function GET(request: NextRequest) {
   const callback = new URL("/auth/cucallback", request.nextUrl.origin);
   const intent = request.nextUrl.searchParams.get("intent") === "link" ? "link" : "login";
-  const nonce = randomUUID();
-  callback.searchParams.set("state", nonce);
 
   let loginUrl;
   try {
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
   }
 
   const response = NextResponse.redirect(loginUrl);
-  response.cookies.set("cu_state", `${intent}:${nonce}`, {
+  response.cookies.set("cu_state", intent, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

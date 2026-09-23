@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
 
 async function handle(request: NextRequest) {
   // Reject tickets this browser didn't ask for (see /auth/cusso/start).
-  const [intent, nonce] = request.cookies.get("cu_state")?.value.split(":") ?? [];
-  if (!nonce || nonce !== request.nextUrl.searchParams.get("state")) return authErrorResponse("start_failed");
+  const intent = request.cookies.get("cu_state")?.value;
+  if (intent !== "link" && intent !== "login") return authErrorResponse("start_failed");
 
   const ticket = request.nextUrl.searchParams.get("ticket");
   if (!ticket) return authErrorResponse("start_failed");
