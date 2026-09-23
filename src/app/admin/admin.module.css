@@ -17,3 +17,5 @@
 .facts { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
 .facts dt { color: #ff9bc8; }
 .facts dd { margin: 0; overflow-wrap: anywhere; }
+.adminNav { display: flex; gap: 20px; font: 700 15px/1 var(--font-rajdhani), sans-serif; text-transform: uppercase; }
+.adminNav a { color: #ffd6e7; }

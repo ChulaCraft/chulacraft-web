@@ -52,7 +52,7 @@ export async function GET() {
     let error;
     ({ data, error } = await supabase.from("minecraft_registrations")
         .select("id, minecraft_username, desired_whitelisted, sync_status, updated_at")
-        .eq("user_id", user.id).eq("desired_whitelisted", true).order("created_at"));
+        .eq("user_id", user.id).eq("is_active", true).order("created_at"));
     if (error) throw new Error(error.message);
   } catch {
     return NextResponse.json({ error: "Could not load registrations." }, { status: 503 });
@@ -71,6 +71,26 @@ export async function PATCH(request: Request) {
     if (typeof id !== "string") return null;
     return ["change_minecraft_account", { p_registration_id: id, p_minecraft_uuid: profile.uuid, p_minecraft_username: profile.username }];
   });
+}
+
+/** Remove an account from the player's list (soft delete, also un-whitelists). */
+export async function DELETE(request: Request) {
+  const supabase = await createClient();
+  let user;
+  try { ({ data: { user } } = await supabase.auth.getUser()); }
+  catch { return NextResponse.json({ error: "Authentication is temporarily unavailable." }, { status: 503 }); }
+  if (!user) return NextResponse.json({ error: "Sign in is required." }, { status: 401 });
+  let id: unknown;
+  try { ({ id } = await request.json() as { id?: unknown }); } catch { /* handled below */ }
+  if (typeof id !== "string") return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 });
+  let error;
+  try { ({ error } = await supabase.rpc("remove_minecraft_account", { p_registration_id: id })); }
+  catch { return NextResponse.json({ error: "We couldn’t remove that account. Please try again." }, { status: 503 }); }
+  if (error) {
+    const failure = registrationError(error.message, error.code);
+    return NextResponse.json({ error: failure.error }, { status: failure.status });
+  }
+  return new NextResponse(null, { status: 204 });
 }
 
 type Profile = { uuid: string; username: string };

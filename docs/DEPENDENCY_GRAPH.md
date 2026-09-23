@@ -11,7 +11,8 @@ app/about/page.tsx → components/{icons, site-footer, site-header}
 app/register/page.tsx → components/{brand, site-header, site-footer, discord-auth, cusso-auth}
                        → lib/supabase/server
 
-app/welcome/page.tsx → components/{brand, registration-panel, site-header}      (user dashboard)
+app/welcome/page.tsx → components/{brand, server-address-card, site-header}      (post-sign-in onboarding checklist)
+app/dashboard/page.tsx → components/{brand, registration-panel, site-header}    (profile + Minecraft accounts)
                       → lib/{registration, supabase/server}
 
 app/admin/layout.tsx → components/site-header, lib/supabase/server             (role gate: owner/admin)
@@ -55,7 +56,8 @@ Notable coupling: `components/registration-panel.tsx` imports CSS from `app/regi
 | Caller | RPC / table |
 |---|---|
 | `api/registration/minecraft` | `consume_registration_attempt`, `add_minecraft_account` (POST), `change_minecraft_account` (PATCH), `minecraft_registrations` (GET) |
-| `welcome/page` | `minecraft_registrations`, `cu_sso_identities`, `profiles` (own rows via RLS) |
+| `welcome/page` | `minecraft_registrations`, `cu_sso_identities` (own rows via RLS) |
+| `dashboard/page` | `minecraft_registrations`, `cu_sso_identities`, `profiles` (own rows via RLS) |
 | `auth/cucallback` | `link_cu_sso` + `cu_sso_identities` lookup (service key via `createAdminClient`) |
 | `admin/*` | `current_app_role`, `admin_search_users`, `admin_get_user`, `admin_set_whitelisted`, `admin_set_role` |
 

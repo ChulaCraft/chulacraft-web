@@ -29,6 +29,7 @@ const routes = [
   { name: "about", path: "/about", expectedPath: "/about", expectedStatus: 200, authenticated: false },
   { name: "register-unauthenticated", path: "/register", expectedPath: "/register", expectedStatus: 200, authenticated: false },
   { name: "register", path: "/register", expectedPath: "/welcome", expectedStatus: 200, authenticated: true },
+  { name: "dashboard", path: "/dashboard", expectedPath: "/dashboard", expectedStatus: 200, authenticated: true },
   { name: "auth-error", path: "/auth/error?reason=access_denied", expectedPath: "/auth/error", expectedStatus: 200, authenticated: false },
   { name: "not-found", path: "/visual-audit-not-found", expectedPath: "/visual-audit-not-found", expectedStatus: 404, authenticated: false },
 ] as const;

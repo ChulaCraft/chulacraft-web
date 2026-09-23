@@ -65,7 +65,7 @@ async function linkToSignedInUser(admin: ReturnType<typeof createAdminClient>, u
     p_display_name: `${profile.firstname ?? ""} ${profile.lastname ?? ""}`.trim() || null
   });
   if (error) return authErrorResponse(error.message.includes("CU_ALREADY_LINKED") ? "cu_already_linked" : "other");
-  return redirectTo("/welcome?linked=cu");
+  return redirectTo("/dashboard?linked=cu");
 }
 
 // Chula SSO sign-in mints a real Supabase session for the already-linked user:

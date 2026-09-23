@@ -8,7 +8,7 @@ type Detail = {
   user: { id: string; email: string | null; created_at: string; role: string } | null;
   discord: { id: string; username: string | null } | null;
   chula: { chula_uid: string; chula_username: string; email: string | null; display_name: string | null; linked_at: string } | null;
-  registrations: { id: string; minecraft_username: string; minecraft_uuid: string; desired_whitelisted: boolean; sync_status: string }[];
+  registrations: { id: string; minecraft_username: string; minecraft_uuid: string; desired_whitelisted: boolean; is_active: boolean; sync_status: string }[];
   log: { id: string; field: string; old_value: string | null; new_value: string | null; source: string; actor_user_id: string | null; created_at: string }[];
 };
 
@@ -81,7 +81,7 @@ export default async function AdminUserPage({ params, searchParams }: {
                   <tr key={account.id}>
                     <td>{account.minecraft_username}</td>
                     <td className={styles.muted}>{account.minecraft_uuid}</td>
-                    <td>{account.desired_whitelisted ? "Active" : "Removed"}</td>
+                    <td>{account.desired_whitelisted ? "Active" : account.is_active ? "Removed" : "Deleted by player"}</td>
                     <td>{account.sync_status}</td>
                     <td>
                       {canManage && (

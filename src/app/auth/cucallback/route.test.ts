@@ -65,7 +65,7 @@ describe("Chula SSO callback", () => {
     expect(await location("ticket=t")).toBe("https://site.test/welcome");
     expect(m.rpc).not.toHaveBeenCalled();
 
-    expect(await location("ticket=t", "cu_state=link:n1")).toBe("https://site.test/welcome?linked=cu");
+    expect(await location("ticket=t", "cu_state=link:n1")).toBe("https://site.test/dashboard?linked=cu");
     expect(m.rpc).toHaveBeenCalledWith("link_cu_sso", expect.objectContaining({ p_user_id: "u1", p_chula_uid: profile.uid }));
   });
 

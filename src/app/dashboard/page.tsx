@@ -4,7 +4,7 @@ import { Brand } from "@/components/brand";
 import { RegistrationPanel } from "@/components/registration-panel";
 import type { RegistrationView } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
-import styles from "./register.module.css";
+import styles from "./dashboard.module.css";
 import { SiteHeader } from "@/components/site-header";
 
 function ServiceUnavailable() {
@@ -23,7 +23,8 @@ function ServiceUnavailable() {
   );
 }
 
-export default async function WelcomePage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ linked?: string }> }) {
+  const { linked } = await searchParams;
   const supabase = await createClient();
   let user;
 
@@ -46,7 +47,7 @@ export default async function WelcomePage() {
         .from("minecraft_registrations")
         .select("id, minecraft_username, desired_whitelisted, sync_status, updated_at")
         .eq("user_id", user.id)
-        .eq("desired_whitelisted", true)
+        .eq("is_active", true)
         .order("created_at"),
       supabase.from("cu_sso_identities").select("chula_username").eq("user_id", user.id).maybeSingle(),
       supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle(),
@@ -81,19 +82,20 @@ export default async function WelcomePage() {
 
       <div className={styles.shell}>
         <section className={styles.intro} aria-labelledby="register-title">
-          <p className={styles.eyebrow}><span aria-hidden="true">+</span> CHULACRAFT WHITELIST <span aria-hidden="true">+</span></p>
-          <h1 id="register-title">Dashboard</h1>
+          <p className={styles.eyebrow}><span aria-hidden="true">+</span> CHULACRAFT PROFILE <span aria-hidden="true">+</span></p>
+          <h1 id="register-title">Profile</h1>
           <p>Manage your sign-in methods and Minecraft Java Edition accounts.</p>
+          {linked === "cu" && <p className={styles.statusNote} role="status">Chula SSO linked. You can now add Minecraft accounts.</p>}
         </section>
 
         <div className={styles.panelStack}>
-          <div className={styles.playerBar}>
+          <div className={styles.profileCard}>
             {avatar ? (
               <Image
                 src={avatar}
                 alt=""
-                width={40}
-                height={40}
+                width={96}
+                height={96}
                 unoptimized
                 referrerPolicy="no-referrer"
               />
@@ -103,10 +105,10 @@ export default async function WelcomePage() {
               </span>
             )}
             <div>
-              <small>Discord connected</small>
               <strong>{displayName}</strong>
+              <small>Discord connected{role !== "user" && ` · ${role}`}</small>
+              <small>Your picture and name come from Discord. Change them there and sign in again.</small>
             </div>
-            <span className={styles.connectedBadge}>Online</span>
           </div>
 
           <div className={styles.playerBar}>
@@ -127,10 +129,6 @@ export default async function WelcomePage() {
             lookupFailed={lookupFailed}
             canAdd={Boolean(chulaUsername)}
           />
-
-          {(role === "owner" || role === "admin") && (
-            <a className={`button button-header-signup ${styles.linkButton}`} href="/admin">Open admin</a>
-          )}
         </div>
       </div>
 

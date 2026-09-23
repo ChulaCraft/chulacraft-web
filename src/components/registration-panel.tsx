@@ -23,6 +23,7 @@ type Editing = { id: string | null } | null;
 export function RegistrationPanel({ initialRegistrations, lookupFailed = false, canAdd }: Props) {
   const [accounts, setAccounts] = useState(initialRegistrations);
   const [editing, setEditing] = useState<Editing>(initialRegistrations.length === 0 && canAdd ? { id: null } : null);
+  const [removeError, setRemoveError] = useState("");
 
   const reload = useCallback(async () => {
     try {
@@ -54,6 +55,25 @@ export function RegistrationPanel({ initialRegistrations, lookupFailed = false, 
 
   const full = accounts.length >= MAX_MINECRAFT_ACCOUNTS;
 
+  async function remove(account: RegistrationView) {
+    if (!window.confirm(`Remove ${account.minecraftUsername} from your list? It will also be removed from the whitelist.`)) return;
+    setRemoveError("");
+    try {
+      const response = await fetch("/api/registration/minecraft", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: account.id }),
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({})) as { error?: string };
+        setRemoveError(result.error || "We couldn’t remove that account. Please try again.");
+      }
+    } catch {
+      setRemoveError("Connection problem. Please try again in a moment.");
+    }
+    await reload();
+  }
+
   return (
     <section className={styles.card} aria-live="polite">
       <p className={styles.cardLabel}>Your Minecraft accounts · {accounts.length}/{MAX_MINECRAFT_ACCOUNTS}</p>
@@ -76,15 +96,24 @@ export function RegistrationPanel({ initialRegistrations, lookupFailed = false, 
               <strong>{account.minecraftUsername}</strong>
               <small>{statusMessage(account)}</small>
             </div>
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={() => setEditing({ id: account.id })}
-              aria-label={`Change ${account.minecraftUsername}`}
-            >✎</button>
+            <div className={styles.rowActions}>
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={() => setEditing({ id: account.id })}
+                aria-label={`Change ${account.minecraftUsername}`}
+              >✎</button>
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={() => remove(account)}
+                aria-label={`Remove ${account.minecraftUsername}`}
+              >✕</button>
+            </div>
           </li>
         ))}
       </ul>
+      {removeError && <p className={styles.fieldError} role="alert">{removeError}</p>}
 
       {editing?.id === null ? (
         <AccountForm

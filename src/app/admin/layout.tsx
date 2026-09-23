@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { createClient } from "@/lib/supabase/server";
@@ -16,7 +17,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <main className={`${styles.page} auth-scene`}>
       <div className={`${styles.backdrop} auth-scene-backdrop`} />
       <SiteHeader user={user} />
-      <div className={styles.shell}>{children}</div>
+      <div className={styles.shell}>
+        <nav className={styles.adminNav} aria-label="Admin">
+          <Link href="/admin">Players</Link>
+          <Link href="/admin/restore">Restore accounts</Link>
+        </nav>
+        {children}
+      </div>
     </main>
   );
 }

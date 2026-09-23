@@ -188,3 +188,15 @@
   .loadingBloom { animation: none; }
 }
 .linkButton { margin-left: auto; min-height: 44px; display: inline-flex; align-items: center; justify-self: center; }
+.profileCard { position: relative; z-index: 2; margin-bottom: 12px; padding: 18px; border: 1px solid rgba(255, 214, 231, .34); display: flex; align-items: center; gap: 16px; background: rgba(32, 26, 43, .92); }
+.profileCard img, .profileCard .avatarFallback { width: 72px; height: 72px; border: 2px solid #ff6fae; border-radius: 50%; flex: 0 0 auto; object-fit: cover; background: #3b2f4a; font-size: 28px; }
+.profileCard div { min-width: 0; display: grid; gap: 5px; }
+.profileCard strong { overflow: hidden; font-size: 20px; text-overflow: ellipsis; white-space: nowrap; }
+.profileCard small { color: #bcaec6; font-size: 12px; line-height: 1.4; }
+.profileCard small:first-of-type { color: #ff9bc8; font: 700 11px/1 var(--font-rajdhani), sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.steps li { padding: 12px 14px; border: 1px solid rgba(255, 214, 231, .24); display: flex; align-items: center; gap: 12px; background: rgba(22, 16, 33, .45); }
+.steps li > span { width: 28px; height: 28px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid #8b6aae; color: #ffd6e7; font-weight: 700; }
+.steps li[data-done="true"] > span { border-color: #7ee2a8; color: #7ee2a8; }
+.steps li div { min-width: 0; display: grid; gap: 3px; }
+.steps li small { color: #bcaec6; font-size: 12px; }

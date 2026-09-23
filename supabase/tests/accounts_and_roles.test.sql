@@ -1,6 +1,6 @@
 begin;
 
-select plan(34);
+select plan(47);
 
 -- Users: 1 owner, 2 admin, 3 second admin, 4 player with Chula SSO, 5 player without.
 insert into auth.users (id, email) values
@@ -101,8 +101,38 @@ select throws_ok($$ select public.admin_set_whitelisted(
 select throws_ok($$ select public.admin_set_role('00000000-0000-0000-0000-000000000004', 'admin') $$, 'P0001', 'FORBIDDEN', 'an admin cannot change roles');
 
 select pg_temp.login('00000000-0000-0000-0000-000000000004');
+select is((select desired_whitelisted from public.add_minecraft_account('10000000-0000-0000-0000-000000000003', 'Player_3')),
+  false, 're-adding an admin-revoked account does not re-whitelist it');
+select throws_ok($$ select * from public.change_minecraft_account(
+    (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000003'),
+    '10000000-0000-0000-0000-000000000031', 'Player_31') $$,
+  'P0001', 'REGISTRATION_BLOCKED', 'an admin-revoked account cannot be swapped for a new one');
+select lives_ok($$ select public.remove_minecraft_account(
+  (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000003')) $$,
+  'a player can remove an account');
 select throws_ok($$ select * from public.add_minecraft_account('10000000-0000-0000-0000-000000000003', 'Player_3') $$,
-  'P0001', 'REGISTRATION_BLOCKED', 'a player cannot undo an admin revoke');
+  'P0001', 'REGISTRATION_BLOCKED', 'remove then re-add cannot undo an admin revoke');
+select lives_ok($$ select public.remove_minecraft_account(
+  (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000004')) $$,
+  'a player can remove a whitelisted account');
+select is((select (is_active, desired_whitelisted)::text from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000004'),
+  '(f,f)', 'removed accounts are hidden and un-whitelisted');
+select is((select (desired_whitelisted, created)::text from public.add_minecraft_account('10000000-0000-0000-0000-000000000004', 'Player_4')),
+  '(t,t)', 're-adding a removed account re-whitelists it');
+select is((select is_active from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000004'),
+  true, 're-adding a removed account shows it again');
+select throws_ok($$ select public.remove_minecraft_account(gen_random_uuid()) $$, 'P0001', 'NOT_FOUND', 'unknown accounts cannot be removed');
+
+select throws_ok($$ select * from public.admin_removed_accounts() $$, 'P0001', 'FORBIDDEN', 'players cannot list removed accounts');
+select pg_temp.login('00000000-0000-0000-0000-000000000002');
+select is((select (is_active, removed_by is not null)::text from public.admin_removed_accounts() where minecraft_username = 'Player_3'),
+  '(f,t)', 'restore list shows player-deleted accounts and who removed them');
+select lives_ok($$ select public.admin_set_whitelisted(
+  (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000003'), true) $$,
+  'an admin can restore a player-deleted account');
+select is((select (is_active, desired_whitelisted)::text from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000003'),
+  '(t,t)', 'admin restore makes the account visible and whitelisted again');
+select is((select count(*)::int from public.admin_removed_accounts() where minecraft_username = 'Player_3'), 0, 'restored accounts leave the restore list');
 
 select pg_temp.login('00000000-0000-0000-0000-000000000001');
 select throws_ok($$ select public.admin_set_role('00000000-0000-0000-0000-000000000001', 'user') $$, 'P0001', 'SELF_ROLE_CHANGE', 'an owner cannot change their own role');

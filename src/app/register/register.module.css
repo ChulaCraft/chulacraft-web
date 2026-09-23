@@ -205,3 +205,4 @@
 .iconButton:focus-visible, .cancelButton:focus-visible { outline: 2px solid #ff6fae; outline-offset: 2px; }
 .rowActions { display: flex; gap: 10px; align-items: center; }
 .cancelButton { min-height: 44px; margin-top: 16px; padding: 0 16px; border: 1px solid #8b6aae; color: #d8cbe1; background: transparent; font: 700 14px/1 var(--font-rajdhani), sans-serif; text-transform: uppercase; cursor: pointer; }
+.accountRow .rowActions { display: flex; margin-left: auto; }
