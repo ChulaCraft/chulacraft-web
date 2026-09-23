@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isValidMinecraftUsername, normalizeMinecraftUsername, safeNextPath, statusMessage } from "./registration";
+import { isValidMinecraftUsername, normalizeMinecraftUsername, registrationError, safeNextPath, statusMessage } from "./registration";
 import { BoundedFetchTimeoutError, createBoundedFetch } from "./bounded-fetch";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -40,5 +40,16 @@ describe("safe redirect and status copy", () => {
   it("never calls a pending registration complete", () => {
     expect(statusMessage({ desiredWhitelisted: true, syncStatus: "pending" })).toContain("Waiting");
     expect(statusMessage({ desiredWhitelisted: true, syncStatus: "synced" })).toContain("whitelisted");
+  });
+});
+
+describe("registration RPC errors", () => {
+  it("maps database error codes to safe responses", () => {
+    expect(registrationError("REGISTRATION_CONFLICT").status).toBe(409);
+    expect(registrationError("duplicate key", "23505").status).toBe(409);
+    expect(registrationError("LIMIT_REACHED").error).toContain("5");
+    expect(registrationError("CU_SSO_REQUIRED").status).toBe(403);
+    expect(registrationError("REGISTRATION_BLOCKED").status).toBe(403);
+    expect(registrationError("connection reset").status).toBe(503);
   });
 });

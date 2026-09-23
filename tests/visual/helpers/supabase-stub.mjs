@@ -38,7 +38,7 @@ const server = createServer((request, response) => {
     return;
   }
 
-  if (request.method === "GET" && url.pathname === "/rest/v1/minecraft_registrations") {
+  if (request.method === "GET" && ["/rest/v1/minecraft_registrations", "/rest/v1/cu_sso_identities", "/rest/v1/profiles"].includes(url.pathname)) {
     response.writeHead(200, { "content-type": "application/json" });
     response.end("null");
     return;

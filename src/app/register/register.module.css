@@ -194,3 +194,14 @@
 @media (prefers-reduced-motion: reduce) {
   .loadingBloom { animation: none; }
 }
+
+.accountList { margin: 0 0 12px; padding: 0; display: grid; gap: 8px; list-style: none; }
+.accountRow { padding: 10px 12px; border: 1px solid rgba(255, 214, 231, .24); display: flex; align-items: center; gap: 12px; background: rgba(22, 16, 33, .45); }
+.accountRow div { min-width: 0; display: grid; gap: 3px; }
+.accountRow strong { overflow: hidden; color: #fff; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.accountRow small { color: #bcaec6; font-size: 12px; line-height: 1.35; }
+.iconButton { min-width: 44px; min-height: 44px; margin-left: auto; border: 1px solid #8b6aae; color: #ffd6e7; background: rgba(22, 16, 33, .62); font: 700 20px/1 var(--font-rajdhani), sans-serif; cursor: pointer; }
+.iconButton:hover { border-color: #ff6fae; }
+.iconButton:focus-visible, .cancelButton:focus-visible { outline: 2px solid #ff6fae; outline-offset: 2px; }
+.rowActions { display: flex; gap: 10px; align-items: center; }
+.cancelButton { min-height: 44px; margin-top: 16px; padding: 0 16px; border: 1px solid #8b6aae; color: #d8cbe1; background: transparent; font: 700 14px/1 var(--font-rajdhani), sans-serif; text-transform: uppercase; cursor: pointer; }

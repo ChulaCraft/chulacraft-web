@@ -4,6 +4,11 @@ export type AuthFailureReason =
   | "callback_missing_code"
   | "session_exchange_failed"
   | "start_failed"
+  | "cu_ticket_invalid"
+  | "cu_disabled"
+  | "cu_not_linked"
+  | "cu_no_email"
+  | "cu_already_linked"
   | "other";
 
 export function classifyOAuthCallbackFailure(
@@ -22,6 +27,11 @@ export function safeAuthFailureReason(value: string | undefined): AuthFailureRea
     case "callback_missing_code":
     case "session_exchange_failed":
     case "start_failed":
+    case "cu_ticket_invalid":
+    case "cu_disabled":
+    case "cu_not_linked":
+    case "cu_no_email":
+    case "cu_already_linked":
     case "other":
       return value;
     default:
@@ -41,7 +51,17 @@ export function authFailureMessage(reason: AuthFailureReason) {
       return "Discord authorized the account, but the secure session could not be created. Please start again in the same browser.";
     case "start_failed":
       return "The Discord sign-in request could not be started. Please refresh the page and try again.";
+    case "cu_ticket_invalid":
+      return "Chula SSO could not confirm your sign-in. Please start again from this site.";
+    case "cu_disabled":
+      return "This Chula account is disabled, so it can't be used to sign in.";
+    case "cu_not_linked":
+      return "No ChulaCraft account uses this Chula SSO yet. Sign in with Discord, then press Link Chula SSO on your dashboard.";
+    case "cu_no_email":
+      return "Your account has no email address, so Chula SSO sign-in isn't available. Please sign in with Discord.";
+    case "cu_already_linked":
+      return "This Chula account is already linked to another ChulaCraft account, or yours already has a different Chula account linked.";
     case "other":
-      return "An error occured";
+      return "An error occurred.";
   }
 }

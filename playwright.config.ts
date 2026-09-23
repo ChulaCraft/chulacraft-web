@@ -46,7 +46,7 @@ export default defineConfig({
     },
     {
       command:
-        "export NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:3211 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_visual_audit; npm run build && npm run start -- --hostname 127.0.0.1 --port 3210",
+        "export NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:3211 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_visual_audit SUPABASE_SECRET_KEY=sb_secret_visual_audit; npm run build && npm run start -- --hostname 127.0.0.1 --port 3210",
       url: `${baseURL}/images/chulacraft-logo.webp`,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,

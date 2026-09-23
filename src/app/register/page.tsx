@@ -50,7 +50,7 @@ export default async function RegisterPage() {
         <div className={`${styles.card} ${styles.authCard} pixel-panel`}>
           <p className={styles.cardLabel}>Choose a sign-in method</p>
           <h2>Continue to registration</h2>
-          <p className={styles.introCopy}>Use Discord or your Chula account. You will return here to finish your player registration.</p>
+          <p className={styles.introCopy}>New players sign up with Discord. Already linked Chula SSO on your dashboard? You can sign in with it too.</p>
           <div className={styles.actions}>
             <DiscordAuthButton />
             <CussoAuthButton />

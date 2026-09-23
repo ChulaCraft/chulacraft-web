@@ -1,89 +1,99 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { getSecretSupabaseEnvironment, getSiteUrl } from "@/lib/env";
+import { getPublicSupabaseEnvironment, getSiteUrl } from "@/lib/env";
 import { createBoundedFetch } from "@/lib/bounded-fetch";
 import type { AuthFailureReason } from "@/lib/auth-error";
-import { createClient } from "@/lib/supabase/server";
-import { resolveTicket } from "@/lib/cusso/server";
-import jwt from 'jsonwebtoken';
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { resolveTicket, type ProfilePayload } from "@/lib/cusso/server";
 
-function authErrorResponse(reason: AuthFailureReason, message?: string) {
-  const destination = new URL("/auth/error", getSiteUrl());
-  destination.searchParams.set("reason", reason);
-  if (message) destination.searchParams.set("message", message);
-  return NextResponse.redirect(destination);
+// Like the Discord callback, destinations are fixed; never taken from the request.
+function redirectTo(path: string) {
+  return NextResponse.redirect(new URL(path, getSiteUrl()));
+}
+
+function authErrorResponse(reason: AuthFailureReason) {
+  return redirectTo(`/auth/error?reason=${reason}`);
 }
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  let user;
-  try { ({ data: { user } } = await supabase.auth.getUser()); }
-  catch { return NextResponse.json({ error: "Authentication is temporarily unavailable." }, { status: 503 }); }
-  const url = new URL(request.url);
-  const ticket = url.searchParams.get("ticket");
+  const response = await handle(request);
+  // The state cookie is single-use on every exit path.
+  response.cookies.set("cu_state", "", { path: "/auth/cucallback", maxAge: 0 });
+  return response;
+}
+
+async function handle(request: NextRequest) {
+  // Reject tickets this browser didn't ask for (see /auth/cusso/start).
+  const [intent, nonce] = request.cookies.get("cu_state")?.value.split(":") ?? [];
+  if (!nonce || nonce !== request.nextUrl.searchParams.get("state")) return authErrorResponse("start_failed");
+
+  const ticket = request.nextUrl.searchParams.get("ticket");
   if (!ticket) return authErrorResponse("start_failed");
+
+  let profile: ProfilePayload;
   try {
-    const { error: error1, profile } = await resolveTicket(ticket);
-    if (error1) {
-      if (error1.status == 401) return authErrorResponse("other", "CU SSO Login Unauthorized");
-      return authErrorResponse("provider_error");
-    }
-
-    const response = NextResponse.redirect("/welcome");
-    const { url: supabaseUrl, key } = getSecretSupabaseEnvironment();
-    const supabase = createServerClient(supabaseUrl, key, {
-      global: { fetch: createBoundedFetch() },
-      cookies: { getAll: () => request.cookies.getAll(), setAll: (cookies) => cookies.forEach(({ name, value, options }) => response.cookies.set(name, value, options)) }
-    });
-    let cu_registrations = supabase.from("cu_registrations");
-    let q_res = await cu_registrations.select("sp_user_id").eq("uid", profile.uid).maybeSingle();
-    if (q_res.success && q_res.data) {
-      cu_registrations.update({ ...profile, pg_updated_at: new Date().toISOString() });
-      let user = await supabase.auth.admin.getUserById(q_res.data.sp_user_id);
-      if (!user.data.user) return authErrorResponse("other", "User not found or deleted.");
-
-      // su
-      const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET!;
-      const expirationSeconds = 60 * 60; // 1 Hour
-      
-      const supabaseCompatiblePayload = {
-        aud: 'authenticated',
-        role: 'authenticated', // Crucial for Postgres RLS access control
-        sub: user.data.user.id, // The standard identifier in your table
-        email: user.data.user.email,
-        exp: Math.floor(Date.now() / 1000) + expirationSeconds,
-        app_metadata: { provider: 'custom_pipeline' },
-        user_metadata: {}
-      };
-
-      const supabaseJWT = jwt.sign(supabaseCompatiblePayload, SUPABASE_JWT_SECRET);
-
-      // 4. GENERATE THE NATIVE COOKIE CONTAINER 
-      // Supabase stores access tokens and fake refresh tokens as a stringified array/JSON sequence.
-      const cookieData = JSON.stringify([supabaseJWT, "custom-refresh-bypass-token"]);
-      const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL!.split('.')[0].replace('https://', '');
-      const cookieName = `sb-${projectRef}-auth-token`;
-
-      // 5. RESPOND WITH SECURE HTTP COOKIES
-      
-      response.cookies.set(cookieName, cookieData, {
-        path: '/',
-        maxAge: expirationSeconds,
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: false, // Must be false so the client SDK can read it to synchronize storage states
-        sameSite: 'lax',
-      });
-
-      return response;
-    }
-    if (user) {
-      cu_registrations.insert({ ...profile, sp_user_id: user.id });
-
-      return response;
-    }
-
-    return authErrorResponse("other", "CU SSO Sign Up is currently unavailable.");
+    const result = await resolveTicket(ticket);
+    if (result.error) return authErrorResponse(result.error.status === 401 ? "cu_ticket_invalid" : "provider_error");
+    profile = result.profile;
   } catch {
-    return authErrorResponse("start_failed");
+    return authErrorResponse("provider_error");
   }
+  if (profile.disable) return authErrorResponse("cu_disabled");
+
+  let user;
+  try {
+    ({ data: { user } } = await (await createClient()).auth.getUser());
+  } catch {
+    return NextResponse.json({ error: "Authentication is temporarily unavailable." }, { status: 503 });
+  }
+
+  try {
+    const admin = createAdminClient();
+    if (user) return intent === "link" ? await linkToSignedInUser(admin, user.id, profile) : redirectTo("/welcome");
+    return await signInLinkedUser(request, admin, profile);
+  } catch {
+    return authErrorResponse("other");
+  }
+}
+
+async function linkToSignedInUser(admin: ReturnType<typeof createAdminClient>, userId: string, profile: ProfilePayload) {
+  const { error } = await admin.rpc("link_cu_sso", {
+    p_user_id: userId,
+    p_chula_uid: profile.uid,
+    p_chula_username: profile.username,
+    p_email: profile.email || null,
+    p_display_name: `${profile.firstname ?? ""} ${profile.lastname ?? ""}`.trim() || null
+  });
+  if (error) return authErrorResponse(error.message.includes("CU_ALREADY_LINKED") ? "cu_already_linked" : "other");
+  return redirectTo("/welcome?linked=cu");
+}
+
+// Chula SSO sign-in mints a real Supabase session for the already-linked user:
+// the service key generates a one-time magic-link token (no email is sent) and
+// the cookie-bound client exchanges it, exactly as an emailed link would.
+async function signInLinkedUser(request: NextRequest, admin: ReturnType<typeof createAdminClient>, profile: ProfilePayload) {
+  const { data: link, error: linkError } = await admin
+    .from("cu_sso_identities").select("user_id").eq("chula_uid", profile.uid).maybeSingle();
+  if (linkError) return authErrorResponse("other");
+  if (!link) return authErrorResponse("cu_not_linked");
+
+  const { data: { user }, error: userError } = await admin.auth.admin.getUserById(link.user_id);
+  if (userError || !user) return authErrorResponse("other");
+  if (!user.email) return authErrorResponse("cu_no_email");
+
+  const { data: generated, error: generateError } = await admin.auth.admin.generateLink({ type: "magiclink", email: user.email });
+  if (generateError) return authErrorResponse("session_exchange_failed");
+
+  const response = redirectTo("/welcome");
+  const { url, key } = getPublicSupabaseEnvironment();
+  const supabase = createServerClient(url, key, {
+    global: { fetch: createBoundedFetch() },
+    cookies: {
+      getAll: () => request.cookies.getAll(),
+      setAll: (cookies) => cookies.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+    }
+  });
+  const { error } = await supabase.auth.verifyOtp({ type: "magiclink", token_hash: generated.properties.hashed_token });
+  if (error) return authErrorResponse("session_exchange_failed");
+  return response;
 }

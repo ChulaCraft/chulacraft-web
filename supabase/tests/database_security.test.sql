@@ -41,7 +41,7 @@ select has_function(
 
 select has_function(
   'public',
-  'register_minecraft_profile',
+  'add_minecraft_account',
   array['uuid', 'text'],
   'registration function exists'
 );
@@ -59,7 +59,7 @@ select ok(
   coalesce((
     select prosecdef
     from pg_catalog.pg_proc
-    where oid = 'public.register_minecraft_profile(uuid,text)'::regprocedure
+    where oid = 'public.add_minecraft_account(uuid,text)'::regprocedure
   ), false),
   'registration function is explicitly security definer'
 );
@@ -76,7 +76,7 @@ select ok(
 select ok(
   not has_function_privilege(
     'anon',
-    'public.register_minecraft_profile(uuid,text)',
+    'public.add_minecraft_account(uuid,text)',
     'EXECUTE'
   ),
   'anonymous users cannot register Minecraft profiles'

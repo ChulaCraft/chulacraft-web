@@ -187,3 +187,4 @@
 @media (prefers-reduced-motion: reduce) {
   .loadingBloom { animation: none; }
 }
+.linkButton { margin-left: auto; min-height: 44px; display: inline-flex; align-items: center; justify-self: center; }

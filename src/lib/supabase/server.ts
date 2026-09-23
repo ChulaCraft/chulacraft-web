@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { getSecretSupabaseEnvironment } from "@/lib/env";
 import { createBoundedFetch } from "@/lib/bounded-fetch";
@@ -21,5 +22,14 @@ export async function createClient() {
         }
       }
     }
+  });
+}
+
+/** Service-role client with no cookies, so admin sessions never reach the browser. Server-only. */
+export function createAdminClient() {
+  const { url, key } = getSecretSupabaseEnvironment();
+  return createSupabaseClient(url, key, {
+    global: { fetch: createBoundedFetch() },
+    auth: { persistSession: false, autoRefreshToken: false }
   });
 }

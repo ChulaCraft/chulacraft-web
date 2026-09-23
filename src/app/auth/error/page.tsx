@@ -6,11 +6,9 @@ import styles from "./auth-error.module.css";
 export default async function AuthErrorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reason?: string, message?: string }>;
+  searchParams: Promise<{ reason?: string }>;
 }) {
-  let params = await searchParams;
-  const reason = safeAuthFailureReason(params.reason);
-  const message = params.message;
+  const reason = safeAuthFailureReason((await searchParams).reason);
 
   return (
     <main className={`${styles.page} auth-scene`}>
@@ -20,9 +18,8 @@ export default async function AuthErrorPage({
         <p className={styles.eyebrow}><span aria-hidden="true">+</span> AUTHENTICATION <span aria-hidden="true">+</span></p>
         <div className={`${styles.card} pixel-panel`}>
           <span className={styles.errorSymbol} aria-hidden="true"><i>!</i></span>
-          <h1 id="auth-error-title">Discord sign-in didn’t finish</h1>
+          <h1 id="auth-error-title">Sign-in didn’t finish</h1>
           <p>{authFailureMessage(reason)}</p>
-          {message ? <p>{message}</p> : <></>}
           <Link className={`button button-primary ${styles.button}`} href="/">Try again</Link>
         </div>
       </section>

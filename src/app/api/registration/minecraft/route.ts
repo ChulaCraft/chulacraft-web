@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { isValidMinecraftUsername, normalizeMinecraftUsername, type RegistrationView } from "@/lib/registration";
+import { isValidMinecraftUsername, normalizeMinecraftUsername, registrationError, type RegistrationView } from "@/lib/registration";
 
 export const runtime = "nodejs";
 
@@ -10,6 +10,7 @@ const RATE_WINDOW_MS = 10 * 60 * 1000;
 
 function safeView(row: Record<string, unknown>): RegistrationView {
   return {
+    id: String(row.id),
     minecraftUsername: String(row.minecraft_username),
     desiredWhitelisted: Boolean(row.desired_whitelisted),
     syncStatus: row.sync_status as RegistrationView["syncStatus"],
@@ -50,15 +51,32 @@ export async function GET() {
   try {
     let error;
     ({ data, error } = await supabase.from("minecraft_registrations")
-        .select("minecraft_username, desired_whitelisted, sync_status, updated_at").eq("user_id", user.id).maybeSingle());
+        .select("id, minecraft_username, desired_whitelisted, sync_status, updated_at")
+        .eq("user_id", user.id).eq("desired_whitelisted", true).order("created_at"));
     if (error) throw new Error(error.message);
   } catch {
-    return NextResponse.json({ error: "Could not load registration." }, { status: 503 });
+    return NextResponse.json({ error: "Could not load registrations." }, { status: 503 });
   }
-  return NextResponse.json({ registration: data ? safeView(data) : null });
+  return NextResponse.json({ registrations: (data ?? []).map(safeView) });
 }
 
+/** Add a new Minecraft account (+ button). */
 export async function POST(request: Request) {
+  return save(request, (profile) => ["add_minecraft_account", { p_minecraft_uuid: profile.uuid, p_minecraft_username: profile.username }]);
+}
+
+/** Change an existing account's name (pen → Save). */
+export async function PATCH(request: Request) {
+  return save(request, (profile, id) => {
+    if (typeof id !== "string") return null;
+    return ["change_minecraft_account", { p_registration_id: id, p_minecraft_uuid: profile.uuid, p_minecraft_username: profile.username }];
+  });
+}
+
+type Profile = { uuid: string; username: string };
+type RpcCall = [string, Record<string, unknown>];
+
+async function save(request: Request, toRpc: (profile: Profile, id: unknown) => RpcCall | null) {
   const supabase = await createClient();
   let user;
   try { ({ data: { user } } = await supabase.auth.getUser()); }
@@ -75,20 +93,24 @@ export async function POST(request: Request) {
   if (!allowed) return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
 
   let rawUsername: unknown;
-  try { rawUsername = (await request.json() as { minecraftUsername?: unknown }).minecraftUsername; } catch { return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 }); }
+  let id: unknown;
+  try { ({ minecraftUsername: rawUsername, id } = await request.json() as { minecraftUsername?: unknown; id?: unknown }); } catch { return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 }); }
   if (typeof rawUsername !== "string" || !isValidMinecraftUsername(rawUsername)) return NextResponse.json({ error: "Enter 3–16 letters, numbers, or underscores." }, { status: 400 });
 
-  let profile: { uuid: string; username: string } | null;
+  let profile: Profile | null;
   try { profile = await resolveMinecraftProfile(normalizeMinecraftUsername(rawUsername)); } catch { return NextResponse.json({ error: "Minecraft profile lookup is temporarily unavailable. Please try again." }, { status: 503 }); }
   if (!profile) return NextResponse.json({ error: "We couldn’t find that Minecraft Java Edition profile." }, { status: 400 });
 
+  const call = toRpc(profile, id);
+  if (!call) return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 });
+
   let data;
   let error;
-  try { ({ data, error } = await supabase.rpc("register_minecraft_profile", { p_minecraft_uuid: profile.uuid, p_minecraft_username: profile.username })); }
+  try { ({ data, error } = await supabase.rpc(...call)); }
   catch { return NextResponse.json({ error: "We couldn’t save the registration. Please try again." }, { status: 503 }); }
   if (error) {
-    if (error.code === "23505" || error.message.includes("REGISTRATION_CONFLICT")) return NextResponse.json({ error: "This Discord or Minecraft account is already registered." }, { status: 409 });
-    return NextResponse.json({ error: "We couldn’t save the registration. Please try again." }, { status: 503 });
+    const failure = registrationError(error.message, error.code);
+    return NextResponse.json({ error: failure.error }, { status: failure.status });
   }
   const registration = Array.isArray(data) ? data[0] : data;
   return NextResponse.json({ registration: safeView(registration as Record<string, unknown>) }, { status: registration?.created ? 201 : 200 });
