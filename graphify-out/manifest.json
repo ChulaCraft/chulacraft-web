@@ -1,9 +1,9 @@
 {
   "eslint.config.mjs": {
-    "mtime": 1786334945.2265148,
-    "seen": 1790181875.0013735,
-    "ast_hash": "309217eae8448d14c3aea15602fb85e5",
-    "semantic_hash": "309217eae8448d14c3aea15602fb85e5"
+    "mtime": 1790186742.1259,
+    "seen": 1790186912.7390833,
+    "ast_hash": "f60394061a677cd12b650e3461ae1ad4",
+    "semantic_hash": ""
   },
   "next-env.d.ts": {
     "mtime": 1790185396.376871,
@@ -12,10 +12,10 @@
     "semantic_hash": ""
   },
   "next.config.ts": {
-    "mtime": 1786334945.2265148,
-    "seen": 1790181875.0013762,
-    "ast_hash": "550feb367a18d74dc71c56f6b22793ca",
-    "semantic_hash": "550feb367a18d74dc71c56f6b22793ca"
+    "mtime": 1790186719.838266,
+    "seen": 1790186912.7391675,
+    "ast_hash": "ec913c07bccf794c5f30b56f520fc66d",
+    "semantic_hash": ""
   },
   "package.json": {
     "mtime": 1790173948.1230168,
@@ -60,10 +60,10 @@
     "semantic_hash": ""
   },
   "src/app/admin/users/[id]/actions.ts": {
-    "mtime": 1790173948.123506,
-    "seen": 1790181875.001391,
-    "ast_hash": "00195a11dc0ff0482aa72f585c317776",
-    "semantic_hash": "00195a11dc0ff0482aa72f585c317776"
+    "mtime": 1790186719.8383484,
+    "seen": 1790186912.739517,
+    "ast_hash": "d976970248a79af7bd7d4c7756ab6baa",
+    "semantic_hash": ""
   },
   "src/app/admin/users/[id]/page.tsx": {
     "mtime": 1790185376.131789,
@@ -72,9 +72,9 @@
     "semantic_hash": ""
   },
   "src/app/api/registration/minecraft/route.ts": {
-    "mtime": 1790185386.2450001,
-    "seen": 1790185403.6557786,
-    "ast_hash": "505e006c3961524893a795a7decfbb28",
+    "mtime": 1790186719.8384526,
+    "seen": 1790186912.7395768,
+    "ast_hash": "d672b5b81882de52cdcb657862239982",
     "semantic_hash": ""
   },
   "src/app/auth/callback/route.test.ts": {
@@ -90,22 +90,22 @@
     "semantic_hash": ""
   },
   "src/app/auth/cucallback/route.test.ts": {
-    "mtime": 1790176551.0858521,
-    "seen": 1790181875.0013943,
-    "ast_hash": "b257cdcbac9e591e47fc34cf3143d97c",
-    "semantic_hash": "b257cdcbac9e591e47fc34cf3143d97c"
+    "mtime": 1790186742.1117306,
+    "seen": 1790186912.7396796,
+    "ast_hash": "dd07f2a6659418b5f3674b59ecb670a3",
+    "semantic_hash": ""
   },
   "src/app/auth/cucallback/route.ts": {
-    "mtime": 1790176551.0855763,
-    "seen": 1790181875.0013947,
-    "ast_hash": "709940f3626fbab09e18ab6a80085aea",
-    "semantic_hash": "709940f3626fbab09e18ab6a80085aea"
+    "mtime": 1790186719.8385758,
+    "seen": 1790186912.7396808,
+    "ast_hash": "34b2f65602edfa7a0fefb78b7e394998",
+    "semantic_hash": ""
   },
   "src/app/auth/cusso/start/route.ts": {
-    "mtime": 1790176551.0853417,
-    "seen": 1790181875.0013955,
-    "ast_hash": "16c0042991e503ea1edcb5158228924e",
-    "semantic_hash": "16c0042991e503ea1edcb5158228924e"
+    "mtime": 1790186719.8386548,
+    "seen": 1790186912.7396877,
+    "ast_hash": "8bf8d9ab595f9cc70cfb346b0455ef4b",
+    "semantic_hash": ""
   },
   "src/app/auth/error/page.tsx": {
     "mtime": 1790173948.1241279,
@@ -234,9 +234,9 @@
     "semantic_hash": "52bae11e64f22e55c42c0fa6eb3e12c8"
   },
   "src/lib/cusso/server.ts": {
-    "mtime": 1790185210.4223528,
-    "seen": 1790185221.6853783,
-    "ast_hash": "9d04a8e5ac703ffbbfef37f9665cc3fd",
+    "mtime": 1790186719.8387272,
+    "seen": 1790186912.7406445,
+    "ast_hash": "7d4a9503ac50e10af0161de14ce4d6eb",
     "semantic_hash": ""
   },
   "src/lib/env.test.ts": {
@@ -384,9 +384,9 @@
     "semantic_hash": "8fc186356941f1e04bdbdf8281b034ce"
   },
   ".claude/.headroom_wrap_marker.json": {
-    "mtime": 1790184859.5419014,
-    "seen": 1790185221.6840627,
-    "ast_hash": "a65861793d10e0b8141643e5cf4e5ec2",
+    "mtime": 1790186719.83624,
+    "seen": 1790186912.739079,
+    "ast_hash": "c51e5bc4a7b303b7fb571ea7c0d1a4cb",
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
@@ -1254,15 +1254,51 @@
     "semantic_hash": ""
   },
   "src/app/api/registration/minecraft/route.test.ts": {
-    "mtime": 1790185341.8511286,
-    "seen": 1790185403.6557772,
-    "ast_hash": "2b7f5e7bc5245b991d2e19da330ad9ef",
+    "mtime": 1790186742.1119533,
+    "seen": 1790186912.7395747,
+    "ast_hash": "931a92224874598bfa6d16614b1875b6",
     "semantic_hash": ""
   },
   "src/app/dashboard/service-unavailable.tsx": {
     "mtime": 1790185376.1303966,
     "seen": 1790185403.6559584,
     "ast_hash": "c3725da2bf738d84ae8593e4943a04de",
+    "semantic_hash": ""
+  },
+  "src/app/auth/cusso/confirm/actions.ts": {
+    "mtime": 1790186356.0218308,
+    "seen": 1790186912.7396827,
+    "ast_hash": "ac00b10263f3ba366e4036fd6066cfd7",
+    "semantic_hash": ""
+  },
+  "src/app/auth/cusso/confirm/page.tsx": {
+    "mtime": 1790186628.591549,
+    "seen": 1790186912.7396846,
+    "ast_hash": "21b7b7e8586e363528f0a7c6a52321fa",
+    "semantic_hash": ""
+  },
+  "src/app/auth/cusso/start/route.test.ts": {
+    "mtime": 1790186760.304784,
+    "seen": 1790186912.7396863,
+    "ast_hash": "2fd2691a43287ef4b2ce48706e4277af",
+    "semantic_hash": ""
+  },
+  "src/lib/cusso/pending.test.ts": {
+    "mtime": 1790186699.0744946,
+    "seen": 1790186912.7406414,
+    "ast_hash": "5572ab8a54461cd1b38debdb13482c9b",
+    "semantic_hash": ""
+  },
+  "src/lib/cusso/pending.ts": {
+    "mtime": 1790186285.8980994,
+    "seen": 1790186912.7406428,
+    "ast_hash": "c17573db576b964d5ae2aa840ebc4309",
+    "semantic_hash": ""
+  },
+  ".github/workflows/security.yml": {
+    "mtime": 1790186856.3728948,
+    "seen": 1790186912.7418077,
+    "ast_hash": "9f4379dc9eba67514f67429dbafe39b5",
     "semantic_hash": ""
   }
 }

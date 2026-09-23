@@ -6,9 +6,15 @@ import { getSiteUrl } from "@/lib/env";
 // returns to the callback registered for the app (no query params survive), so
 // the only proof that this browser started the flow is this short-lived
 // httpOnly cookie. It also carries the intent (`link` or `login`).
-// ponytail: cookie-only check; a ticket planted within the 10-minute window of a
-// flow the victim started still gets through. Add a nonce if Chula ever echoes state.
+// A cross-site page could otherwise open this URL in a popup to arm the cookie
+// and then deliver its own ticket, so only our own pages (or a typed URL) may
+// start a flow. Links are additionally confirmed at /auth/cusso/confirm.
 export async function GET(request: NextRequest) {
+  const site = request.headers.get("sec-fetch-site");
+  if (site && site !== "same-origin" && site !== "none") {
+    return NextResponse.redirect(new URL("/auth/error?reason=start_failed", getSiteUrl()));
+  }
+
   const callback = new URL("/auth/cucallback", request.nextUrl.origin);
   const intent = request.nextUrl.searchParams.get("intent") === "link" ? "link" : "login";
 

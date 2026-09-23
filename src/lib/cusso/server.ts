@@ -27,9 +27,17 @@ export type ProfilePayload = {
 
 export async function resolveTicket(ticket: string) {
   const response = await fetch("https://account.it.chula.ac.th/serviceValidation", {
-    headers: { DeeAppId: getChulaSSOAppId(), DeeAppSecret: getChulaSSOAppSecret(), DeeTicket: ticket }
+    headers: { DeeAppId: getChulaSSOAppId(), DeeAppSecret: getChulaSSOAppSecret(), DeeTicket: ticket },
+    signal: AbortSignal.timeout(8000),
+    cache: "no-store"
   });
   if (!response.ok) return { error: { status: response.status } };
   const profile: ProfilePayload = await response.json();
-  return { profile };
+  // uid is the sign-in key, so an empty or odd value must never reach the lookup.
+  if (!isId(profile?.uid) || !isId(profile.username)) throw new Error("CU_PROFILE_INVALID");
+  return { profile: { ...profile, disable: profile.disable !== false } };
+}
+
+function isId(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Za-z0-9._-]{1,64}$/.test(value);
 }

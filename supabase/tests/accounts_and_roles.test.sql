@@ -1,6 +1,6 @@
 begin;
 
-select plan(47);
+select plan(50);
 
 -- Users: 1 owner, 2 admin, 3 second admin, 4 player with Chula SSO, 5 player without.
 insert into auth.users (id, email) values
@@ -48,30 +48,34 @@ select public.link_cu_sso('00000000-0000-0000-0000-000000000004', 'cu-4', 'playe
 select lives_ok($$ select public.link_cu_sso('00000000-0000-0000-0000-000000000004', 'cu-4', 'player4', null, null) $$, 'relinking the same chula account is a no-op');
 select throws_ok($$ select public.link_cu_sso('00000000-0000-0000-0000-000000000005', 'cu-4', 'player4', null, null) $$, 'P0001', 'CU_ALREADY_LINKED', 'a chula account belongs to one user');
 
+select ok(not has_function_privilege('authenticated', 'public.add_minecraft_account(uuid,uuid,text)', 'EXECUTE'), 'players cannot call add_minecraft_account directly');
+select ok(not has_function_privilege('authenticated', 'public.change_minecraft_account(uuid,uuid,uuid,text)', 'EXECUTE'), 'players cannot call change_minecraft_account directly');
+select ok(not has_function_privilege('authenticated', 'public.remove_minecraft_account(uuid,uuid)', 'EXECUTE'), 'players cannot call remove_minecraft_account directly');
+
 -- Adding Minecraft accounts
 select pg_temp.login('00000000-0000-0000-0000-000000000005');
-select throws_ok($$ select * from public.add_minecraft_account('10000000-0000-0000-0000-000000000001', 'NoChula') $$, 'P0001', 'CU_SSO_REQUIRED', 'adding requires a linked chula account');
+select throws_ok($$ select * from public.add_minecraft_account('00000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', 'NoChula') $$, 'P0001', 'CU_SSO_REQUIRED', 'adding requires a linked chula account');
 
 select pg_temp.login('00000000-0000-0000-0000-000000000004');
 select lives_ok($$
-  select public.add_minecraft_account(('10000000-0000-0000-0000-00000000000' || n)::uuid, 'Player_' || n) from generate_series(1, 5) n
+  select public.add_minecraft_account('00000000-0000-0000-0000-000000000004', ('10000000-0000-0000-0000-00000000000' || n)::uuid, 'Player_' || n) from generate_series(1, 5) n
 $$, 'a player can add 5 accounts');
-select throws_ok($$ select * from public.add_minecraft_account('10000000-0000-0000-0000-000000000006', 'Player_6') $$, 'P0001', 'LIMIT_REACHED', 'the 6th account is rejected');
-select is((select created from public.add_minecraft_account('10000000-0000-0000-0000-000000000001', 'Player_1')), false, 're-adding an active account is idempotent');
+select throws_ok($$ select * from public.add_minecraft_account('00000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000006', 'Player_6') $$, 'P0001', 'LIMIT_REACHED', 'the 6th account is rejected');
+select is((select created from public.add_minecraft_account('00000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'Player_1')), false, 're-adding an active account is idempotent');
 
 select public.link_cu_sso('00000000-0000-0000-0000-000000000005', 'cu-5', 'nocu5', null, null);
 select pg_temp.login('00000000-0000-0000-0000-000000000005');
-select throws_ok($$ select * from public.add_minecraft_account('10000000-0000-0000-0000-000000000001', 'Stolen') $$, 'P0001', 'REGISTRATION_CONFLICT', 'another user''s account cannot be claimed');
+select throws_ok($$ select * from public.add_minecraft_account('00000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', 'Stolen') $$, 'P0001', 'REGISTRATION_CONFLICT', 'another user''s account cannot be claimed');
 
 -- Changing Minecraft accounts
 select pg_temp.login('00000000-0000-0000-0000-000000000004');
 select is(
-  (select minecraft_username from public.change_minecraft_account(
+  (select minecraft_username from public.change_minecraft_account('00000000-0000-0000-0000-000000000004',
     (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000001'),
     '10000000-0000-0000-0000-000000000001', 'Renamed_1')),
   'Renamed_1', 'same UUID renames in place');
 select is(
-  (select created from public.change_minecraft_account(
+  (select created from public.change_minecraft_account('00000000-0000-0000-0000-000000000004',
     (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000002'),
     '10000000-0000-0000-0000-000000000009', 'Player_9')),
   true, 'a different UUID adds a new account');
@@ -101,27 +105,27 @@ select throws_ok($$ select public.admin_set_whitelisted(
 select throws_ok($$ select public.admin_set_role('00000000-0000-0000-0000-000000000004', 'admin') $$, 'P0001', 'FORBIDDEN', 'an admin cannot change roles');
 
 select pg_temp.login('00000000-0000-0000-0000-000000000004');
-select is((select desired_whitelisted from public.add_minecraft_account('10000000-0000-0000-0000-000000000003', 'Player_3')),
+select is((select desired_whitelisted from public.add_minecraft_account('00000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000003', 'Player_3')),
   false, 're-adding an admin-revoked account does not re-whitelist it');
-select throws_ok($$ select * from public.change_minecraft_account(
+select throws_ok($$ select * from public.change_minecraft_account('00000000-0000-0000-0000-000000000004',
     (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000003'),
     '10000000-0000-0000-0000-000000000031', 'Player_31') $$,
   'P0001', 'REGISTRATION_BLOCKED', 'an admin-revoked account cannot be swapped for a new one');
-select lives_ok($$ select public.remove_minecraft_account(
+select lives_ok($$ select public.remove_minecraft_account('00000000-0000-0000-0000-000000000004',
   (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000003')) $$,
   'a player can remove an account');
-select throws_ok($$ select * from public.add_minecraft_account('10000000-0000-0000-0000-000000000003', 'Player_3') $$,
+select throws_ok($$ select * from public.add_minecraft_account('00000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000003', 'Player_3') $$,
   'P0001', 'REGISTRATION_BLOCKED', 'remove then re-add cannot undo an admin revoke');
-select lives_ok($$ select public.remove_minecraft_account(
+select lives_ok($$ select public.remove_minecraft_account('00000000-0000-0000-0000-000000000004',
   (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000004')) $$,
   'a player can remove a whitelisted account');
 select is((select (is_active, desired_whitelisted)::text from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000004'),
   '(f,f)', 'removed accounts are hidden and un-whitelisted');
-select is((select (desired_whitelisted, created)::text from public.add_minecraft_account('10000000-0000-0000-0000-000000000004', 'Player_4')),
+select is((select (desired_whitelisted, created)::text from public.add_minecraft_account('00000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000004', 'Player_4')),
   '(t,t)', 're-adding a removed account re-whitelists it');
 select is((select is_active from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000004'),
   true, 're-adding a removed account shows it again');
-select throws_ok($$ select public.remove_minecraft_account(gen_random_uuid()) $$, 'P0001', 'NOT_FOUND', 'unknown accounts cannot be removed');
+select throws_ok($$ select public.remove_minecraft_account('00000000-0000-0000-0000-000000000004', gen_random_uuid()) $$, 'P0001', 'NOT_FOUND', 'unknown accounts cannot be removed');
 
 select throws_ok($$ select * from public.admin_removed_accounts() $$, 'P0001', 'FORBIDDEN', 'players cannot list removed accounts');
 select pg_temp.login('00000000-0000-0000-0000-000000000002');

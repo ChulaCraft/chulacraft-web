@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+# graphify's cache stores file hashes that look like API keys.
+[allowlist]
+paths = ['''^graphify-out/cache/''']

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { isValidMinecraftUsername, normalizeMinecraftUsername, REGISTRATION_COLUMNS, registrationError, toRegistrationView } from "@/lib/registration";
 
 export const runtime = "nodejs";
@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 const ipAttempts = new Map<string, { count: number; resetsAt: number }>();
 const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The signed-in user's client, or the response to send when there isn't one. */
 async function signedIn() {
@@ -61,26 +62,26 @@ export async function GET() {
 
 /** Add a new Minecraft account (+ button). */
 export async function POST(request: Request) {
-  return save(request, (profile) => ["add_minecraft_account", { p_minecraft_uuid: profile.uuid, p_minecraft_username: profile.username }]);
+  return save(request, (profile, _id, userId) => ["add_minecraft_account", { p_user_id: userId, p_minecraft_uuid: profile.uuid, p_minecraft_username: profile.username }]);
 }
 
 /** Change an existing account's name (pen → Save). */
 export async function PATCH(request: Request) {
-  return save(request, (profile, id) => {
-    if (typeof id !== "string") return null;
-    return ["change_minecraft_account", { p_registration_id: id, p_minecraft_uuid: profile.uuid, p_minecraft_username: profile.username }];
+  return save(request, (profile, id, userId) => {
+    if (typeof id !== "string" || !UUID.test(id)) return null;
+    return ["change_minecraft_account", { p_user_id: userId, p_registration_id: id, p_minecraft_uuid: profile.uuid, p_minecraft_username: profile.username }];
   });
 }
 
 /** Remove an account from the player's list (soft delete, also un-whitelists). */
 export async function DELETE(request: Request) {
-  const { supabase, failure } = await signedIn();
+  const { user, failure } = await signedIn();
   if (failure) return failure;
   let id: unknown;
   try { ({ id } = await request.json() as { id?: unknown }); } catch { /* handled below */ }
-  if (typeof id !== "string") return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 });
+  if (typeof id !== "string" || !UUID.test(id)) return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 });
   let error;
-  try { ({ error } = await supabase.rpc("remove_minecraft_account", { p_registration_id: id })); }
+  try { ({ error } = await createAdminClient().rpc("remove_minecraft_account", { p_user_id: user.id, p_registration_id: id })); }
   catch { return NextResponse.json({ error: "We couldn’t remove that account. Please try again." }, { status: 503 }); }
   if (error) {
     const failure = registrationError(error.message, error.code);
@@ -92,8 +93,8 @@ export async function DELETE(request: Request) {
 type Profile = { uuid: string; username: string };
 type RpcCall = [string, Record<string, unknown>];
 
-async function save(request: Request, toRpc: (profile: Profile, id: unknown) => RpcCall | null) {
-  const { supabase, failure } = await signedIn();
+async function save(request: Request, toRpc: (profile: Profile, id: unknown, userId: string) => RpcCall | null) {
+  const { supabase, user, failure } = await signedIn();
   if (failure) return failure;
   const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (ipRateLimited(`ip:${forwardedFor}`)) return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
@@ -114,12 +115,13 @@ async function save(request: Request, toRpc: (profile: Profile, id: unknown) => 
   try { profile = await resolveMinecraftProfile(normalizeMinecraftUsername(rawUsername)); } catch { return NextResponse.json({ error: "Minecraft profile lookup is temporarily unavailable. Please try again." }, { status: 503 }); }
   if (!profile) return NextResponse.json({ error: "We couldn’t find that Minecraft Java Edition profile." }, { status: 400 });
 
-  const call = toRpc(profile, id);
+  const call = toRpc(profile, id, user.id);
   if (!call) return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 });
 
   let data;
   let error;
-  try { ({ data, error } = await supabase.rpc(...call)); }
+  // The account RPCs are service-role only so players can't skip the Mojang lookup above.
+  try { ({ data, error } = await createAdminClient().rpc(...call)); }
   catch { return NextResponse.json({ error: "We couldn’t save the registration. Please try again." }, { status: 503 }); }
   if (error) {
     const failure = registrationError(error.message, error.code);

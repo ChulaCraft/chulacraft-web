@@ -5,8 +5,9 @@ const m = vi.hoisted(() => ({ getUser: vi.fn(), order: vi.fn(), rpc: vi.fn() }))
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => {
     const query = { select: () => query, eq: () => query, order: m.order };
-    return { auth: { getUser: m.getUser }, from: () => query, rpc: m.rpc };
-  }
+    return { auth: { getUser: m.getUser }, from: () => query };
+  },
+  createAdminClient: () => ({ rpc: m.rpc })
 }));
 
 import { DELETE, GET } from "./route";
@@ -40,10 +41,13 @@ describe("Minecraft registration API", () => {
   });
 
   it("removes an account or maps the database error", async () => {
+    const id = "00000000-0000-0000-0000-000000000001";
     expect((await del({})).status).toBe(400);
+    expect((await del({ id: "r1" })).status).toBe(400);
     m.rpc.mockResolvedValueOnce({ error: null });
-    expect((await del({ id: "r1" })).status).toBe(204);
+    expect((await del({ id })).status).toBe(204);
+    expect(m.rpc).toHaveBeenCalledWith("remove_minecraft_account", { p_user_id: "u1", p_registration_id: id });
     m.rpc.mockResolvedValueOnce({ error: { message: "NOT_FOUND" } });
-    expect((await del({ id: "r1" })).status).toBe(404);
+    expect((await del({ id })).status).toBe(404);
   });
 });

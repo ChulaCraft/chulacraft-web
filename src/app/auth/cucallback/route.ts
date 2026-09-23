@@ -5,6 +5,7 @@ import { createBoundedFetch } from "@/lib/bounded-fetch";
 import type { AuthFailureReason } from "@/lib/auth-error";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { resolveTicket, type ProfilePayload } from "@/lib/cusso/server";
+import { PENDING_LINK_COOKIE, PENDING_LINK_TTL_SECONDS, sealPendingLink } from "@/lib/cusso/pending";
 
 // Like the Discord callback, destinations are fixed; never taken from the request.
 function redirectTo(path: string) {
@@ -47,25 +48,33 @@ async function handle(request: NextRequest) {
     return NextResponse.json({ error: "Authentication is temporarily unavailable." }, { status: 503 });
   }
 
+  if (user) return intent === "link" ? stageLink(user.id, profile) : redirectTo("/welcome");
   try {
-    const admin = createAdminClient();
-    if (user) return intent === "link" ? await linkToSignedInUser(admin, user.id, profile) : redirectTo("/welcome");
-    return await signInLinkedUser(request, admin, profile);
+    return await signInLinkedUser(request, createAdminClient(), profile);
   } catch {
     return authErrorResponse("other");
   }
 }
 
-async function linkToSignedInUser(admin: ReturnType<typeof createAdminClient>, userId: string, profile: ProfilePayload) {
-  const { error } = await admin.rpc("link_cu_sso", {
-    p_user_id: userId,
-    p_chula_uid: profile.uid,
-    p_chula_username: profile.username,
-    p_email: profile.email || null,
-    p_display_name: `${profile.firstname ?? ""} ${profile.lastname ?? ""}`.trim() || null
+// A ticket reaching this callback does not prove the signed-in user chose this
+// Chula account (a cross-site page can deliver someone else's ticket), so the
+// link is only staged here and written after a same-origin confirmation POST.
+function stageLink(userId: string, profile: ProfilePayload) {
+  const response = redirectTo("/auth/cusso/confirm");
+  response.cookies.set(PENDING_LINK_COOKIE, sealPendingLink({
+    userId,
+    uid: profile.uid,
+    username: profile.username,
+    email: profile.email || null,
+    displayName: `${profile.firstname ?? ""} ${profile.lastname ?? ""}`.trim() || null
+  }), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/auth/cusso/confirm",
+    maxAge: PENDING_LINK_TTL_SECONDS
   });
-  if (error) return authErrorResponse(error.message.includes("CU_ALREADY_LINKED") ? "cu_already_linked" : "other");
-  return redirectTo("/dashboard?linked=cu");
+  return response;
 }
 
 // Chula SSO sign-in mints a real Supabase session for the already-linked user:

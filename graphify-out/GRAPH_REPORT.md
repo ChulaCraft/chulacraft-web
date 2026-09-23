@@ -1,33 +1,33 @@
 # Graph Report - chulacraft-web  (2026-09-24)
 
 ## Corpus Check
-- 89 files · ~2,977,220 words
+- 95 files · ~2,978,937 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 14 file(s) not represented in the graph (top: .css 8, (none) 2, .example 1)
+- Unclassified: 15 file(s) not represented in the graph (top: .css 8, (none) 2, .toml 2)
 
 ## Summary
-- 356 nodes · 618 edges · 27 communities (17 shown, 10 thin omitted)
+- 373 nodes · 675 edges · 27 communities (16 shown, 11 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `527dedb7`
+- Built from commit: `5862e8c5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- next
-- cucallback/route.ts
+- site-header.tsx
+- supabase/server.ts
 - minecraft/route.ts
 - package.json
-- createClient
+- next
 - compilerOptions
 - ChulaCraft Redesign Implementation Plan
 - devDependencies
 - audit-page.ts
 - ChulaCraft Web
 - ChulaCraft Visual Redesign Audit Report
-- app/layout.tsx
+- next.config.ts
 - next-env.d.ts
 - supabase-stub.mjs
 - Visual TODO
@@ -40,21 +40,21 @@
 - cycle-04/report.md
 - cycle-05/report.md
 - cycle-06/report.md
-- vitest
+- cucallback/route.ts
 - auth-error.ts
 - ref_next_dev_types_routes_d_ts
 
 ## God Nodes (most connected - your core abstractions)
-1. `next` - 30 edges
-2. `createClient()` - 28 edges
+1. `next` - 33 edges
+2. `createClient()` - 32 edges
 3. `compilerOptions` - 16 edges
 4. `ChulaCraft Web` - 13 edges
 5. `createBoundedFetch()` - 12 edges
 6. `getPublicSupabaseEnvironment()` - 12 edges
-7. `save()` - 10 edges
-8. `ChulaCraft Visual Redesign Audit Report` - 10 edges
-9. `ChulaCraft Redesign Implementation Plan` - 10 edges
-10. `scripts` - 9 edges
+7. `vitest` - 11 edges
+8. `save()` - 11 edges
+9. `createAdminClient()` - 10 edges
+10. `ChulaCraft Visual Redesign Audit Report` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `DashboardPage()` --indirect_call--> `toRegistrationView()`  [INFERRED]
@@ -71,27 +71,27 @@
 ## Import Cycles
 - None detected.
 
-## Communities (27 total, 10 thin omitted)
+## Communities (27 total, 11 thin omitted)
 
-### Community 0 - "next"
-Cohesion: 0.09
-Nodes (26): next, react, src_app_about_about_module, communityRoles, metadata, serverQualities, values, src_app_home_module (+18 more)
+### Community 0 - "site-header.tsx"
+Cohesion: 0.07
+Nodes (34): react, src_app_about_about_module, communityRoles, metadata, serverQualities, values, src_app_dashboard_dashboard_module, ServiceUnavailable() (+26 more)
 
-### Community 1 - "cucallback/route.ts"
+### Community 1 - "supabase/server.ts"
 Cohesion: 0.14
-Nodes (25): @supabase/ssr, authErrorResponse(), GET(), { exchangeCodeForSession }, authErrorResponse(), handle(), linkToSignedInUser(), redirectTo() (+17 more)
+Nodes (19): @supabase/ssr, vitest, authErrorResponse(), GET(), { exchangeCodeForSession }, GET(), start(), BoundedFetchTimeoutError (+11 more)
 
 ### Community 2 - "minecraft/route.ts"
-Cohesion: 0.11
-Nodes (30): DELETE(), GET(), ipAttempts, ipRateLimited(), PATCH(), POST(), Profile, resolveMinecraftProfile() (+22 more)
+Cohesion: 0.15
+Nodes (24): DELETE(), GET(), ipAttempts, ipRateLimited(), PATCH(), POST(), Profile, resolveMinecraftProfile() (+16 more)
 
 ### Community 3 - "package.json"
 Cohesion: 0.05
-Nodes (37): allowScripts, unrs-resolver@1.12.2, dependencies, @emnapi/core, @emnapi/runtime, next, react, react-dom (+29 more)
+Nodes (40): allowScripts, unrs-resolver@1.12.2, dependencies, @emnapi/core, @emnapi/runtime, next, react, react-dom (+32 more)
 
-### Community 4 - "createClient"
-Cohesion: 0.13
-Nodes (20): src_app_admin_admin_module, AdminLayout(), AdminPage(), UserRow, restoreAccount(), ERRORS, RemovedRow, RestorePage() (+12 more)
+### Community 4 - "next"
+Cohesion: 0.11
+Nodes (24): next, src_app_admin_admin_module, AdminLayout(), AdminPage(), UserRow, restoreAccount(), ERRORS, RemovedRow (+16 more)
 
 ### Community 5 - "compilerOptions"
 Cohesion: 0.11
@@ -117,10 +117,6 @@ Nodes (18): Architecture, Chula SSO, ChulaCraft Web, Commands, Current implement
 Cohesion: 0.12
 Nodes (16): 1. Design asset inventory, 2. Existing website inventory, 3. Route-to-reference mapping, 4. Design-system interpretation, 5. Functional constraints, 6. Risks, 7. Uncertainties, 8. Agent disagreements and challenges (+8 more)
 
-### Community 11 - "app/layout.tsx"
-Cohesion: 0.36
-Nodes (5): src_app_globals, metadata, inter, minecraftia, rajdhani
-
 ### Community 12 - "next-env.d.ts"
 Cohesion: 0.50
 Nodes (3): NOTE: This file should not be edited, next_types_root_params_d, next_types_routes_d
@@ -133,33 +129,33 @@ Nodes (7): About, Accepted final differences, Auth error and not found, Home, Re
 Cohesion: 0.29
 Nodes (6): Chulacraft registration runbook, Normal operations, Roles and Chula SSO, Safe launch order, Secret incident response, Troubleshooting and recovery
 
-### Community 24 - "vitest"
-Cohesion: 0.12
-Nodes (12): nextConfig, ref_node_url, react-dom, vitest, GET(), location(), m, profile (+4 more)
+### Community 24 - "cucallback/route.ts"
+Cohesion: 0.14
+Nodes (23): ref_node_crypto, authErrorResponse(), GET(), handle(), redirectTo(), signInLinkedUser(), stageLink(), location() (+15 more)
 
 ### Community 25 - "auth-error.ts"
-Cohesion: 0.42
-Nodes (6): src_app_auth_error_auth_error_module, AuthErrorPage(), AUTH_FAILURE_REASONS, authFailureMessage(), classifyOAuthCallbackFailure(), safeAuthFailureReason()
+Cohesion: 0.36
+Nodes (7): src_app_auth_error_auth_error_module, AuthErrorPage(), AUTH_FAILURE_REASONS, authFailureMessage(), AuthFailureReason, classifyOAuthCallbackFailure(), safeAuthFailureReason()
 
 ## Knowledge Gaps
-- **154 isolated node(s):** `nextConfig`, `name`, `private`, `version`, `dev` (+149 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 189 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **156 isolated node(s):** `nextConfig`, `name`, `private`, `version`, `dev` (+151 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 191 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `next` to `cucallback/route.ts`, `minecraft/route.ts`, `package.json`, `createClient`, `app/layout.tsx`, `vitest`, `auth-error.ts`?**
-  _High betweenness centrality (0.219) - this node is a cross-community bridge._
-- **Why does `devDependencies` connect `devDependencies` to `package.json`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
-- **Why does `@playwright/test` connect `audit-page.ts` to `package.json`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
+- **Why does `next` connect `next` to `site-header.tsx`, `supabase/server.ts`, `minecraft/route.ts`, `package.json`, `next.config.ts`, `cucallback/route.ts`, `auth-error.ts`?**
+  _High betweenness centrality (0.222) - this node is a cross-community bridge._
+- **Why does `createClient()` connect `next` to `site-header.tsx`, `supabase/server.ts`, `minecraft/route.ts`, `package.json`, `cucallback/route.ts`?**
+  _High betweenness centrality (0.042) - this node is a cross-community bridge._
+- **Why does `vitest` connect `supabase/server.ts` to `minecraft/route.ts`, `package.json`, `next.config.ts`, `cucallback/route.ts`, `auth-error.ts`?**
+  _High betweenness centrality (0.038) - this node is a cross-community bridge._
 - **What connects `nextConfig`, `name`, `private` to the rest of the system?**
-  _154 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `next` be split into smaller, more focused modules?**
-  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
-- **Should `cucallback/route.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.1422475106685633 - nodes in this community are weakly interconnected._
-- **Should `minecraft/route.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.1111111111111111 - nodes in this community are weakly interconnected._
+  _156 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `site-header.tsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.06957047791893527 - nodes in this community are weakly interconnected._
+- **Should `supabase/server.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.14112903225806453 - nodes in this community are weakly interconnected._
+- **Should `package.json` be split into smaller, more focused modules?**
+  _Cohesion score 0.048726467331118496 - nodes in this community are weakly interconnected._

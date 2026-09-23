@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 // The RPCs enforce every role rule; these actions only forward the request and
 // send the outcome back to the page as a known error code.
 function finish(userId: string, error: { message: string } | null) {
+  if (!/^[0-9a-f-]{36}$/i.test(userId)) redirect("/admin");
   const code = error?.message.match(/[A-Z_]{5,}/)?.[0] ?? (error ? "FAILED" : null);
   revalidatePath(`/admin/users/${userId}`);
   redirect(`/admin/users/${userId}${code ? `?error=${code}` : ""}`);

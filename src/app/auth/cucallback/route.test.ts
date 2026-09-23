@@ -15,6 +15,7 @@ vi.mock("@/lib/cusso/server", () => ({ resolveTicket: m.resolveTicket }));
 vi.mock("@/lib/env", () => ({
   getSiteUrl: () => "https://site.test",
   getPublicSupabaseEnvironment: () => ({ url: "https://db.test", key: "pub" }),
+  getChulaSSOAppSecret: () => "secret",
 }));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({ auth: { getUser: m.getUser } }),
@@ -58,21 +59,15 @@ describe("Chula SSO callback", () => {
     expect(await location("ticket=t")).toBe("https://site.test/auth/error?reason=cu_disabled");
   });
 
-  it("links only for a link flow started by this browser", async () => {
+  it("only stages a link, for a link flow started by this browser", async () => {
     m.getUser.mockResolvedValue({ data: { user: { id: "u1" } } });
-    m.rpc.mockResolvedValue({ error: null });
 
     expect(await location("ticket=t")).toBe("https://site.test/welcome");
+
+    const response = await GET(new NextRequest("https://site.test/auth/cucallback?ticket=t", { headers: { cookie: "cu_state=link" } }));
+    expect(response.headers.get("location")).toBe("https://site.test/auth/cusso/confirm");
+    expect(response.cookies.get("cu_pending")?.value).toBeTruthy();
     expect(m.rpc).not.toHaveBeenCalled();
-
-    expect(await location("ticket=t", "cu_state=link")).toBe("https://site.test/dashboard?linked=cu");
-    expect(m.rpc).toHaveBeenCalledWith("link_cu_sso", expect.objectContaining({ p_user_id: "u1", p_chula_uid: profile.uid }));
-  });
-
-  it("reports a Chula account that is linked elsewhere", async () => {
-    m.getUser.mockResolvedValue({ data: { user: { id: "u1" } } });
-    m.rpc.mockResolvedValue({ error: { message: "CU_ALREADY_LINKED" } });
-    expect(await location("ticket=t", "cu_state=link")).toBe("https://site.test/auth/error?reason=cu_already_linked");
   });
 
   it("refuses signed-out sign-in for an unlinked Chula account", async () => {
