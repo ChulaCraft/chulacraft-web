@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { inter, minecraftia, rajdhani } from "@/lib/fonts";
 import "./globals.css";
 
@@ -13,7 +14,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${rajdhani.variable} ${minecraftia.variable}`}>{children}</body>
+      <body className={`${inter.variable} ${rajdhani.variable} ${minecraftia.variable}`}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
