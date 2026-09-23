@@ -1,26 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Brand } from "@/components/brand";
 import { ServerAddressCard } from "@/components/server-address-card";
 import { SiteHeader } from "@/components/site-header";
+import { MAX_MINECRAFT_ACCOUNTS } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../dashboard/dashboard.module.css";
-
-function ServiceUnavailable() {
-  return (
-    <main className={`${styles.page} auth-scene`}>
-      <div className={`${styles.backdrop} auth-scene-backdrop`} />
-      <div className={styles.errorLayout}>
-        <Brand />
-        <section className={`${styles.errorCard} pixel-panel`} role="status">
-          <span className={styles.errorSymbol} aria-hidden="true"><i>!</i></span>
-          <h1>Registration is temporarily unavailable</h1>
-          <p>Please refresh in a moment. Your saved registration has not been changed.</p>
-        </section>
-      </div>
-    </main>
-  );
-}
+import { ServiceUnavailable } from "../dashboard/service-unavailable";
 
 /** Landing page after sign-in: shows what's left to do, the profile page does the editing. */
 export default async function WelcomePage() {
@@ -78,7 +63,7 @@ export default async function WelcomePage() {
             </li>
             <li data-done={accountCount > 0}>
               <span aria-hidden="true">{accountCount > 0 ? "✓" : "3"}</span>
-              <div><strong>Add a Minecraft account</strong><small>{accountCount > 0 ? `${accountCount} account${accountCount === 1 ? "" : "s"} registered` : "Java Edition, up to 5 accounts."}</small></div>
+              <div><strong>Add a Minecraft account</strong><small>{accountCount > 0 ? `${accountCount} account${accountCount === 1 ? "" : "s"} registered` : `Java Edition, up to ${MAX_MINECRAFT_ACCOUNTS} accounts.`}</small></div>
               {chulaLinked && accountCount === 0 && <Link className={`button button-header-signup ${styles.linkButton}`} href="/dashboard">Add</Link>}
             </li>
           </ol>

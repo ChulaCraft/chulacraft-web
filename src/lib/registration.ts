@@ -12,6 +12,19 @@ export type RegistrationView = {
   updatedAt: string;
 };
 
+export const REGISTRATION_COLUMNS = "id, minecraft_username, desired_whitelisted, sync_status, updated_at";
+
+/** Maps a minecraft_registrations row to the fields the player may see. */
+export function toRegistrationView(row: Record<string, unknown>): RegistrationView {
+  return {
+    id: String(row.id),
+    minecraftUsername: String(row.minecraft_username),
+    desiredWhitelisted: Boolean(row.desired_whitelisted),
+    syncStatus: row.sync_status as SyncStatus,
+    updatedAt: String(row.updated_at)
+  };
+}
+
 export function normalizeMinecraftUsername(value: string) {
   return value.trim();
 }
@@ -42,9 +55,4 @@ export function registrationError(message: string, code?: string): { status: num
   if (message.includes("REGISTRATION_BLOCKED")) return { status: 403, error: "An admin removed this Minecraft account. Contact an admin to restore it." };
   if (message.includes("NOT_FOUND")) return { status: 404, error: "That Minecraft account is no longer on your list. Refresh and try again." };
   return { status: 503, error: "We couldn’t save the registration. Please try again." };
-}
-
-export function safeNextPath(value: string | null) {
-  const hasControlCharacter = value ? Array.from(value).some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127) : false;
-  return value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\") && !hasControlCharacter ? value : "/register";
 }

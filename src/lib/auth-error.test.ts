@@ -17,4 +17,13 @@ describe("OAuth failure handling", () => {
     expect(safeAuthFailureReason("<script>alert(1)</script>")).toBe("provider_error");
     expect(authFailureMessage(safeAuthFailureReason("<script>alert(1)</script>"))).not.toContain("<script>");
   });
+
+  it("accepts every known reason", () => {
+    for (const reason of ["cancelled", "provider_error", "callback_missing_code", "session_exchange_failed", "start_failed",
+      "cu_ticket_invalid", "cu_disabled", "cu_not_linked", "cu_no_email", "cu_already_linked", "other"]) {
+      expect(safeAuthFailureReason(reason)).toBe(reason);
+    }
+    expect(safeAuthFailureReason(undefined)).toBe("provider_error");
+    expect(safeAuthFailureReason("toString")).toBe("provider_error");
+  });
 });

@@ -59,4 +59,22 @@ describe("OAuth callback", () => {
 
     expect(response.headers.get("location")).toBe("https://example.test/welcome");
   });
+
+  it("maps exchange failures to a fixed reason", async () => {
+    exchangeCodeForSession.mockResolvedValueOnce({ error: { code: "bad", status: 400 } });
+    let response = await GET(new NextRequest("https://example.test/auth/callback?code=x"));
+    expect(response.headers.get("location")).toBe("https://example.test/auth/error?reason=session_exchange_failed");
+
+    exchangeCodeForSession.mockResolvedValueOnce({ error: { status: 400 } });
+    response = await GET(new NextRequest("https://example.test/auth/callback?error=access_denied"));
+    expect(response.headers.get("location")).toBe("https://example.test/auth/error?reason=cancelled");
+
+    exchangeCodeForSession.mockRejectedValueOnce(new Error("down"));
+    response = await GET(new NextRequest("https://example.test/auth/callback?code=x"));
+    expect(response.headers.get("location")).toBe("https://example.test/auth/error?reason=session_exchange_failed");
+
+    exchangeCodeForSession.mockRejectedValueOnce(new Error("down"));
+    response = await GET(new NextRequest("https://example.test/auth/callback?error=server_error"));
+    expect(response.headers.get("location")).toBe("https://example.test/auth/error?reason=provider_error");
+  });
 });

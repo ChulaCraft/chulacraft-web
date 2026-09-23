@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MAX_MINECRAFT_ACCOUNTS } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../admin.module.css";
 import { restoreAccount } from "./actions";
@@ -15,7 +16,7 @@ type RemovedRow = {
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to restore this player's account.",
-  LIMIT_REACHED: "That player already has 5 active Minecraft accounts.",
+  LIMIT_REACHED: `That player already has ${MAX_MINECRAFT_ACCOUNTS} active Minecraft accounts.`,
   NOT_FOUND: "That account no longer exists. Refresh and try again.",
 };
 

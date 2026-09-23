@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
   const code = url.searchParams.get("code") ?? "";
   const providerError = url.searchParams.get("error");
   const providerErrorCode = url.searchParams.get("error_code");
+  const failureReason = code ? "session_exchange_failed" : classifyOAuthCallbackFailure(providerError, providerErrorCode);
   // The OAuth callback is security-sensitive: never let callback parameters
   // choose where an authenticated user is sent.
   const destination = new URL("/welcome", getSiteUrl());
@@ -27,28 +28,20 @@ export async function GET(request: NextRequest) {
   try {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
-      const reason = code
-        ? "session_exchange_failed"
-        : classifyOAuthCallbackFailure(providerError, providerErrorCode);
       console.error("oauth_session_exchange_failed", {
-        reason,
+        reason: failureReason,
         errorCode: error.code ?? null,
         status: error.status ?? null
       });
-      return authErrorResponse(reason);
+      return authErrorResponse(failureReason);
     }
-    if (!code) {
-      return authErrorResponse(classifyOAuthCallbackFailure(providerError, providerErrorCode));
-    }
+    if (!code) return authErrorResponse(failureReason);
     return response;
   } catch (error) {
-    const reason = code
-      ? "session_exchange_failed"
-      : classifyOAuthCallbackFailure(providerError, providerErrorCode);
     console.error("oauth_session_exchange_failed", {
-      reason,
+      reason: failureReason,
       errorName: error instanceof Error ? error.name : "UnknownError"
     });
-    return authErrorResponse(reason);
+    return authErrorResponse(failureReason);
   }
 }

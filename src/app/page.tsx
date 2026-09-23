@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { AuthButton } from "@/components/auth-button";
+import { DiscordAuthButton } from "@/components/discord-auth";
 import { DiscordIcon } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -58,7 +58,7 @@ export default function HomePage() {
             </p>
 
             <div className={styles.actions}>
-              <AuthButton />
+              <DiscordAuthButton />
               <a className="button button-outline" href={discordCommunityUrl} target="_blank" rel="noreferrer">
                 <DiscordIcon /> Join Discord
               </a>

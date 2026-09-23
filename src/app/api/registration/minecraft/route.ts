@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { isValidMinecraftUsername, normalizeMinecraftUsername, registrationError, type RegistrationView } from "@/lib/registration";
+import { isValidMinecraftUsername, normalizeMinecraftUsername, REGISTRATION_COLUMNS, registrationError, toRegistrationView } from "@/lib/registration";
 
 export const runtime = "nodejs";
 
@@ -8,14 +8,16 @@ const ipAttempts = new Map<string, { count: number; resetsAt: number }>();
 const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 
-function safeView(row: Record<string, unknown>): RegistrationView {
-  return {
-    id: String(row.id),
-    minecraftUsername: String(row.minecraft_username),
-    desiredWhitelisted: Boolean(row.desired_whitelisted),
-    syncStatus: row.sync_status as RegistrationView["syncStatus"],
-    updatedAt: String(row.updated_at)
-  };
+/** The signed-in user's client, or the response to send when there isn't one. */
+async function signedIn() {
+  const supabase = await createClient();
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { failure: NextResponse.json({ error: "Sign in is required." }, { status: 401 }) };
+    return { supabase, user };
+  } catch {
+    return { failure: NextResponse.json({ error: "Authentication is temporarily unavailable." }, { status: 503 }) };
+  }
 }
 
 function ipRateLimited(key: string) {
@@ -42,22 +44,19 @@ async function resolveMinecraftProfile(username: string) {
 }
 
 export async function GET() {
-  const supabase = await createClient();
-  let user;
-  try { ({ data: { user } } = await supabase.auth.getUser()); }
-  catch { return NextResponse.json({ error: "Authentication is temporarily unavailable." }, { status: 503 }); }
-  if (!user) return NextResponse.json({ error: "Sign in is required." }, { status: 401 });
+  const { supabase, user, failure } = await signedIn();
+  if (failure) return failure;
   let data;
   try {
     let error;
     ({ data, error } = await supabase.from("minecraft_registrations")
-        .select("id, minecraft_username, desired_whitelisted, sync_status, updated_at")
+        .select(REGISTRATION_COLUMNS)
         .eq("user_id", user.id).eq("is_active", true).order("created_at"));
     if (error) throw new Error(error.message);
   } catch {
     return NextResponse.json({ error: "Could not load registrations." }, { status: 503 });
   }
-  return NextResponse.json({ registrations: (data ?? []).map(safeView) });
+  return NextResponse.json({ registrations: (data ?? []).map(toRegistrationView) });
 }
 
 /** Add a new Minecraft account (+ button). */
@@ -75,11 +74,8 @@ export async function PATCH(request: Request) {
 
 /** Remove an account from the player's list (soft delete, also un-whitelists). */
 export async function DELETE(request: Request) {
-  const supabase = await createClient();
-  let user;
-  try { ({ data: { user } } = await supabase.auth.getUser()); }
-  catch { return NextResponse.json({ error: "Authentication is temporarily unavailable." }, { status: 503 }); }
-  if (!user) return NextResponse.json({ error: "Sign in is required." }, { status: 401 });
+  const { supabase, failure } = await signedIn();
+  if (failure) return failure;
   let id: unknown;
   try { ({ id } = await request.json() as { id?: unknown }); } catch { /* handled below */ }
   if (typeof id !== "string") return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 });
@@ -97,11 +93,8 @@ type Profile = { uuid: string; username: string };
 type RpcCall = [string, Record<string, unknown>];
 
 async function save(request: Request, toRpc: (profile: Profile, id: unknown) => RpcCall | null) {
-  const supabase = await createClient();
-  let user;
-  try { ({ data: { user } } = await supabase.auth.getUser()); }
-  catch { return NextResponse.json({ error: "Authentication is temporarily unavailable." }, { status: 503 }); }
-  if (!user) return NextResponse.json({ error: "Sign in is required." }, { status: 401 });
+  const { supabase, failure } = await signedIn();
+  if (failure) return failure;
   const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (ipRateLimited(`ip:${forwardedFor}`)) return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
   let allowed: boolean | null;
@@ -133,5 +126,5 @@ async function save(request: Request, toRpc: (profile: Profile, id: unknown) => 
     return NextResponse.json({ error: failure.error }, { status: failure.status });
   }
   const registration = Array.isArray(data) ? data[0] : data;
-  return NextResponse.json({ registration: safeView(registration as Record<string, unknown>) }, { status: registration?.created ? 201 : 200 });
+  return NextResponse.json({ registration: toRegistrationView(registration as Record<string, unknown>) }, { status: registration?.created ? 201 : 200 });
 }

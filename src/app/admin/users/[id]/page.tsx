@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MAX_MINECRAFT_ACCOUNTS } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../../admin.module.css";
 import { setRole, setWhitelisted } from "./actions";
@@ -14,7 +15,7 @@ type Detail = {
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to change this player.",
-  LIMIT_REACHED: "This player already has 5 active Minecraft accounts.",
+  LIMIT_REACHED: `This player already has ${MAX_MINECRAFT_ACCOUNTS} active Minecraft accounts.`,
   SELF_ROLE_CHANGE: "You can't change your own role.",
   NOT_FOUND: "That record no longer exists. Refresh and try again.",
 };

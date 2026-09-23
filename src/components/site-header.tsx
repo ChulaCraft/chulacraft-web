@@ -6,7 +6,7 @@ import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
 
-export async function SiteHeader({ user = undefined }: { user?: User | null }) {
+export async function SiteHeader({ user }: { user?: User | null }) {
   const supabase = await createClient();
   if (user === undefined) {
     try {

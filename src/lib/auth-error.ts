@@ -1,15 +1,18 @@
-export type AuthFailureReason =
-  | "cancelled"
-  | "provider_error"
-  | "callback_missing_code"
-  | "session_exchange_failed"
-  | "start_failed"
-  | "cu_ticket_invalid"
-  | "cu_disabled"
-  | "cu_not_linked"
-  | "cu_no_email"
-  | "cu_already_linked"
-  | "other";
+const AUTH_FAILURE_REASONS = [
+  "cancelled",
+  "provider_error",
+  "callback_missing_code",
+  "session_exchange_failed",
+  "start_failed",
+  "cu_ticket_invalid",
+  "cu_disabled",
+  "cu_not_linked",
+  "cu_no_email",
+  "cu_already_linked",
+  "other"
+] as const;
+
+export type AuthFailureReason = (typeof AUTH_FAILURE_REASONS)[number];
 
 export function classifyOAuthCallbackFailure(
   error: string | null,
@@ -21,22 +24,7 @@ export function classifyOAuthCallbackFailure(
 }
 
 export function safeAuthFailureReason(value: string | undefined): AuthFailureReason {
-  switch (value) {
-    case "cancelled":
-    case "provider_error":
-    case "callback_missing_code":
-    case "session_exchange_failed":
-    case "start_failed":
-    case "cu_ticket_invalid":
-    case "cu_disabled":
-    case "cu_not_linked":
-    case "cu_no_email":
-    case "cu_already_linked":
-    case "other":
-      return value;
-    default:
-      return "provider_error";
-  }
+  return AUTH_FAILURE_REASONS.find((reason) => reason === value) ?? "provider_error";
 }
 
 export function authFailureMessage(reason: AuthFailureReason) {

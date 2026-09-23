@@ -5,10 +5,6 @@ export class BoundedFetchTimeoutError extends Error {
   }
 }
 
-export function isBoundedFetchTimeout(error: unknown) {
-  return error instanceof BoundedFetchTimeoutError;
-}
-
 /** A server-only fetch wrapper that respects an upstream cancellation signal. */
 export function createBoundedFetch(timeoutMs = 8000): typeof fetch {
   return async (input, init) => {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { isValidMinecraftUsername, normalizeMinecraftUsername, registrationError, safeNextPath, statusMessage } from "./registration";
+import { isValidMinecraftUsername, normalizeMinecraftUsername, registrationError, statusMessage } from "./registration";
 import { BoundedFetchTimeoutError, createBoundedFetch } from "./bounded-fetch";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -30,13 +30,7 @@ describe("bounded server fetch", () => {
   });
 });
 
-describe("safe redirect and status copy", () => {
-  it("does not permit external redirect targets", () => {
-    expect(safeNextPath("/register")).toBe("/register");
-    expect(safeNextPath("//evil.example")).toBe("/register");
-    expect(safeNextPath("/\\evil.example")).toBe("/register");
-    expect(safeNextPath("https://evil.example")).toBe("/register");
-  });
+describe("status copy", () => {
   it("never calls a pending registration complete", () => {
     expect(statusMessage({ desiredWhitelisted: true, syncStatus: "pending" })).toContain("Waiting");
     expect(statusMessage({ desiredWhitelisted: true, syncStatus: "synced" })).toContain("whitelisted");
