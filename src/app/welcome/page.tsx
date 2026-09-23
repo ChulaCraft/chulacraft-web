@@ -35,33 +35,36 @@ export default async function WelcomePage() {
 
   if (!user) redirect("/");
 
-  let data: {
-    minecraft_username: string;
-    desired_whitelisted: boolean;
-    sync_status: string;
-    updated_at: string;
-  } | null = null;
+  let registrations: RegistrationView[] = [];
+  let chulaUsername: string | null = null;
+  let role = "user";
   let lookupFailed = false;
 
   try {
-    const lookup = await supabase
-      .from("minecraft_registrations")
-      .select("minecraft_username, desired_whitelisted, sync_status, updated_at")
-      .maybeSingle();
-    data = lookup.data;
-    lookupFailed = Boolean(lookup.error);
+    const [accounts, chula, profile] = await Promise.all([
+      supabase
+        .from("minecraft_registrations")
+        .select("id, minecraft_username, desired_whitelisted, sync_status, updated_at")
+        .eq("user_id", user.id)
+        .eq("desired_whitelisted", true)
+        .order("created_at"),
+      supabase.from("cu_sso_identities").select("chula_username").eq("user_id", user.id).maybeSingle(),
+      supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle(),
+    ]);
+    lookupFailed = Boolean(accounts.error || chula.error || profile.error);
+    registrations = (accounts.data ?? []).map((row) => ({
+      id: row.id,
+      minecraftUsername: row.minecraft_username,
+      desiredWhitelisted: row.desired_whitelisted,
+      syncStatus: row.sync_status as RegistrationView["syncStatus"],
+      updatedAt: row.updated_at,
+    }));
+    chulaUsername = chula.data?.chula_username ?? null;
+    role = profile.data?.role ?? "user";
   } catch {
     lookupFailed = true;
   }
 
-  const registration: RegistrationView | null = data
-    ? {
-        minecraftUsername: data.minecraft_username,
-        desiredWhitelisted: data.desired_whitelisted,
-        syncStatus: data.sync_status as RegistrationView["syncStatus"],
-        updatedAt: data.updated_at,
-      }
-    : null;
   const meta = user.user_metadata;
   const displayName =
     typeof meta.full_name === "string"
@@ -79,8 +82,8 @@ export default async function WelcomePage() {
       <div className={styles.shell}>
         <section className={styles.intro} aria-labelledby="register-title">
           <p className={styles.eyebrow}><span aria-hidden="true">+</span> CHULACRAFT WHITELIST <span aria-hidden="true">+</span></p>
-          <h1 id="register-title">Register</h1>
-          <p>Connect your Minecraft Java Edition account to start your adventure.</p>
+          <h1 id="register-title">Dashboard</h1>
+          <p>Manage your sign-in methods and Minecraft Java Edition accounts.</p>
         </section>
 
         <div className={styles.panelStack}>
@@ -106,10 +109,28 @@ export default async function WelcomePage() {
             <span className={styles.connectedBadge}>Online</span>
           </div>
 
+          <div className={styles.playerBar}>
+            <span className={styles.avatarFallback} aria-hidden="true">CU</span>
+            <div>
+              <small>Chula SSO</small>
+              <strong>{chulaUsername ?? "Not linked"}</strong>
+            </div>
+            {chulaUsername ? (
+              <span className={styles.connectedBadge}>Linked</span>
+            ) : (
+              <a className={`button button-header-signup ${styles.linkButton}`} href="/auth/cusso/start?intent=link">Link Chula SSO</a>
+            )}
+          </div>
+
           <RegistrationPanel
-            initialRegistration={registration}
+            initialRegistrations={registrations}
             lookupFailed={lookupFailed}
+            canAdd={Boolean(chulaUsername)}
           />
+
+          {(role === "owner" || role === "admin") && (
+            <a className={`button button-header-signup ${styles.linkButton}`} href="/admin">Open admin</a>
+          )}
         </div>
       </div>
 

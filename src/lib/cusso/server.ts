@@ -36,6 +36,6 @@ export async function resolveTicket(ticket: string) {
         if (f.status == 401) return { error: new AuthError("ticket resolve failed", 401, "no_authorization") };
         return { error: new AuthError("ticket resolve failed", f.status, "unexpected_failure") };
     }
-    let profile: ProfilePayload = await f.json();
+    const profile: ProfilePayload = await f.json();
     return { profile };
 }

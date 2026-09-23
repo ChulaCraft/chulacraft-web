@@ -30,3 +30,15 @@
 ## Secret incident response
 
 If a Supabase backend key, Discord secret, or RCON password may have been exposed, rotate it immediately in its owning service, update only the relevant private environment, redeploy/restart that service, and review normal logs for accidental disclosure. RCON must never be forwarded publicly; only Minecraft TCP `25565` should be exposed.
+
+## Roles and Chula SSO
+
+Roles live in `public.profiles.role` (`owner`, `admin`, `user`). Owners change roles from `/admin/users/<id>`. Promote an owner by SQL only to bootstrap, e.g. when the first owner's Discord account logged in after the profiles migration ran:
+
+```sql
+update public.profiles p set role = 'owner'
+  from auth.identities i
+  where i.user_id = p.user_id and i.provider = 'discord' and i.provider_id = '938769182210809866';
+```
+
+Chula SSO sign-in only works for accounts that linked Chula SSO from `/welcome` while signed in with Discord. `SUPABASE_JWT_SECRET` is no longer used by the web app and can be removed from the deployment environment.

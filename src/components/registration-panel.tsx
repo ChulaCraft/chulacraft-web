@@ -1,9 +1,10 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { ArrowIcon, ShieldIcon } from "@/components/icons";
 import {
   isValidMinecraftUsername,
+  MAX_MINECRAFT_ACCOUNTS,
   normalizeMinecraftUsername,
   statusMessage,
   type RegistrationView,
@@ -11,58 +12,34 @@ import {
 import styles from "@/app/register/register.module.css";
 
 type Props = {
-  initialRegistration: RegistrationView | null;
+  initialRegistrations: RegistrationView[];
   lookupFailed?: boolean;
+  /** Adding (or switching to) a new Minecraft account requires a linked Chula SSO account. */
+  canAdd: boolean;
 };
 
-export function RegistrationPanel({ initialRegistration, lookupFailed = false }: Props) {
-  const [registration, setRegistration] = useState(initialRegistration);
-  const [username, setUsername] = useState("");
-  const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+type Editing = { id: string | null } | null;
+
+export function RegistrationPanel({ initialRegistrations, lookupFailed = false, canAdd }: Props) {
+  const [accounts, setAccounts] = useState(initialRegistrations);
+  const [editing, setEditing] = useState<Editing>(initialRegistrations.length === 0 && canAdd ? { id: null } : null);
+
+  const reload = useCallback(async () => {
+    try {
+      const response = await fetch("/api/registration/minecraft", { cache: "no-store" });
+      if (!response.ok) return;
+      const result = await response.json() as { registrations: RegistrationView[] };
+      setAccounts(result.registrations);
+    } catch {
+      /* A later poll retries; do not create an unhandled rejection. */
+    }
+  }, []);
 
   useEffect(() => {
-    if (!registration || registration.syncStatus === "synced" || !registration.desiredWhitelisted) return;
-    const interval = window.setInterval(async () => {
-      try {
-        const response = await fetch("/api/registration", { cache: "no-store" });
-        if (!response.ok) return;
-        const result = await response.json() as { registration: RegistrationView | null };
-        if (result.registration) setRegistration(result.registration);
-      } catch {
-        /* A later interval retries; do not create an unhandled rejection. */
-      }
-    }, 3500);
+    if (!accounts.some((account) => account.syncStatus !== "synced")) return;
+    const interval = window.setInterval(reload, 3500);
     return () => window.clearInterval(interval);
-  }, [registration]);
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const cleaned = normalizeMinecraftUsername(username);
-    if (!isValidMinecraftUsername(cleaned)) {
-      setError("Enter 3–16 letters, numbers, or underscores.");
-      return;
-    }
-    setSubmitting(true);
-    setError("");
-    try {
-      const response = await fetch("/api/registration/minecraft", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ minecraftUsername: cleaned }),
-      });
-      const result = await response.json() as { registration?: RegistrationView; error?: string };
-      if (!response.ok || !result.registration) {
-        setError(result.error || "We couldn’t save that registration. Please try again.");
-        return;
-      }
-      setRegistration(result.registration);
-    } catch {
-      setError("Connection problem. Please try again in a moment.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  }, [accounts, reload]);
 
   if (lookupFailed) {
     return (
@@ -75,66 +52,128 @@ export function RegistrationPanel({ initialRegistration, lookupFailed = false }:
     );
   }
 
-  if (registration) {
-    const state = !registration.desiredWhitelisted ? "revoked" : registration.syncStatus;
-    const stateClass = {
-      failed: styles.statusFailed,
-      pending: styles.statusPending,
-      revoked: styles.statusRevoked,
-      synced: styles.statusSynced,
-    }[state];
+  const full = accounts.length >= MAX_MINECRAFT_ACCOUNTS;
 
-    return (
-      <section className={`${styles.card} ${styles.statusCard} ${stateClass}`} aria-live="polite">
-        <span className={styles.statusEmblem} aria-hidden="true"><i>
-          {state === "synced" ? "✓" : state === "failed" || state === "revoked" ? "!" : "…"}
-        </i></span>
-        <p className={styles.cardLabel}>Your registration</p>
-        <h2>{registration.minecraftUsername}</h2>
-        <p className={styles.registrationStatus}>{statusMessage(registration)}</p>
-        {registration.desiredWhitelisted && registration.syncStatus !== "synced" && (
-          <p className={styles.statusNote}>This page checks for updates automatically. You can leave it open or come back later.</p>
-        )}
-        <div className={styles.cardFooter}><ShieldIcon /> Your account can only have one active Minecraft registration.</div>
-      </section>
-    );
+  return (
+    <section className={styles.card} aria-live="polite">
+      <p className={styles.cardLabel}>Your Minecraft accounts · {accounts.length}/{MAX_MINECRAFT_ACCOUNTS}</p>
+      <h2>Minecraft accounts</h2>
+      {!canAdd && <p className={styles.statusNote}>Link your Chula SSO account above to add Minecraft accounts.</p>}
+
+      <ul className={styles.accountList}>
+        {accounts.map((account) => editing?.id === account.id ? (
+          <li key={account.id}>
+            <AccountForm
+              id={account.id}
+              initial={account.minecraftUsername}
+              onCancel={() => setEditing(null)}
+              onSaved={async () => { setEditing(null); await reload(); }}
+            />
+          </li>
+        ) : (
+          <li key={account.id} className={styles.accountRow}>
+            <div>
+              <strong>{account.minecraftUsername}</strong>
+              <small>{statusMessage(account)}</small>
+            </div>
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={() => setEditing({ id: account.id })}
+              aria-label={`Change ${account.minecraftUsername}`}
+            >✎</button>
+          </li>
+        ))}
+      </ul>
+
+      {editing?.id === null ? (
+        <AccountForm
+          id={null}
+          initial=""
+          onCancel={accounts.length ? () => setEditing(null) : undefined}
+          onSaved={async () => { setEditing(null); await reload(); }}
+        />
+      ) : canAdd && !full && (
+        <button type="button" className={styles.iconButton} onClick={() => setEditing({ id: null })} aria-label="Add a Minecraft account">+</button>
+      )}
+      {full && <p className={styles.fieldHelp}>You’ve reached the limit of {MAX_MINECRAFT_ACCOUNTS} accounts. Change one with the pen button.</p>}
+
+      <div className={styles.cardFooter}><ShieldIcon /> Only register Minecraft accounts that belong to you.</div>
+    </section>
+  );
+}
+
+function AccountForm({ id, initial, onCancel, onSaved }: {
+  id: string | null;
+  initial: string;
+  onCancel?: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const [username, setUsername] = useState(initial);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const inputId = `minecraft-username-${id ?? "new"}`;
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const cleaned = normalizeMinecraftUsername(username);
+    if (!isValidMinecraftUsername(cleaned)) {
+      setError("Enter 3–16 letters, numbers, or underscores.");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    try {
+      const response = await fetch("/api/registration/minecraft", {
+        method: id ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(id ? { id, minecraftUsername: cleaned } : { minecraftUsername: cleaned }),
+      });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) {
+        setError(result.error || "We couldn’t save that registration. Please try again.");
+        return;
+      }
+      await onSaved();
+    } catch {
+      setError("Connection problem. Please try again in a moment.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
-    <section className={styles.card}>
-      <p className={styles.cardLabel}>Step 2 of 2</p>
-      <h2>Register your Minecraft account</h2>
-      <p className={styles.introCopy}>Enter the Java Edition username you’ll use to join Chulacraft.</p>
-      <form onSubmit={submit} noValidate>
-        <label htmlFor="minecraft-username">Minecraft username</label>
-        <div className={styles.inputWrap}>
-          <span aria-hidden="true">✦</span>
-          <input
-            id="minecraft-username"
-            name="minecraftUsername"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            placeholder="Example_Player"
-            autoComplete="off"
-            autoCapitalize="off"
-            spellCheck="false"
-            maxLength={16}
-            required
-            aria-invalid={Boolean(error)}
-            aria-describedby="username-help username-error"
-          />
-        </div>
-        <p id="username-help" className={styles.fieldHelp}>3–16 letters, numbers, or underscores. Java Edition only.</p>
-        {error && <p id="username-error" className={styles.fieldError} role="alert">{error}</p>}
+    <form onSubmit={submit} noValidate>
+      <label htmlFor={inputId}>{id ? "Change Minecraft username" : "New Minecraft username"}</label>
+      <div className={styles.inputWrap}>
+        <span aria-hidden="true">✦</span>
+        <input
+          id={inputId}
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
+          placeholder="Example_Player"
+          autoComplete="off"
+          autoCapitalize="off"
+          spellCheck="false"
+          maxLength={16}
+          required
+          autoFocus={Boolean(onCancel)}
+          aria-invalid={Boolean(error)}
+          aria-describedby={`${inputId}-help ${inputId}-error`}
+        />
+      </div>
+      <p id={`${inputId}-help`} className={styles.fieldHelp}>3–16 letters, numbers, or underscores. Java Edition only.</p>
+      {error && <p id={`${inputId}-error`} className={styles.fieldError} role="alert">{error}</p>}
+      <div className={styles.rowActions}>
         <button className={styles.submitButton} type="submit" disabled={submitting} aria-busy={submitting}>
           {submitting ? (
             <><span className={styles.loadingBloom} aria-hidden="true" /> Checking account…</>
           ) : (
-            <>Register and join whitelist <ArrowIcon /></>
+            <>Save <ArrowIcon /></>
           )}
         </button>
-      </form>
-      <div className={styles.cardFooter}><ShieldIcon /> Only register a Minecraft account that belongs to you.</div>
-    </section>
+        {onCancel && <button className={styles.cancelButton} type="button" onClick={onCancel} disabled={submitting}>Cancel</button>}
+      </div>
+    </form>
   );
 }
