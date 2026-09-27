@@ -8,7 +8,7 @@ Players can explore the server, sign in, submit a Java Edition username, and fol
 
 - Responsive landing, about, registration, error, and custom 404 pages
 - Discord OAuth through Supabase Auth
-- Chula SSO ticket callback and CU profile metadata handling
+- Chula membership verification by linking a @chula.ac.th / @student.chula.ac.th Google account
 - Authenticated Minecraft Java username registration
 - Canonical profile lookup through the Minecraft Services API
 - Supabase Postgres schema with RLS, uniqueness constraints, RPC-based writes, and durable per-user rate limiting
@@ -32,7 +32,7 @@ flowchart LR
   Player[Player browser] -->|HTTPS| Web[Next.js application]
   Web -->|OAuth and session| Auth[Supabase Auth]
   Auth <-->|Discord OAuth| Discord[Discord]
-  Web <-->|Ticket validation| Chula[Chula SSO]
+  Auth <-->|Google OAuth| Google[Google]
   Web -->|Profile lookup| Minecraft[Minecraft Services API]
   Web -->|RLS queries and RPCs| DB[(Supabase Postgres)]
   Worker[External whitelist worker] -->|Service-role access| DB
@@ -54,15 +54,20 @@ Only browser-safe Supabase configuration belongs in the web deployment. The Supa
 
 The application callback is deliberately fixed to `/welcome`; arbitrary `next` parameters are ignored.
 
-### Chula SSO
+### Chula verification (Google)
 
-1. `/register` builds a Chula login URL whose service callback is `/auth/cucallback`.
-2. Chula returns a ticket to the callback.
-3. The callback validates the ticket with Chula's `serviceValidation` endpoint.
-4. For an existing Supabase session, CU profile fields are stored in user metadata.
-5. The route otherwise attempts to provision a Supabase magic-link session and then redirects to `/welcome`.
+Accounts are always created with Discord. Every signed-in page (`/welcome`, `/dashboard`, `/admin`) sends users who are not yet verified to `/verify`.
 
-Chula SSO currently assumes an HTTPS callback, including in the browser-side URL builder. See [Current implementation caveats](#current-implementation-caveats) before treating CU-only registration as production-ready.
+1. On `/verify` the browser calls `supabase.auth.linkIdentity({ provider: "google" })`, which returns to `/auth/callback`.
+2. After the code exchange, `src/lib/reconcile-identities.ts` checks the session's identities on **every** sign-in:
+   - no Discord identity → sign out (`discord_required`);
+   - a Google identity with a verified `@chula.ac.th` / `@student.chula.ac.th` email is claimed with `claim_chula` (one Chula account per user, one user per Chula account, no swapping);
+   - Chula-domain identities with unverified emails, rejected claims, personal Google accounts before verification, and extra personal Google accounts are unlinked.
+3. `public.chula_claims` keeps the claim even if the identity is unlinked, so a Chula account can't be moved to another Discord account. Only `admin_reset_chula` (the **Reset Chula link** button on `/admin/users/<id>`) clears it.
+4. Verified users may link one personal Google account on `/welcome` or `/dashboard`. From then on, Discord, the Chula Google account, and the personal Google account all sign in to the same user.
+5. The `hook_only_discord_signups` Before User Created hook refuses Google sign-ins from unknown accounts (`register_discord_first`).
+
+Verification is `public.is_chula_verified(uid)`: a Discord identity plus a claim whose Google identity is still linked. Adding a Minecraft account requires it; existing whitelist rows are never revoked by it.
 
 ### Minecraft registration
 
@@ -104,10 +109,10 @@ This asynchronous boundary keeps registrations durable while the Minecraft host 
 | --- | --- |
 | `/` | Public landing page, Discord sign-in, community link, and server-address card |
 | `/about` | Community mission, values, and server overview |
-| `/register` | Public Discord or Chula sign-in page; authenticated users redirect to `/welcome` |
+| `/register` | Public Discord or Google sign-in page; authenticated users redirect to `/welcome` |
+| `/verify` | Link a Chula Google account; the only page an unverified user can use |
 | `/welcome` | Protected Minecraft registration and synchronization status |
-| `/auth/callback` | Discord/Supabase authorization-code exchange |
-| `/auth/cucallback` | Chula ticket validation and CU profile handling |
+| `/auth/callback` | Supabase authorization-code exchange and identity rules (Discord and Google) |
 | `/auth/error` | Safe user-facing authentication failure page |
 | `/api/registration` | Authenticated registration read/write API |
 | Any unknown route | Custom Minecraft-themed 404 page |
@@ -139,7 +144,7 @@ This asynchronous boundary keeps registrations durable while the Minecraft host 
 - npm (the repository is locked with `package-lock.json`)
 - A Supabase project with Auth and Postgres enabled
 - A Discord application/provider for Discord login
-- Chula SSO application credentials for the Chula sign-in button, which is always rendered on `/register`
+- A Google OAuth client (Audience **External**, published) for Chula verification and Google sign-in
 - Supabase CLI only when running the local database stack or applying migrations from the CLI
 - Playwright's Chromium browser when running the visual suite
 
@@ -157,8 +162,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_REPLACE_ME
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS=mc.example.com
 
-NEXT_PUBLIC_CHULA_SSO_APP_ID=
-CHULA_SSO_APP_SECRET=
+SUPABASE_SECRET_KEY=
 ```
 
 | Variable | Required | Used for |
@@ -167,12 +171,11 @@ CHULA_SSO_APP_SECRET=
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes | Browser-safe Supabase publishable key |
 | `NEXT_PUBLIC_SITE_URL` | Recommended; required for a stable production origin | Canonical server-side auth and redirect origin |
 | `NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS` | No | Address displayed and copied on the landing page |
-| `NEXT_PUBLIC_CHULA_SSO_APP_ID` | For Chula SSO | Chula application identifier exposed to the browser URL builder |
-| `CHULA_SSO_APP_SECRET` | For Chula SSO | Server-only credential sent to Chula ticket validation |
+| `SUPABASE_SECRET_KEY` | Yes | Server-only key used by the auth callback to claim Chula accounts and by registration RPCs |
 
 If `NEXT_PUBLIC_SITE_URL` is absent, the server tries `VERCEL_PROJECT_PRODUCTION_URL`, then `VERCEL_URL`, then `http://localhost:3000`. These Vercel variables are platform-provided and do not belong in `.env.example`.
 
-All `NEXT_PUBLIC_` values are embedded into the client build where used. Redeploy after changing production values. `CHULA_SSO_APP_SECRET` must never receive the `NEXT_PUBLIC_` prefix.
+All `NEXT_PUBLIC_` values are embedded into the client build where used. Redeploy after changing production values. `SUPABASE_SECRET_KEY` must never receive the `NEXT_PUBLIC_` prefix.
 
 ## Local development
 
@@ -217,11 +220,19 @@ Site URL:     https://your-domain.example
 Redirect URL: https://your-domain.example/auth/callback
 ```
 
-The redirect URI configured in the Discord application itself must be the Supabase provider callback:
+The redirect URI configured in the Discord application and the Google OAuth client must be the Supabase provider callback:
 
 ```text
 https://<project-ref>.supabase.co/auth/v1/callback
 ```
+
+Google verification also needs, in the Supabase dashboard:
+
+- **Authentication → Sign In / Providers → Google** enabled with the client ID and secret.
+- **Allow manual linking** turned on (used by `linkIdentity`).
+- **Authentication → Hooks → Before User Created** set to `public.hook_only_discord_signups`, enabled only after the code that handles `register_discord_first` is deployed.
+
+In Google Auth Platform, set the Audience to **External** and publish the app; Internal would block personal Gmail sign-in. Only the `openid`, `email`, and `profile` scopes are needed.
 
 ## Commands
 
@@ -278,11 +289,6 @@ See `OPERATOR_RUNBOOK.md` for launch order, recovery, troubleshooting, backups, 
 
 These are code-backed constraints in the current repository, not intended architecture:
 
-- `register_minecraft_profile` still requires a Discord identity from `auth.identities`. A CU-only Supabase user cannot complete Minecraft registration with the current migration.
-- The unauthenticated Chula callback attempts `supabase.auth.admin.generateLink()` using the normal server client, which is configured with the public publishable key. Supabase admin APIs require trusted server credentials, but no such credential is defined for this web app. New CU-only user provisioning therefore needs a secure backend design before production use.
-- The Chula callback URL builder forces `https://`, so the button is not usable against the default plain-HTTP local development origin without additional HTTPS setup.
-- Chula ticket validation currently uses an unbounded upstream `fetch`; unlike Supabase and Minecraft requests, it has no timeout or cancellation signal.
-- Chula callback failures are routed through an error page whose current copy is Discord-specific.
+- A user can unlink their own Discord identity from the browser console (`unlinkIdentity`). The account is then refused (`discord_required`), and signing in with Discord again creates a new account; an admin has to repair it.
 - The whitelist worker and Paper/RCON integration are external to this repository; this codebase can only store and display synchronization state.
 
-Until those items are resolved, Discord OAuth is the complete registration path represented by the database schema.

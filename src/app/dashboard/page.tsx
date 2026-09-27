@@ -1,48 +1,46 @@
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import { LinkGoogleButton } from "@/components/google-auth";
 import { RegistrationPanel } from "@/components/registration-panel";
+import { classifyIdentities, identityEmail, linkErrorMessage } from "@/lib/chula";
 import { REGISTRATION_COLUMNS, toRegistrationView, type RegistrationView } from "@/lib/registration";
-import { createClient } from "@/lib/supabase/server";
+import { requireVerifiedUser } from "@/lib/verified-user";
 import styles from "./dashboard.module.css";
 import { SiteHeader } from "@/components/site-header";
 import { ServiceUnavailable } from "./service-unavailable";
+import { unlinkPersonalGoogle } from "./actions";
 
-export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ linked?: string }> }) {
-  const { linked } = await searchParams;
-  const supabase = await createClient();
-  let user;
-
-  try {
-    ({ data: { user } } = await supabase.auth.getUser());
-  } catch {
-    return <ServiceUnavailable />;
-  }
-
-  if (!user) redirect("/");
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; unlinked?: string }> }) {
+  const { error: errorCode, unlinked } = await searchParams;
+  const session = await requireVerifiedUser();
+  if (!session) return <ServiceUnavailable />;
+  const { supabase, user } = session;
 
   let registrations: RegistrationView[] = [];
-  let chulaUsername: string | null = null;
   let role = "user";
+  let chulaEmail: string | null = null;
   let lookupFailed = false;
 
   try {
-    const [accounts, chula, profile] = await Promise.all([
+    const [accounts, profile, claim] = await Promise.all([
       supabase
         .from("minecraft_registrations")
         .select(REGISTRATION_COLUMNS)
         .eq("user_id", user.id)
         .eq("is_active", true)
         .order("created_at"),
-      supabase.from("cu_sso_identities").select("chula_username").eq("user_id", user.id).maybeSingle(),
       supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle(),
+      supabase.from("chula_claims").select("email").eq("user_id", user.id).maybeSingle(),
     ]);
-    lookupFailed = Boolean(accounts.error || chula.error || profile.error);
+    lookupFailed = Boolean(accounts.error || profile.error || claim.error);
+    chulaEmail = claim.data?.email ?? null;
     registrations = (accounts.data ?? []).map(toRegistrationView);
-    chulaUsername = chula.data?.chula_username ?? null;
     role = profile.data?.role ?? "user";
   } catch {
     lookupFailed = true;
   }
+
+  const personalIdentity = classifyIdentities(user.identities ?? []).personal.find((i) => identityEmail(i) !== chulaEmail) ?? null;
+  const errorMessage = linkErrorMessage(errorCode);
 
   const meta = user.user_metadata;
   const displayName =
@@ -63,7 +61,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <p className={styles.eyebrow}><span aria-hidden="true">+</span> CHULACRAFT PROFILE <span aria-hidden="true">+</span></p>
           <h1 id="register-title">Profile</h1>
           <p>Manage your sign-in methods and Minecraft Java Edition accounts.</p>
-          {linked === "cu" && <p className={styles.statusNote} role="status">Chula SSO linked. You can now add Minecraft accounts.</p>}
+          {errorMessage && <p className={styles.statusNote} role="alert">{errorMessage}</p>}
+          {unlinked && <p className={styles.statusNote} role="status">Personal Google account unlinked.</p>}
         </section>
 
         <div className={styles.panelStack}>
@@ -92,20 +91,31 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <div className={styles.playerBar}>
             <span className={styles.avatarFallback} aria-hidden="true">CU</span>
             <div>
-              <small>Chula SSO</small>
-              <strong>{chulaUsername ?? "Not linked"}</strong>
+              <small>Chula Google</small>
+              <strong>{chulaEmail ?? "Verified"}</strong>
             </div>
-            {chulaUsername ? (
-              <span className={styles.connectedBadge}>Linked</span>
+            <span className={styles.connectedBadge}>Linked</span>
+          </div>
+
+          <div className={styles.playerBar}>
+            <span className={styles.avatarFallback} aria-hidden="true">G</span>
+            <div>
+              <small>Personal Google (optional sign-in)</small>
+              <strong>{personalIdentity ? identityEmail(personalIdentity) : "Not linked"}</strong>
+            </div>
+            {personalIdentity ? (
+              <form action={unlinkPersonalGoogle}>
+                <input type="hidden" name="identityId" value={personalIdentity.identity_id} />
+                <button type="submit" className={`button button-header-signup ${styles.linkButton}`}>Unlink</button>
+              </form>
             ) : (
-              <a className={`button button-header-signup ${styles.linkButton}`} href="/auth/cusso/start?intent=link">Link Chula SSO</a>
+              <LinkGoogleButton className={`button button-header-signup ${styles.linkButton}`} />
             )}
           </div>
 
           <RegistrationPanel
             initialRegistrations={registrations}
             lookupFailed={lookupFailed}
-            canAdd={Boolean(chulaUsername)}
           />
         </div>
       </div>

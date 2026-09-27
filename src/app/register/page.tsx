@@ -5,7 +5,7 @@ import styles from "./register.module.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { DiscordAuthButton } from "@/components/discord-auth";
-import { CussoAuthButton } from "@/components/cusso-auth";
+import { GoogleSignInButton } from "@/components/google-auth";
 
 function ServiceUnavailable() {
   return (
@@ -50,12 +50,12 @@ export default async function RegisterPage() {
         <div className={`${styles.card} ${styles.authCard} pixel-panel`}>
           <p className={styles.cardLabel}>Choose a sign-in method</p>
           <h2>Continue to registration</h2>
-          <p className={styles.introCopy}>New players sign up with Discord. Already linked Chula SSO on your dashboard? You can sign in with it too.</p>
+          <p className={styles.introCopy}>New players sign up with Discord, then verify with their Chula Google account. Already verified? Sign in with Discord or Google.</p>
           <div className={styles.actions}>
             <DiscordAuthButton />
-            <CussoAuthButton />
+            <GoogleSignInButton />
           </div>
-          <p className={styles.authNote}>Your sign-in is used only to identify your ChulaCraft registration.</p>
+          <p className={styles.authNote}>Your sign-in is used only to identify your ChulaCraft registration. Your Chula Google email is stored to confirm CU membership.</p>
         </div>
       </section>
 

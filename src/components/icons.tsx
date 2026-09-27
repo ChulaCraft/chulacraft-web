@@ -13,6 +13,10 @@ export function CUIcon({ className }: IconProps) {
   </svg>;
 }
 
+export function GoogleIcon({ className }: IconProps) {
+  return <svg className={className} viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.8 10.2H12v3.9h5.6c-.5 2.6-2.7 4.1-5.6 4.1a6.2 6.2 0 1 1 4-10.9l2.9-2.9A10.2 10.2 0 1 0 12 22.2c5.9 0 10-4.1 10-10 0-.7-.1-1.3-.2-2Z" /></svg>;
+}
+
 export function ArrowIcon({ className }: IconProps) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>;
 }

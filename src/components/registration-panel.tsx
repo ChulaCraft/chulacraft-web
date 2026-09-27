@@ -14,15 +14,13 @@ import styles from "@/app/register/register.module.css";
 type Props = {
   initialRegistrations: RegistrationView[];
   lookupFailed?: boolean;
-  /** Adding (or switching to) a new Minecraft account requires a linked Chula SSO account. */
-  canAdd: boolean;
 };
 
 type Editing = { id: string | null } | null;
 
-export function RegistrationPanel({ initialRegistrations, lookupFailed = false, canAdd }: Props) {
+export function RegistrationPanel({ initialRegistrations, lookupFailed = false }: Props) {
   const [accounts, setAccounts] = useState(initialRegistrations);
-  const [editing, setEditing] = useState<Editing>(initialRegistrations.length === 0 && canAdd ? { id: null } : null);
+  const [editing, setEditing] = useState<Editing>(initialRegistrations.length === 0 ? { id: null } : null);
   const [removeError, setRemoveError] = useState("");
 
   const reload = useCallback(async () => {
@@ -78,7 +76,6 @@ export function RegistrationPanel({ initialRegistrations, lookupFailed = false, 
     <section className={styles.card} aria-live="polite">
       <p className={styles.cardLabel}>Your Minecraft accounts · {accounts.length}/{MAX_MINECRAFT_ACCOUNTS}</p>
       <h2>Minecraft accounts</h2>
-      {!canAdd && <p className={styles.statusNote}>Link your Chula SSO account above to add Minecraft accounts.</p>}
 
       <ul className={styles.accountList}>
         {accounts.map((account) => editing?.id === account.id ? (
@@ -122,7 +119,7 @@ export function RegistrationPanel({ initialRegistrations, lookupFailed = false, 
           onCancel={accounts.length ? () => setEditing(null) : undefined}
           onSaved={async () => { setEditing(null); await reload(); }}
         />
-      ) : canAdd && !full && (
+      ) : !full && (
         <button type="button" className={styles.iconButton} onClick={() => setEditing({ id: null })} aria-label="Add a Minecraft account">+</button>
       )}
       {full && <p className={styles.fieldHelp}>You’ve reached the limit of {MAX_MINECRAFT_ACCOUNTS} accounts. Change one with the pen button.</p>}

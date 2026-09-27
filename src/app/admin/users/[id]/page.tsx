@@ -3,12 +3,13 @@ import { notFound } from "next/navigation";
 import { MAX_MINECRAFT_ACCOUNTS } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../../admin.module.css";
-import { setRole, setWhitelisted } from "./actions";
+import { resetChula, setRole, setWhitelisted } from "./actions";
 
 type Detail = {
   user: { id: string; email: string | null; created_at: string; role: string } | null;
   discord: { id: string; username: string | null } | null;
-  chula: { chula_uid: string; chula_username: string; email: string | null; display_name: string | null; linked_at: string } | null;
+  chula: { email: string; claimed_at: string; verified: boolean } | null;
+  google: { email: string | null; linked_at: string }[];
   registrations: { id: string; minecraft_username: string; minecraft_uuid: string; desired_whitelisted: boolean; is_active: boolean; sync_status: string }[];
   log: { id: string; field: string; old_value: string | null; new_value: string | null; source: string; actor_user_id: string | null; created_at: string }[];
 };
@@ -51,7 +52,17 @@ export default async function AdminUserPage({ params, searchParams }: {
         <dl className={styles.facts}>
           <dt>Email</dt><dd>{detail.user.email ?? "—"}</dd>
           <dt>Discord ID</dt><dd>{detail.discord?.id ?? "Not linked"}</dd>
-          <dt>Chula SSO</dt><dd>{detail.chula ? `${detail.chula.chula_username} (${detail.chula.chula_uid})` : "Not linked"}</dd>
+          <dt>Chula</dt>
+          <dd>
+            {detail.chula ? `${detail.chula.email}${detail.chula.verified ? "" : " (claimed, Google unlinked)"}` : "Not verified"}
+            {detail.chula && canManage && (
+              <form action={resetChula} className={styles.inline}>
+                <input type="hidden" name="userId" value={detail.user.id} />
+                <button className="button button-header-signup" type="submit">Reset Chula link</button>
+              </form>
+            )}
+          </dd>
+          <dt>Google accounts</dt><dd>{detail.google.length ? detail.google.map((g) => g.email ?? "—").join(", ") : "None"}</dd>
           <dt>Joined</dt><dd>{new Date(detail.user.created_at).toLocaleString("en-GB")}</dd>
           <dt>Role</dt>
           <dd>

@@ -7,7 +7,7 @@ type UserRow = {
   role: string;
   email: string | null;
   discord_username: string | null;
-  chula_username: string | null;
+  chula_email: string | null;
   minecraft_usernames: string | null;
 };
 
@@ -39,7 +39,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               {users.map((user) => (
                 <tr key={user.user_id}>
                   <td><Link href={`/admin/users/${user.user_id}`}>{user.discord_username ?? user.email ?? user.user_id}</Link></td>
-                  <td>{user.chula_username ?? <span className={styles.muted}>—</span>}</td>
+                  <td>{user.chula_email ?? <span className={styles.muted}>—</span>}</td>
                   <td>{user.minecraft_usernames ?? <span className={styles.muted}>—</span>}</td>
                   <td>{user.role}</td>
                 </tr>

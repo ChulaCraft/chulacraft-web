@@ -50,7 +50,7 @@ export function statusMessage(registration: Pick<RegistrationView, "desiredWhite
 export function registrationError(message: string, code?: string): { status: number; error: string } {
   if (code === "23505" || message.includes("REGISTRATION_CONFLICT")) return { status: 409, error: "This Minecraft account is already registered to another player." };
   if (message.includes("LIMIT_REACHED")) return { status: 409, error: `You can have up to ${MAX_MINECRAFT_ACCOUNTS} Minecraft accounts.` };
-  if (message.includes("CU_SSO_REQUIRED")) return { status: 403, error: "Link your Chula SSO account before adding a Minecraft account." };
+  if (message.includes("CU_SSO_REQUIRED")) return { status: 403, error: "Verify your Chula Google account before adding a Minecraft account." };
   if (message.includes("DISCORD_IDENTITY_REQUIRED")) return { status: 403, error: "Sign in with Discord before adding a Minecraft account." };
   if (message.includes("REGISTRATION_BLOCKED")) return { status: 403, error: "An admin removed this Minecraft account. Contact an admin to restore it." };
   if (message.includes("NOT_FOUND")) return { status: 404, error: "That Minecraft account is no longer on your list. Refresh and try again." };

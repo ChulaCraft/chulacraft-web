@@ -31,7 +31,7 @@
 
 If a Supabase backend key, Discord secret, or RCON password may have been exposed, rotate it immediately in its owning service, update only the relevant private environment, redeploy/restart that service, and review normal logs for accidental disclosure. RCON must never be forwarded publicly; only Minecraft TCP `25565` should be exposed.
 
-## Roles and Chula SSO
+## Roles and Chula verification
 
 Roles live in `public.profiles.role` (`owner`, `admin`, `user`). Owners change roles from `/admin/users/<id>`. Promote an owner by SQL only to bootstrap, e.g. when the first owner's Discord account logged in after the profiles migration ran:
 
@@ -41,4 +41,13 @@ update public.profiles p set role = 'owner'
   where i.user_id = p.user_id and i.provider = 'discord' and i.provider_id = '938769182210809866';
 ```
 
-Chula SSO sign-in only works for accounts that linked Chula SSO from `/welcome` while signed in with Discord. `SUPABASE_JWT_SECRET` is no longer used by the web app and can be removed from the deployment environment.
+Accounts are created with Discord only, then verified by linking a `@chula.ac.th` / `@student.chula.ac.th` Google account on `/verify`. `SUPABASE_JWT_SECRET` and the old `NEXT_PUBLIC_CHULA_SSO_APP_ID` / `CHULA_SSO_APP_SECRET` are no longer used and can be removed from the deployment environment.
+
+To let a player change their Chula account, use **Reset Chula link** on `/admin/users/<id>`. That removes the claim and the Google identity, and the player verifies again on their next visit.
+
+### Switching from CU SSO to Google (deploy order)
+
+1. Google Auth Platform: Audience **External**, **Publish app**. In Supabase, enable the Google provider and turn on **Allow manual linking**.
+2. Apply `20260927000001_chula_google.sql` (additive only), then deploy the web app.
+3. Supabase → Authentication → Hooks → **Before User Created** → `public.hook_only_discord_signups`. Immediately sign in with a brand-new Discord account to confirm Discord signups still work.
+4. Apply `20260927000002_drop_cu_sso.sql`.

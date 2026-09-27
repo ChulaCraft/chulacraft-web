@@ -10,6 +10,8 @@ describe("OAuth failure handling", () => {
     expect(classifyOAuthCallbackFailure("access_denied", null)).toBe("cancelled");
     expect(classifyOAuthCallbackFailure("server_error", "unexpected_failure")).toBe("provider_error");
     expect(classifyOAuthCallbackFailure(null, null)).toBe("callback_missing_code");
+    expect(classifyOAuthCallbackFailure("server_error", "unexpected_failure", "Error running hook URI: REGISTER_DISCORD_FIRST")).toBe("register_discord_first");
+    expect(classifyOAuthCallbackFailure("server_error", "identity_already_exists")).toBe("already_linked");
   });
 
   it("does not reflect arbitrary callback values into the error page", () => {
@@ -20,7 +22,7 @@ describe("OAuth failure handling", () => {
 
   it("accepts every known reason", () => {
     for (const reason of ["cancelled", "provider_error", "callback_missing_code", "session_exchange_failed", "start_failed",
-      "cu_ticket_invalid", "cu_disabled", "cu_not_linked", "cu_no_email", "cu_already_linked", "other"]) {
+      "register_discord_first", "already_linked", "discord_required", "other"]) {
       expect(safeAuthFailureReason(reason)).toBe(reason);
     }
     expect(safeAuthFailureReason(undefined)).toBe("provider_error");
