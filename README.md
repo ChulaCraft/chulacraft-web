@@ -274,8 +274,7 @@ Run `npm run test:visual` when changing layouts, assets, routing behavior, or au
 
 ## Security and operational boundaries
 
-- Browser users can select only `desired_whitelisted`, `sync_status`, and `updated_at` for their own row, plus `minecraft_username` from `minecraft_profiles` for their own accounts.
-- Minecraft UUID + username live in `minecraft_profiles`; `minecraft_registrations.minecraft_uuid` references it. The worker reads the flat `minecraft_whitelist` view and writes sync fields to `minecraft_registrations`.
+- Browser users can select only `minecraft_username`, `desired_whitelisted`, `sync_status`, and `updated_at` for their own row.
 - Registration writes go through a security-definer RPC; direct browser writes are not granted.
 - The authoritative registration-attempt window is private and derives its user from `auth.uid()`.
 - The IP limiter is only best effort and trusts the deployment proxy's first `X-Forwarded-For` value.
