@@ -1,6 +1,6 @@
 begin;
 
-select plan(80);
+select plan(84);
 
 -- Users: 1 owner, 2 admin, 3 second admin, 4 player with Chula Google, 5 player without.
 insert into auth.users (id, email) values
@@ -110,6 +110,12 @@ select is(
     (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000001'),
     '10000000-0000-0000-0000-000000000001', 'Renamed_1')),
   'Renamed_1', 'same UUID renames in place');
+select is((select minecraft_username from public.minecraft_profiles where minecraft_uuid = '10000000-0000-0000-0000-000000000001'),
+  'Renamed_1', 'renames are stored on the minecraft profile');
+select throws_ok($$ select * from public.add_minecraft_account('00000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000050', 'renamed_1') $$,
+  'P0001', 'REGISTRATION_CONFLICT', 'a name held by another UUID cannot be registered');
+select ok(not has_table_privilege('authenticated', 'public.minecraft_whitelist', 'SELECT'), 'players cannot read the worker view');
+select ok(has_table_privilege('service_role', 'public.minecraft_whitelist', 'SELECT'), 'the worker can read the whitelist view');
 select is(
   (select created from public.change_minecraft_account('00000000-0000-0000-0000-000000000004',
     (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000002'),
@@ -133,8 +139,10 @@ select is((select source from public.account_change_log where field = 'desired_w
   'admin', 'admin changes are logged as admin');
 select is((select count(*)::int from public.admin_search_users('player_')), 1, 'search matches minecraft names with a literal underscore');
 
-insert into public.minecraft_registrations (user_id, discord_user_id, minecraft_uuid, minecraft_username, minecraft_username_key)
-  values ('00000000-0000-0000-0000-000000000003', 'd-3', '10000000-0000-0000-0000-000000000030', 'AdminTwo', 'admintwo');
+insert into public.minecraft_profiles (minecraft_uuid, minecraft_username, minecraft_username_key)
+  values ('10000000-0000-0000-0000-000000000030', 'AdminTwo', 'admintwo');
+insert into public.minecraft_registrations (user_id, discord_user_id, minecraft_uuid)
+  values ('00000000-0000-0000-0000-000000000003', 'd-3', '10000000-0000-0000-0000-000000000030');
 select throws_ok($$ select public.admin_set_whitelisted(
   (select id from public.minecraft_registrations where minecraft_uuid = '10000000-0000-0000-0000-000000000030'), false) $$,
   'P0001', 'FORBIDDEN', 'an admin cannot manage another admin');
