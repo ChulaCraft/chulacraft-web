@@ -12,8 +12,7 @@ export type RegistrationView = {
   updatedAt: string;
 };
 
-// The name lives in minecraft_profiles; the spread embed flattens it into the row.
-export const REGISTRATION_COLUMNS = "id, desired_whitelisted, sync_status, updated_at, ...minecraft_profiles(minecraft_username)";
+export const REGISTRATION_COLUMNS = "id, minecraft_username, desired_whitelisted, sync_status, updated_at";
 
 /** Maps a minecraft_registrations row to the fields the player may see. */
 export function toRegistrationView(row: Record<string, unknown>): RegistrationView {
