@@ -16,6 +16,7 @@ alter table public.chula_claims enable row level security;
 revoke all on public.chula_claims from anon, authenticated;
 grant select (user_id, email, claimed_at) on public.chula_claims to authenticated;
 grant select on public.chula_claims to service_role;
+drop policy if exists "users can read own chula claim" on public.chula_claims;
 create policy "users can read own chula claim" on public.chula_claims for select to authenticated using ((select auth.uid()) = user_id);
 
 alter table public.account_change_log drop constraint if exists account_change_log_entity_check;
@@ -98,7 +99,7 @@ grant execute on function public.log_identity_change(uuid, uuid, text, text, tex
 -- Before User Created hook: only Discord may create accounts. Google only
 -- signs in to (or links onto) an existing one.
 create or replace function public.hook_only_discord_signups(event jsonb)
-returns jsonb language plpgsql as $$
+returns jsonb language plpgsql set search_path = '' as $$
 begin
   if event -> 'user' -> 'app_metadata' ->> 'provider' = 'discord' then return '{}'::jsonb; end if;
   return jsonb_build_object('error', jsonb_build_object('http_code', 403, 'message', 'REGISTER_DISCORD_FIRST'));
