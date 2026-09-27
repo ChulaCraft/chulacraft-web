@@ -94,11 +94,11 @@ select ok(
 select ok(
   has_column_privilege(
     'authenticated',
-    'public.minecraft_registrations',
+    'public.minecraft_profiles',
     'minecraft_username',
     'SELECT'
   ),
-  'authenticated users can read the public registration fields'
+  'authenticated users can read the public minecraft profile fields'
 );
 
 select ok(

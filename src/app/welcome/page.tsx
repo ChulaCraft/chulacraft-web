@@ -1,42 +1,40 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { LinkGoogleButton } from "@/components/google-auth";
 import { ServerAddressCard } from "@/components/server-address-card";
 import { SiteHeader } from "@/components/site-header";
+import { classifyIdentities, identityEmail } from "@/lib/chula";
 import { MAX_MINECRAFT_ACCOUNTS } from "@/lib/registration";
-import { createClient } from "@/lib/supabase/server";
+import { requireVerifiedUser } from "@/lib/verified-user";
 import styles from "../dashboard/dashboard.module.css";
 import { ServiceUnavailable } from "../dashboard/service-unavailable";
 
 /** Landing page after sign-in: shows what's left to do, the profile page does the editing. */
 export default async function WelcomePage() {
-  const supabase = await createClient();
-  let user;
-  try {
-    ({ data: { user } } = await supabase.auth.getUser());
-  } catch {
-    return <ServiceUnavailable />;
-  }
-  if (!user) redirect("/");
+  const session = await requireVerifiedUser();
+  if (!session) return <ServiceUnavailable />;
+  const { supabase, user } = session;
 
-  let chulaLinked = false;
   let accountCount = 0;
+  let chulaEmail: string | null = null;
   let lookupFailed = false;
   try {
-    const [chula, accounts] = await Promise.all([
-      supabase.from("cu_sso_identities").select("user_id").eq("user_id", user.id).maybeSingle(),
+    const [accounts, claim] = await Promise.all([
       supabase.from("minecraft_registrations").select("id").eq("user_id", user.id).eq("is_active", true),
+      supabase.from("chula_claims").select("email").eq("user_id", user.id).maybeSingle(),
     ]);
-    lookupFailed = Boolean(chula.error || accounts.error);
-    chulaLinked = Boolean(chula.data);
+    lookupFailed = Boolean(accounts.error || claim.error);
     accountCount = accounts.data?.length ?? 0;
+    chulaEmail = claim.data?.email ?? null;
   } catch {
     lookupFailed = true;
   }
   if (lookupFailed) return <ServiceUnavailable />;
 
+  const personal = classifyIdentities(user.identities ?? []).personal.filter((i) => identityEmail(i) !== chulaEmail);
+  const personalEmail = personal[0] ? identityEmail(personal[0]) : null;
   const meta = user.user_metadata;
   const name = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "player";
-  const ready = chulaLinked && accountCount > 0;
+  const ready = accountCount > 0;
 
   return (
     <main className={`${styles.page} auth-scene`}>
@@ -56,15 +54,19 @@ export default async function WelcomePage() {
               <span aria-hidden="true">✓</span>
               <div><strong>Sign in with Discord</strong><small>Done</small></div>
             </li>
-            <li data-done={chulaLinked}>
-              <span aria-hidden="true">{chulaLinked ? "✓" : "2"}</span>
-              <div><strong>Link Chula SSO</strong><small>{chulaLinked ? "Done" : "Confirms you’re part of the CU community."}</small></div>
-              {!chulaLinked && <a className={`button button-header-signup ${styles.linkButton}`} href="/auth/cusso/start?intent=link">Link</a>}
+            <li data-done="true">
+              <span aria-hidden="true">✓</span>
+              <div><strong>Verify Chula account</strong><small>{chulaEmail ?? "Done"}</small></div>
             </li>
-            <li data-done={accountCount > 0}>
-              <span aria-hidden="true">{accountCount > 0 ? "✓" : "3"}</span>
-              <div><strong>Add a Minecraft account</strong><small>{accountCount > 0 ? `${accountCount} account${accountCount === 1 ? "" : "s"} registered` : `Java Edition, up to ${MAX_MINECRAFT_ACCOUNTS} accounts.`}</small></div>
-              {chulaLinked && accountCount === 0 && <Link className={`button button-header-signup ${styles.linkButton}`} href="/dashboard">Add</Link>}
+            <li data-done={Boolean(personalEmail)}>
+              <span aria-hidden="true">{personalEmail ? "✓" : "+"}</span>
+              <div><strong>Add personal Google (optional)</strong><small>{personalEmail ?? "Sign in with your everyday Google account too."}</small></div>
+              {!personalEmail && <LinkGoogleButton className={`button button-header-signup ${styles.linkButton}`} />}
+            </li>
+            <li data-done={ready}>
+              <span aria-hidden="true">{ready ? "✓" : "4"}</span>
+              <div><strong>Add a Minecraft account</strong><small>{ready ? `${accountCount} account${accountCount === 1 ? "" : "s"} registered` : `Java Edition, up to ${MAX_MINECRAFT_ACCOUNTS} accounts.`}</small></div>
+              {!ready && <Link className={`button button-header-signup ${styles.linkButton}`} href="/dashboard">Add</Link>}
             </li>
           </ol>
         </section>

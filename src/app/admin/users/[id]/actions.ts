@@ -29,3 +29,10 @@ export async function setRole(formData: FormData) {
   const { error } = await supabase.rpc("admin_set_role", { p_user_id: userId, p_role: String(formData.get("role")) });
   finish(userId, error);
 }
+
+export async function resetChula(formData: FormData) {
+  const userId = String(formData.get("userId"));
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_reset_chula", { p_user_id: userId });
+  finish(userId, error);
+}

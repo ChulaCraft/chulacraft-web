@@ -20,8 +20,8 @@ vi.mock("@/components/site-footer", () => ({
 vi.mock("@/components/discord-auth", () => ({
   DiscordAuthButton: () => <button>Sign Up with Discord</button>,
 }));
-vi.mock("@/components/cusso-auth", () => ({
-  CussoAuthButton: () => <button>Sign Up with CU SSO</button>,
+vi.mock("@/components/google-auth", () => ({
+  GoogleSignInButton: () => <button>Sign In with Google</button>,
 }));
 
 import RegisterPage from "./page";
@@ -60,7 +60,7 @@ describe("RegisterPage", () => {
     expect(markup).toContain("CHULACRAFT ACCESS");
     expect(markup).toContain("Continue to registration");
     expect(markup).toContain("Sign Up with Discord");
-    expect(markup).toContain("Sign Up with CU SSO");
+    expect(markup).toContain("Sign In with Google");
     expect(markup).toContain("Site header");
     expect(markup).toContain("Site footer");
     expect(redirect).not.toHaveBeenCalled();
