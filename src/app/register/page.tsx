@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Brand } from "@/components/brand";
 import { createClient } from "@/lib/supabase/server";
@@ -55,7 +56,7 @@ export default async function RegisterPage() {
             <DiscordAuthButton />
             <GoogleSignInButton />
           </div>
-          <p className={styles.authNote}>Your sign-in is used only to identify your ChulaCraft registration. Your Chula Google email is stored to confirm CU membership.</p>
+          <p className={styles.authNote}>Your sign-in is used only to identify your ChulaCraft registration. Your Chula Google email is stored to confirm CU membership. By continuing you agree to the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
         </div>
       </section>
 

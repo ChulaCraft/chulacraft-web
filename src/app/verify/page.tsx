@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LinkGoogleButton } from "@/components/google-auth";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -56,7 +57,7 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
 
         <section className={`${styles.card} pixel-panel`} aria-label="Verify Chula account">
           <LinkGoogleButton chula />
-          <p><small>We store your Chula Google email to confirm CU membership. It can’t be changed later without an admin.</small></p>
+          <p><small>We store your Chula Google email to confirm CU membership. It can’t be changed later without an admin. See the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.</small></p>
           <SignOutButton />
         </section>
       </div>

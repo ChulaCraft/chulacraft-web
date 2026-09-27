@@ -1,13 +1,13 @@
 {
-  "0": "site-header.tsx",
+  "0": "next",
   "1": "callback/route.ts",
   "2": "minecraft/route.ts",
   "3": "package.json",
-  "4": "next",
+  "4": "createClient",
   "5": "compilerOptions",
   "6": "ChulaCraft Redesign Implementation Plan",
   "7": "devDependencies",
-  "8": "verify/page.test.tsx",
+  "8": "visual-audit.spec.ts",
   "9": "ChulaCraft Web",
   "10": "ChulaCraft Visual Redesign Audit Report",
   "11": "dashboard/page.tsx",
@@ -24,7 +24,8 @@
   "22": "cycle-05/report.md",
   "23": "cycle-06/report.md",
   "24": "ref_node_crypto",
-  "25": "error/page.tsx",
+  "25": "privacy/page.tsx",
   "26": "ref_next_dev_types_routes_d_ts",
-  "27": "app/layout.tsx"
+  "27": "app/layout.tsx",
+  "28": "reconcile-identities.test.ts"
 }

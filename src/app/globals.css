@@ -637,3 +637,9 @@ p {
     transition-duration: 0.01ms !important;
   }
 }
+
+.site-footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
