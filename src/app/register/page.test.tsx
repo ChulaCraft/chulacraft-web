@@ -57,8 +57,7 @@ describe("RegisterPage", () => {
 
     const markup = renderToStaticMarkup(await RegisterPage());
 
-    expect(markup).toContain("CHULACRAFT ACCESS");
-    expect(markup).toContain("Continue to registration");
+    expect(markup).toContain("Choose sign-in method");
     expect(markup).toContain("Sign Up with Discord");
     expect(markup).toContain("Sign In with Google");
     expect(markup).toContain("Site header");

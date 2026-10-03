@@ -1,22 +1,22 @@
-import { Inter, Rajdhani } from "next/font/google";
-import localFont from "next/font/local";
+import { Atkinson_Hyperlegible, IBM_Plex_Mono, Pixelify_Sans } from "next/font/google";
 
-export const inter = Inter({
+export const bodyFont = Atkinson_Hyperlegible({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "700"],
+  variable: "--font-body",
   display: "swap"
 });
 
-export const rajdhani = Rajdhani({
+export const displayFont = Pixelify_Sans({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
-  variable: "--font-rajdhani",
+  variable: "--font-display",
   display: "swap"
 });
 
-export const minecraftia = localFont({
-  src: "../../public/fonts/Minecraftia-Regular.ttf",
-  variable: "--font-minecraftia",
-  display: "swap",
-  preload: true
+export const monoFont = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: "500",
+  variable: "--font-mono",
+  display: "swap"
 });

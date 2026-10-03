@@ -47,7 +47,7 @@ const server = createServer((request, response) => {
     return;
   }
 
-  if (request.method === "POST" && url.pathname === "/rest/v1/rpc/am_i_chula_verified") {
+  if (request.method === "POST" && url.pathname === "/rest/v1/rpc/am_i_player_verified") {
     response.writeHead(200, { "content-type": "application/json" });
     response.end("true");
     return;

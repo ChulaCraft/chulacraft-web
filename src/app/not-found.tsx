@@ -1,15 +1,12 @@
-import Link from "next/link";
-import { Brand } from "@/components/brand";
-import styles from "./not-found.module.css";
+import { ErrorScreen } from "@/components/error-screen";
 
 export default function NotFoundPage() {
-  return <main className={styles.page}>
-    <Brand />
-    <section className={styles.card} aria-labelledby="not-found-heading">
-      <span className={styles.code} aria-hidden="true">404</span>
-      <h1 id="not-found-heading">This chunk is unexplored</h1>
-      <p>The page you were looking for is not part of this world. Head back to Chulacraft and continue your adventure.</p>
-      <Link className="button button-primary" href="/">Return home</Link>
-    </section>
-  </main>;
+  return <ErrorScreen
+    code="404"
+    title="This chunk never loaded"
+    body="We couldn't find that page. It may have moved, or the link has a typo."
+    primary={{ label: "Back to home", href: "/" }}
+    secondary={{ label: "Go to your profile", href: "/dashboard" }}
+    help="Still lost? Ask on Discord and someone will point the way."
+  />;
 }

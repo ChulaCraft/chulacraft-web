@@ -1,0 +1,30 @@
+.form {
+  --pad: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 18px;
+}
+
+.actions {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  gap: 10px;
+}
+
+.actions > button {
+  flex: 1 1 auto;
+}
+
+
+.form select:disabled {
+  color: var(--text-3);
+  box-shadow: inset 0 0 0 2px var(--edge);
+  cursor: not-allowed;
+}

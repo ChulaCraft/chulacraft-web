@@ -29,15 +29,15 @@ function useGoogle(mode: "sign-in" | "link") {
   return { loading, start };
 }
 
-export function GoogleSignInButton() {
+export function GoogleSignInButton({ className = "btn btn-lg", children }: { className?: string; children?: React.ReactNode }) {
   const { loading, start } = useGoogle("sign-in");
-  return <button type="button" className="button button-discord" onClick={start} disabled={loading} aria-busy={loading}>
-    <GoogleIcon /> {loading ? "Opening Google…" : "Sign In with Google"}
+  return <button type="button" className={className} onClick={start} disabled={loading} aria-busy={loading}>
+    {children ?? <><GoogleIcon /> {loading ? "Opening Google…" : "Sign in with Google"}</>}
   </button>;
 }
 
 /** Links a Google account to the signed-in user: the Chula account on /verify, a personal one later. */
-export function LinkGoogleButton({ chula = false, className = "button button-discord" }: { chula?: boolean; className?: string }) {
+export function LinkGoogleButton({ chula = false, className = "btn btn-primary btn-lg" }: { chula?: boolean; className?: string }) {
   const { loading, start } = useGoogle("link");
   return <button type="button" className={className} onClick={start} disabled={loading} aria-busy={loading}>
     {chula ? <CUIcon /> : <GoogleIcon />} {loading ? "Opening Google…" : chula ? "Verify with Chula Google" : "Link Google"}

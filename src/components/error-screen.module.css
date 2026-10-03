@@ -1,0 +1,53 @@
+.main {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.bg {
+  object-fit: cover;
+  opacity: 0.28;
+}
+
+.tint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 30% 50%, rgba(32, 26, 43, 0.92) 0%, rgba(32, 26, 43, 0.97) 55%, var(--bg) 100%);
+}
+
+.inner {
+  position: relative;
+  padding-block: clamp(56px, 10vw, 120px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inner > * {
+  max-width: 560px;
+}
+
+.code {
+  color: var(--pink);
+  font: 700 clamp(72px, 14vw, 140px)/0.9 var(--font-display), monospace;
+}
+
+.title {
+  font: 700 clamp(30px, 4.6vw, 44px)/1.1 var(--font-display), monospace;
+  text-wrap: balance;
+}
+
+.body {
+  color: var(--text-2);
+  font-size: 18px;
+  text-wrap: pretty;
+}
+
+.actions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}

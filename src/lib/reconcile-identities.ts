@@ -16,7 +16,7 @@ export async function reconcileIdentities(session: SupabaseClient, admin: Supaba
 
   const { data: claim, error: claimLookupError } = await admin.from("chula_claims").select("google_sub").eq("user_id", userId).maybeSingle();
   if (claimLookupError) return { signOut: false, path: "/verify?error=other" };
-  const { cu, invalid, personal } = classifyIdentities(identities);
+  const { cu, invalid, personal } = classifyIdentities(identities, claim?.google_sub ?? null);
   // The claimed account is always the Chula one, even if its email later changes.
   const claimed = identities.find((i) => i.provider === "google" && i.id === claim?.google_sub);
   const notClaimed = (i: UserIdentity) => i !== claimed;

@@ -1,14 +1,22 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MAX_MINECRAFT_ACCOUNTS } from "@/lib/registration";
+import { ConfirmAction } from "@/components/confirm-action";
+import { PixelIcon } from "@/components/icons";
+import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
+import { describeChange } from "@/lib/change-log";
+import { MAX_MINECRAFT_ACCOUNTS, syncBadge, type SyncStatus } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../../admin.module.css";
-import { resetChula, setRole, setWhitelisted } from "./actions";
+import { when } from "../../overview";
+import { markGuest, resetChula, setWhitelisted } from "./actions";
+import { RoleControl } from "./role-control";
 
 type Detail = {
   user: { id: string; email: string | null; created_at: string; role: string } | null;
   discord: { id: string; username: string | null } | null;
-  chula: { email: string; claimed_at: string; verified: boolean } | null;
+  verification_kind: VerificationKind;
+  chula: { email: string; claimed_at: string } | null;
+  guest: { verified_at: string; verified_by_name: string | null } | null;
   google: { email: string | null; linked_at: string }[];
   registrations: { id: string; minecraft_username: string; minecraft_uuid: string; desired_whitelisted: boolean; is_active: boolean; sync_status: string }[];
   log: { id: string; field: string; old_value: string | null; new_value: string | null; source: string; actor_user_id: string | null; created_at: string }[];
@@ -18,15 +26,25 @@ const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to change this player.",
   LIMIT_REACHED: `This player already has ${MAX_MINECRAFT_ACCOUNTS} active Minecraft accounts.`,
   SELF_ROLE_CHANGE: "You can't change your own role.",
+  OWNER_ROLE_PROTECTED: "Owners are peers, so you can't change another owner's role.",
   NOT_FOUND: "That record no longer exists. Refresh and try again.",
+  ALREADY_VERIFIED: "This player is already Chula-verified.",
+};
+
+const DONE: Record<string, string> = {
+  reset: "Verification reset. They'll be asked to verify again.",
+  guest: "Marked as verified (guest). They can add Minecraft accounts now.",
+  role: "Role changed.",
+  restored: "Account put back on the whitelist.",
+  removed: "Account removed from the whitelist.",
 };
 
 export default async function AdminUserPage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; done?: string }>;
 }) {
   const { id } = await params;
-  const errorCode = (await searchParams).error;
+  const { error: errorCode, done } = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const supabase = await createClient();
@@ -35,107 +53,162 @@ export default async function AdminUserPage({ params, searchParams }: {
     supabase.rpc("current_app_role"),
     supabase.auth.getUser(),
   ]);
-  if (error) throw new Error("Could not load player.");
+  if (error) {
+    return <>
+      <Link href="/admin/players" className="back-link"><PixelIcon name="back" />Players</Link>
+      <section className={`panel ${styles.errorCard}`} role="alert">
+        <h1 className={styles.sectionTitle}><PixelIcon name="warning" size={22} className="tone-danger" />Couldn&apos;t load this player</h1>
+        <p className="muted">The player&apos;s details didn&apos;t load. Nothing was changed.</p>
+        <Link href={`/admin/users/${id}`} className="link-button">Try again →</Link>
+      </section>
+    </>;
+  }
   const detail = data as Detail;
   if (!detail.user) notFound();
+  const target = detail.user;
 
   const isOwner = myRole === "owner";
-  const canManage = isOwner || detail.user.role === "user";
+  const canManage = isOwner || target.role === "user";
+  const name = detail.discord?.username ?? target.email ?? target.id;
+  const handle = detail.discord?.username ?? target.id.slice(0, 8);
 
-  return (
-    <>
-      <p><Link href="/admin">← All players</Link></p>
-      {errorCode && <p className={styles.error} role="alert">{ERRORS[errorCode] ?? "The change could not be saved. Please try again."}</p>}
+  return <>
+    <Link href="/admin/players" className="back-link"><PixelIcon name="back" />Players</Link>
 
-      <section className={styles.panel} aria-labelledby="user-title">
-        <h1 id="user-title">{detail.discord?.username ?? detail.user.email ?? detail.user.id}</h1>
-        <dl className={styles.facts}>
-          <dt>Email</dt><dd>{detail.user.email ?? "—"}</dd>
-          <dt>Discord ID</dt><dd>{detail.discord?.id ?? "Not linked"}</dd>
-          <dt>Chula</dt>
-          <dd>
-            {detail.chula ? `${detail.chula.email}${detail.chula.verified ? "" : " (claimed, Google unlinked)"}` : "Not verified"}
-            {detail.chula && canManage && (
-              <form action={resetChula} className={styles.inline}>
-                <input type="hidden" name="userId" value={detail.user.id} />
-                <button className="button button-header-signup" type="submit">Reset Chula link</button>
-              </form>
+    <div aria-live="polite">
+      {errorCode && <div className="alert alert-error" role="alert"><PixelIcon name="warning" /><p className="alert-body">{ERRORS[errorCode] ?? "The change couldn't be saved. Please try again."}</p></div>}
+      {done && DONE[done] && <p className="alert alert-success" role="status"><PixelIcon name="check" />{DONE[done]}</p>}
+    </div>
+
+    <section className={`panel ${styles.userHead}`} aria-labelledby="p-name">
+      <span className="avatar" aria-hidden="true" style={{ width: 56, height: 56, fontSize: 26 }}>{name.charAt(0).toUpperCase()}</span>
+      <div className={styles.userName}>
+        <h1 id="p-name" className={styles.title}>{name}</h1>
+        {detail.discord?.username && <p className="muted">@{detail.discord.username}</p>}
+      </div>
+      <div className={styles.badges}>
+        <VerificationBadge kind={detail.verification_kind} />
+        <span className={styles.roleBadge}>Role: {target.role}</span>
+      </div>
+    </section>
+
+    <div className={styles.columns}>
+      <div className={styles.sideCol}>
+        <section className="panel" aria-labelledby="det-title">
+          <h2 id="det-title" className={styles.sectionTitle}>Details</h2>
+          <dl className={styles.facts}>
+            <dt>Email</dt><dd className="mono">{target.email ?? "—"}</dd>
+            <dt>Discord ID</dt><dd className="mono">{detail.discord?.id ?? "Not linked"}</dd>
+            <dt>Chula</dt>
+            <dd>
+              {detail.chula
+                ? <><span className="mono">{detail.chula.email}</span>{detail.verification_kind !== "verified" && <span className="hint"> (claimed, Google unlinked)</span>}</>
+                : <span className="hint">{detail.guest ? "No Chula account (guest)" : "Not verified"}</span>}
+            </dd>
+            {detail.guest && <><dt>Guest</dt><dd>Verified by {detail.guest.verified_by_name ?? "a removed admin"} · {when(detail.guest.verified_at)}</dd></>}
+            <dt>Google</dt><dd className="mono">{detail.google.length ? detail.google.map((g) => g.email ?? "—").join(", ") : "None"}</dd>
+            <dt>Joined</dt><dd>{when(target.created_at)}</dd>
+          </dl>
+        </section>
+
+        {canManage && (
+          <section className={`panel ${styles.actionsCard}`} aria-labelledby="act-title">
+            <h2 id="act-title" className={styles.sectionTitle}>Actions</h2>
+            {detail.verification_kind === "unverified" && (
+              <div className={styles.actionRow}>
+                <p className="hint">Let someone without a Chula account add Minecraft accounts.</p>
+                <ConfirmAction
+                  action={markGuest}
+                  fields={{ userId: target.id }}
+                  trigger="Mark as verified (guest)"
+                  triggerClassName="btn btn-sm"
+                  title={`Mark ${name} as verified (guest)?`}
+                  body={`${name} will be able to add Minecraft accounts without a Chula account. Only do this for people an admin has invited.`}
+                  confirmLabel="Mark as verified"
+                />
+              </div>
             )}
-          </dd>
-          <dt>Google accounts</dt><dd>{detail.google.length ? detail.google.map((g) => g.email ?? "—").join(", ") : "None"}</dd>
-          <dt>Joined</dt><dd>{new Date(detail.user.created_at).toLocaleString("en-GB")}</dd>
-          <dt>Role</dt>
-          <dd>
-            {isOwner && me?.id !== detail.user.id ? (
-              <form action={setRole} className={styles.inline}>
-                <input type="hidden" name="userId" value={detail.user.id} />
-                <label htmlFor="role" className="sr-only">Role</label>
-                <select id="role" name="role" defaultValue={detail.user.role}>
-                  <option value="user">user</option>
-                  <option value="admin">admin</option>
-                  <option value="owner">owner</option>
-                </select>
-                <button className="button button-header-signup" type="submit">Save role</button>
-              </form>
-            ) : detail.user.role}
-          </dd>
-        </dl>
-      </section>
-
-      <section className={styles.panel} aria-labelledby="accounts-title">
-        <h2 id="accounts-title">Minecraft accounts</h2>
-        {detail.registrations.length === 0 ? <p className={styles.muted}>No Minecraft accounts.</p> : (
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead><tr><th>Name</th><th>UUID</th><th>Whitelist</th><th>Sync</th><th /></tr></thead>
-              <tbody>
-                {detail.registrations.map((account) => (
-                  <tr key={account.id}>
-                    <td>{account.minecraft_username}</td>
-                    <td className={styles.muted}>{account.minecraft_uuid}</td>
-                    <td>{account.desired_whitelisted ? "Active" : account.is_active ? "Removed" : "Deleted by player"}</td>
-                    <td>{account.sync_status}</td>
-                    <td>
-                      {canManage && (
-                        <form action={setWhitelisted}>
-                          <input type="hidden" name="userId" value={detail.user!.id} />
-                          <input type="hidden" name="registrationId" value={account.id} />
-                          <input type="hidden" name="value" value={String(!account.desired_whitelisted)} />
-                          <button className="button button-header-signup" type="submit">
-                            {account.desired_whitelisted ? "Remove" : "Restore"}
-                          </button>
-                        </form>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            {(detail.chula || detail.guest) && (
+              <div className={styles.actionRow}>
+                <p className="hint">Unlink their Chula account and guest status so they have to verify again.</p>
+                <ConfirmAction
+                  action={resetChula}
+                  fields={{ userId: target.id }}
+                  trigger="Reset Chula link"
+                  triggerClassName="btn btn-sm btn-danger-outline"
+                  title={`Reset ${name}'s Chula link?`}
+                  body={`${detail.chula ? `This unlinks ${detail.chula.email}${detail.guest ? " and removes guest status" : ""}.` : "This removes guest status."} ${name} goes back to Unverified and will be asked to verify their Chula account again.`}
+                  confirmLabel="Reset Chula link"
+                  confirmClassName="btn btn-danger"
+                />
+              </div>
+            )}
+            {isOwner && me?.id !== target.id && target.role !== "owner" && (
+              <div className={styles.roleRow}><RoleControl userId={target.id} role={target.role} name={name} handle={handle} /></div>
+            )}
+          </section>
         )}
-      </section>
+      </div>
 
-      <section className={styles.panel} aria-labelledby="log-title">
-        <h2 id="log-title">Change log</h2>
-        {detail.log.length === 0 ? <p className={styles.muted}>No changes recorded.</p> : (
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead><tr><th>When</th><th>Field</th><th>From</th><th>To</th><th>By</th></tr></thead>
-              <tbody>
-                {detail.log.map((entry) => (
-                  <tr key={entry.id}>
-                    <td>{new Date(entry.created_at).toLocaleString("en-GB")}</td>
-                    <td>{entry.field}</td>
-                    <td>{entry.old_value ?? "—"}</td>
-                    <td>{entry.new_value ?? "—"}</td>
-                    <td>{entry.source === "admin" ? `admin (${entry.actor_user_id === me?.id ? "you" : entry.actor_user_id?.slice(0, 8)})` : "player"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-    </>
-  );
+      <div className={styles.mainCol}>
+        <section className={`panel ${styles.flush}`} aria-labelledby="mc-title">
+          <h2 id="mc-title" className={`${styles.sectionTitle} ${styles.flushTitle}`}>Minecraft accounts</h2>
+          {detail.registrations.length === 0 ? <p className={`muted ${styles.flushTitle}`}>No Minecraft accounts added yet.</p> : (
+            <div className={styles.tableWrap}>
+              <table className={styles.table}>
+                <thead><tr><th scope="col">Name</th><th scope="col">UUID</th><th scope="col">Whitelist</th><th scope="col">Sync</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
+                <tbody>
+                  {detail.registrations.map((account) => {
+                    const badge = syncBadge({ desiredWhitelisted: account.desired_whitelisted, syncStatus: account.sync_status as SyncStatus });
+                    return (
+                      <tr key={account.id}>
+                        <td className="mono" data-dim={!account.desired_whitelisted || undefined}>{account.minecraft_username}</td>
+                        <td className="mono" title={account.minecraft_uuid}>{account.minecraft_uuid.slice(0, 8)}…{account.minecraft_uuid.slice(-4)}</td>
+                        <td>{account.desired_whitelisted ? <span className="tone-green">Active</span> : account.is_active ? "Removed by admin" : "Removed by player"}</td>
+                        <td>{account.desired_whitelisted ? <span className={`badge badge-${badge.tone}`}><PixelIcon name={badge.icon} />{badge.label}</span> : <span className="hint">—</span>}</td>
+                        <td className={styles.right}>
+                          {canManage && (
+                            <ConfirmAction
+                              action={setWhitelisted}
+                              fields={{ userId: target.id, registrationId: account.id, value: String(!account.desired_whitelisted) }}
+                              trigger={account.desired_whitelisted ? "Remove" : "Restore"}
+                              triggerLabel={`${account.desired_whitelisted ? "Remove" : "Restore"} ${account.minecraft_username}`}
+                              triggerClassName={account.desired_whitelisted ? "btn btn-sm btn-danger-outline" : "btn btn-sm btn-outline"}
+                              title={`${account.desired_whitelisted ? "Remove" : "Restore"} ${account.minecraft_username}?`}
+                              body={account.desired_whitelisted
+                                ? `${account.minecraft_username} leaves the whitelist and can't join until it's restored.`
+                                : `${account.minecraft_username} goes back on ${name}'s profile and the whitelist.`}
+                              confirmLabel={account.desired_whitelisted ? "Remove account" : "Restore account"}
+                              confirmClassName={account.desired_whitelisted ? "btn btn-danger" : "btn btn-primary"}
+                            />
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section className="panel" aria-labelledby="log-title">
+          <h2 id="log-title" className={styles.sectionTitle}>Change log</h2>
+          {detail.log.length === 0 ? <p className="muted">No changes recorded.</p> : (
+            <ol className={styles.log}>
+              {detail.log.map((entry) => (
+                <li key={entry.id}>
+                  <time dateTime={entry.created_at}>{when(entry.created_at)}</time>
+                  <span>
+                    <strong>{entry.source === "admin" ? (entry.actor_user_id === me?.id ? "you" : "an admin") : name}</strong>{" "}
+                    <span className="muted">{describeChange(entry.field, entry.old_value, entry.new_value)}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
+      </div>
+    </div>
+  </>;
 }

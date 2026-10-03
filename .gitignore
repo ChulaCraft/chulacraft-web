@@ -8,3 +8,9 @@
 .serena/
 .omc/
 .claude/
+.env*.local
+
+tsconfig.tsbuildinfo
+next-env.d.ts
+visual-results/test-artifacts/
+graphify-out/cache/

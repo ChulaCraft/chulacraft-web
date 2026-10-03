@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { PixelIcon } from "@/components/icons";
 
-export function SignOutButton() {
+export function SignOutButton({ className }: { className?: string }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   async function signOut() {
@@ -13,5 +14,5 @@ export function SignOutButton() {
     router.replace("/");
     router.refresh();
   }
-  return <button type="button" className="text-button" onClick={signOut} disabled={loading} aria-busy={loading}>{loading ? "Signing out…" : "Sign out"}</button>;
+  return <button type="button" className={className} onClick={signOut} disabled={loading} aria-busy={loading}><PixelIcon name="signout" />{loading ? "Signing out…" : "Sign out"}</button>;
 }

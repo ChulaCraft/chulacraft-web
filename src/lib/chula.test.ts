@@ -32,6 +32,15 @@ describe("classifyIdentities", () => {
   it("has no discord when only Google is linked", () => {
     expect(classifyIdentities([identity("google", "g", { email: "me@gmail.com" })]).discord).toBeNull();
   });
+
+  it("never offers the claimed Chula account as personal", () => {
+    // The claimed account's email left the Chula domain; it is still Chula.
+    const moved = identity("google", "cu", { email: "alumni@gmail.com", email_verified: true, sub: "cu" });
+    const gmail = identity("google", "gm", { email: "me@gmail.com", email_verified: true, sub: "gm" }, "2026-02-01");
+    const result = classifyIdentities([moved, gmail], "cu");
+    expect(result.personal.map((i) => i.id)).toEqual(["gm"]);
+    expect(classifyIdentities([moved, gmail]).personal.map((i) => i.id)).toEqual(["cu", "gm"]);
+  });
 });
 
 describe("linkErrorMessage", () => {
