@@ -10,7 +10,14 @@ export async function unlinkPersonalGoogle(formData: FormData) {
   const identityId = String(formData.get("identityId"));
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUserIdentities();
-  const identity = error ? undefined : classifyIdentities(data.identities).personal.find((i) => i.identity_id === identityId);
+  const { data: userData } = await supabase.auth.getUser();
+  if (error || !userData.user) redirect("/dashboard?error=unlink_failed");
+  // The claimed Chula account is excluded by google_sub, not by email domain,
+  // so an account whose email left the domain can't be unlinked from here.
+  const { data: claim, error: claimError } = await createAdminClient().from("chula_claims").select("google_sub").eq("user_id", userData.user.id).maybeSingle();
+  // Fail closed: without the claim the Chula account could look personal.
+  if (claimError) redirect("/dashboard?error=unlink_failed");
+  const identity = classifyIdentities(data.identities, claim?.google_sub ?? null).personal.find((i) => i.identity_id === identityId);
   if (!identity) redirect("/dashboard?error=unlink_failed");
 
   const { error: unlinkError } = await supabase.auth.unlinkIdentity(identity);

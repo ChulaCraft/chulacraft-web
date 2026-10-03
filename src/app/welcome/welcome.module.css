@@ -1,0 +1,94 @@
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.steps > li {
+  --edge: var(--surface-2);
+  --title: var(--text-2);
+  --state: var(--text-3);
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--edge);
+}
+
+.steps > li[data-kind="done"] {
+  --edge: var(--surface);
+  --state: var(--green);
+}
+
+.steps > li[data-kind="current"] {
+  --edge: var(--pink);
+  --title: var(--text);
+  --state: var(--pink-soft);
+}
+
+.steps > li[data-kind="waiting"] {
+  --edge: var(--lavender);
+  --title: var(--text);
+  --state: var(--lavender);
+}
+
+.steps > li[data-kind="upcoming"] {
+  background: transparent;
+}
+
+.marker {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  clip-path: var(--pixel-4);
+  color: var(--bg);
+  font: 700 16px var(--font-display), monospace;
+}
+
+[data-kind="done"] .marker {
+  background: var(--green);
+}
+
+[data-kind="current"] .marker {
+  background: var(--pink);
+}
+
+[data-kind="waiting"] .marker {
+  background: var(--lavender);
+}
+
+[data-kind="upcoming"] .marker {
+  clip-path: none;
+  color: var(--text-3);
+  box-shadow: inset 0 0 0 2px var(--edge);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.body > :global(.address-row) {
+  align-self: stretch;
+}
+
+.title {
+  color: var(--title);
+  font-weight: 700;
+}
+
+.label {
+  color: var(--state);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}

@@ -111,4 +111,11 @@ describe("reconcileIdentities", () => {
     expect(await run([discord, cu, gmail, newer])).toEqual({ signOut: false, path: "/dashboard?error=personal_limit" });
     expect(unlinkedIds()).toEqual(["gm2"]);
   });
+
+  it("never counts the claimed account against the personal Google limit", async () => {
+    m.claimSub = "cu";
+    const moved = identity("google", "cu", { email: "alumni@gmail.com", email_verified: true });
+    expect(await run([discord, moved, gmail])).toEqual({ signOut: false, path: "/welcome" });
+    expect(unlinkedIds()).toEqual([]);
+  });
 });

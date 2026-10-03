@@ -1,47 +1,17 @@
-"use client";
+import { PixelIcon } from "@/components/icons";
+import { CopyButton } from "@/components/copy-button";
 
-import { useState } from "react";
+export const serverAddress = process.env.NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS;
 
-type ServerAddressCardProps = {
-  address?: string;
-  className?: string;
-};
-
-export function ServerAddressCard({ address, className }: ServerAddressCardProps) {
-  const [feedback, setFeedback] = useState("");
-  const configured = Boolean(address);
-
-  async function copyAddress() {
-    if (!address) return;
-
-    try {
-      await navigator.clipboard.writeText(address);
-      setFeedback("Server address copied!");
-    } catch {
-      setFeedback("Could not copy automatically. Select the address and copy it manually.");
-    }
-  }
-
+/** Compact address row used inside cards (Welcome, Dashboard). */
+export function ServerAddressRow() {
   return (
-    <aside className={className} aria-label="Minecraft server information">
+    <div className="address-row">
       <div>
-        <span>Minecraft Java</span>
-        <strong>{configured ? address : "Server address coming soon"}</strong>
+        <span className="mono address-row-value">{serverAddress ?? "Address coming soon"}</span>
+        <span className="address-row-note"><PixelIcon name="info" size={14} className="tone-amber" />Java Edition only</span>
       </div>
-      {configured && (
-        <button type="button" onClick={copyAddress} aria-describedby="copy-feedback">
-          Copy IP
-        </button>
-      )}
-      <p
-        id="copy-feedback"
-        aria-live="polite"
-        aria-atomic="true"
-        // Keep the online marker off transient clipboard feedback.
-        data-status={!feedback && configured ? "online" : undefined}
-      >
-        {feedback || (configured ? "Online · Java 1.21.11" : "Server details will be posted here")}
-      </p>
-    </aside>
+      {serverAddress && <CopyButton text={serverAddress} className="btn btn-sm btn-outline" />}
+    </div>
   );
 }

@@ -8,3 +8,4 @@
 .serena/
 .omc/
 .claude/
+.env*.local

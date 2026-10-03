@@ -1,6 +1,6 @@
 begin;
 
-select plan(80);
+select plan(82);
 
 -- Users: 1 owner, 2 admin, 3 second admin, 4 player with Chula Google, 5 player without.
 insert into auth.users (id, email) values
@@ -82,7 +82,7 @@ delete from auth.identities where provider_id = 'g-4p';
 select throws_ok($$ select public.claim_chula('00000000-0000-0000-0000-000000000004', 'g-4b', 'other4@chula.ac.th') $$, 'P0001', 'CU_SWAP_FORBIDDEN', 'a user cannot swap to another chula account');
 select throws_ok($$ select public.claim_chula('00000000-0000-0000-0000-000000000005', 'g-5x', 'p4@student.chula.ac.th') $$, 'P0001', 'CU_ALREADY_LINKED', 'a chula email belongs to one user');
 select pg_temp.login('00000000-0000-0000-0000-000000000004');
-select is(public.am_i_chula_verified(), true, 'players can check their own verification');
+select is(public.am_i_player_verified(), true, 'players can check their own verification');
 
 select ok(not has_function_privilege('authenticated', 'public.add_minecraft_account(uuid,uuid,text)', 'EXECUTE'), 'players cannot call add_minecraft_account directly');
 select ok(not has_function_privilege('authenticated', 'public.change_minecraft_account(uuid,uuid,uuid,text)', 'EXECUTE'), 'players cannot call change_minecraft_account directly');
@@ -177,6 +177,9 @@ select is((select count(*)::int from public.admin_removed_accounts() where minec
 select pg_temp.login('00000000-0000-0000-0000-000000000001');
 select throws_ok($$ select public.admin_set_role('00000000-0000-0000-0000-000000000001', 'user') $$, 'P0001', 'SELF_ROLE_CHANGE', 'an owner cannot change their own role');
 select lives_ok($$ select public.admin_set_role('00000000-0000-0000-0000-000000000004', 'owner') $$, 'an owner can promote another owner');
+select throws_ok($$ select public.admin_set_role('00000000-0000-0000-0000-000000000004', 'admin') $$,
+  'P0001', 'OWNER_ROLE_PROTECTED', 'an owner cannot demote another owner');
+select lives_ok($$ select public.admin_set_role('00000000-0000-0000-0000-000000000004', 'owner') $$, 're-setting the same owner role is a no-op');
 
 -- Admin reset and unlink resilience (user 4 is an owner by now, so use user 5 as the player)
 select pg_temp.login('00000000-0000-0000-0000-000000000005');

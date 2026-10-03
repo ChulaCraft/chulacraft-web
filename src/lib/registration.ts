@@ -56,3 +56,13 @@ export function registrationError(message: string, code?: string): { status: num
   if (message.includes("NOT_FOUND")) return { status: 404, error: "That Minecraft account is no longer on your list. Refresh and try again." };
   return { status: 503, error: "We couldn’t save the registration. Please try again." };
 }
+
+export type SyncBadge = { label: string; tone: "green" | "lavender" | "amber" | "danger"; icon: "check" | "clock" | "retry" | "revoked"; note: string };
+
+/** Player-facing badge for a registration; "Revoked" wins over the worker's sync state. */
+export function syncBadge(registration: Pick<RegistrationView, "desiredWhitelisted" | "syncStatus">): SyncBadge {
+  if (!registration.desiredWhitelisted) return { label: "Revoked", tone: "danger", icon: "revoked", note: "An admin removed this account from the whitelist." };
+  if (registration.syncStatus === "synced") return { label: "Synced", tone: "green", icon: "check", note: "On the whitelist. You can join now." };
+  if (registration.syncStatus === "failed") return { label: "Retrying", tone: "amber", icon: "retry", note: "The server couldn't be reached yet. It retries automatically, so there's nothing you need to do." };
+  return { label: "Pending", tone: "lavender", icon: "clock", note: "Waiting for the server to add it to the whitelist. This usually takes a few minutes." };
+}

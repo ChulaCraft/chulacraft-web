@@ -24,3 +24,31 @@ export function ArrowIcon({ className }: IconProps) {
 export function ShieldIcon({ className }: IconProps) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.5 3 7.8 7.5 9.5 4.5-1.7 7.5-5 7.5-9.5V6L12 3Z" /><path d="m8.5 12 2.2 2.2 4.7-4.7" /></svg>;
 }
+
+// Pixel-style 16×16 stroke icons from the ChulaCraft design.
+const PIXEL_PATHS = {
+  check: "M3 8.5 6.5 12 13 4.5",
+  clock: "M2 2h12v12H2zM8 4.5v4h3",
+  warning: "M8 1.5 15 14H1zM8 6v3.5M8 11.5v.5",
+  info: "M2 2h12v12H2zM8 5v4M8 11v.5",
+  retry: "M13 8a5 5 0 1 1-1.5-3.5M13 2v3h-3",
+  revoked: "M2 2h12v12H2zM4.5 11.5l7-7",
+  shield: "M8 1.5 14 4v4c0 3.5-2.5 5.5-6 6.5C4.5 13.5 2 11.5 2 8V4zM5.5 8 7.5 10 10.5 6",
+  lock: "M2.5 7h11v7.5h-11zM5 7V4.5a3 3 0 0 1 6 0V7",
+  copy: "M5 5h9v9H5zM11 2H2v9",
+  chevron: "M4 6l4 4 4-4",
+  arrow: "M3 8h10M9 4l4 4-4 4",
+  back: "M13 8H3M7 4 3 8l4 4",
+  search: "M2 2h8v8H2zM10.5 10.5 14 14",
+  menu: "M2 4h12M2 8h12M2 12h12",
+  close: "M3 3l10 10M13 3 3 13",
+  signout: "M6 2H2v12h4M10 5l3 3-3 3M13 8H6",
+  plus: "M8 3v10M3 8h10",
+  user: "M6 2h4v5H6zM3 14v-2h2v-2h6v2h2v2"
+} as const;
+
+export type PixelIconName = keyof typeof PIXEL_PATHS;
+
+export function PixelIcon({ name, className, size = 16 }: IconProps & { name: PixelIconName; size?: number }) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" aria-hidden="true"><path d={PIXEL_PATHS[name]} /></svg>;
+}

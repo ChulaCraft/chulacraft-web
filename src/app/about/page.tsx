@@ -1,116 +1,79 @@
 import type { Metadata } from "next";
-import { ShieldIcon } from "@/components/icons";
+import Image from "next/image";
+import Link from "next/link";
+import { DiscordIcon } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { discordCommunityUrl } from "@/lib/site-links";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = {
-  title: "About Us | Chulacraft",
-  description:
-    "Meet the community behind Chulacraft, a friendly Minecraft Java survival server built around playing together.",
+  title: "About | ChulaCraft",
+  description: "A community-run Minecraft Java server for the Chula community.",
 };
 
 const values = [
-  {
-    title: "Our mission",
-    description:
-      "Build a safe and inclusive Minecraft community for builders, explorers, and friends.",
-    icon: "shield",
-  },
-  {
-    title: "Our vision",
-    description:
-      "Become a welcoming world where every player can create, collaborate, and belong.",
-    icon: "world",
-  },
-  {
-    title: "Our values",
-    description:
-      "Respect, teamwork, creativity, and keeping the adventure fun for everyone.",
-    icon: "heart",
-  },
-] as const;
+  { title: "Mission", copy: "Build a safe and inclusive Minecraft community for builders, explorers, and friends.", icon: "M5 1h2v2h2v2h2v2h-2v2h-2v2h-2v-2h-2v-2h-2v-2h2v-2h2zM5 5v2h2v-2z" },
+  { title: "Vision", copy: "Become a welcoming world where every player can create, collaborate, and belong.", icon: "M3 3h6v1h1v1h1v2h-1v1h-1v1h-6v-1h-1v-1h-1v-2h1v-1h1zM5 5v2h2v-2z" },
+  { title: "Values", copy: "Respect, teamwork, creativity, and keeping the adventure fun for everyone.", icon: "M2 2h3v1h2v-1h3v1h1v3h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-3h1z" },
+];
 
-const serverQualities = [
-  { value: "Welcoming", label: "Community" },
-  { value: "Always", label: "Player focused" },
-  { value: "Shared", label: "Adventures" },
-  { value: "Java", label: "Survival" },
-] as const;
-
-const communityRoles = [
-  { name: "Builders", role: "Creative neighbors", tone: "rose" },
-  { name: "Guides", role: "Helpful regulars", tone: "violet" },
-  { name: "Event hosts", role: "Shared adventures", tone: "amber" },
-  { name: "Future you", role: "Next community member", tone: "blue" },
-] as const;
+const gallery = [
+  { src: "/images/collection/beta/firstEnderdragonBeat.webp", alt: "Players celebrating the server's first Ender Dragon kill", wide: true },
+  { src: "/images/collection/current/nice.webp", alt: "A player build on the ChulaCraft world" },
+  { src: "/images/collection/beta/2026-08-03_18.57.27.webp", alt: "Another player build on the ChulaCraft world" },
+];
 
 export default function AboutPage() {
   return (
-    <main className={styles.page}>
-      <SiteHeader />
-      <div className={styles.scenicPage}>
-        <section className={styles.about} aria-labelledby="about-heading">
-          <header className={styles.heroHeading}>
-            <h1 id="about-heading">
-              <span aria-hidden="true">+</span> About us <span aria-hidden="true">+</span>
-            </h1>
-            <p>
-              Chulacraft was created by and for the community. Our goal is to provide a welcoming
-              space where players can relax, create, and make lasting memories together.
-            </p>
-          </header>
+    <div className="page">
+      <SiteHeader active="about" />
+      <main>
+        <section className={styles.hero} aria-labelledby="about-title">
+          <Image className={styles.heroImage} src="/images/collection/current/2026-08-23_17.58.05.webp" alt="" fill preload sizes="100vw" />
+          <div className={styles.heroTint} aria-hidden="true" />
+          <div className={`container ${styles.heroInner}`}>
+            <span className="kicker" aria-hidden="true" />
+            <h1 id="about-title" className={styles.heroTitle}>About ChulaCraft</h1>
+            <p className={styles.heroIntro}>A community-run Minecraft Java server for the Chula community. One shared world where players build, explore, and look out for each other.</p>
+          </div>
+        </section>
 
-          <div className={styles.missionStage}>
-            <div className={styles.missionCard}>
-              {values.map((value) => (
-                <article key={value.title} className={styles.missionItem}>
-                  <span
-                    className={`${styles.missionIcon} ${styles[value.icon]}`}
-                    aria-hidden="true"
-                  >
-                    {value.icon === "shield" ? <ShieldIcon /> : null}
-                  </span>
-                  <div>
-                    <h2>{value.title}</h2>
-                    <p>{value.description}</p>
-                  </div>
-                </article>
-              ))}
+        <section className={`container ${styles.values}`} aria-label="Mission, vision and values">
+          <ul>
+            {values.map((v) => (
+              <li key={v.title} className="panel">
+                <span className={`pixel-4 ${styles.valueIcon}`} aria-hidden="true">
+                  <svg width="22" height="22" viewBox="0 0 12 12" fill="currentColor" shapeRendering="crispEdges"><path d={v.icon} fillRule="evenodd" /></svg>
+                </span>
+                <h2 className={styles.valueTitle}>{v.title}</h2>
+                <p className="lead">{v.copy}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className={`container ${styles.community}`} aria-labelledby="community-title">
+          <div className={styles.communityText}>
+            <span className="kicker" aria-hidden="true" />
+            <h2 id="community-title" className={styles.communityTitle}>The community</h2>
+            <p className="lead">ChulaCraft is run by members of the Chula community. Admins keep the world safe, players build the plugins, and events get planned together on Discord.</p>
+            <p className="lead">Everyone who joins verifies with a Chula account, so you&apos;re always playing alongside people from your own university.</p>
+            <div className={styles.actions}>
+              <a className="btn btn-primary btn-lg" href={discordCommunityUrl} target="_blank" rel="noreferrer"><DiscordIcon /> Join Discord</a>
+              <Link className="btn btn-lg" href="/register">Register</Link>
             </div>
           </div>
-
-          <dl className={styles.statStrip} aria-label="What defines Chulacraft">
-            {serverQualities.map((quality) => (
-              <div key={quality.label}>
-                <dt>{quality.value}</dt>
-                <dd>{quality.label}</dd>
+          <div className={styles.gallery}>
+            {gallery.map((g) => (
+              <div key={g.src} className={`pixel-8 ${styles.shot}`} data-wide={g.wide || undefined}>
+                <Image src={g.src} alt={g.alt} fill sizes="(min-width: 800px) 380px, 100vw" />
               </div>
             ))}
-          </dl>
-
-          <section className={styles.communityPanel} aria-labelledby="community-heading">
-            <header className={styles.sectionHeading}>
-              <h2 id="community-heading">
-                <span aria-hidden="true">+</span> Our community <span aria-hidden="true">+</span>
-              </h2>
-              <p>Behind every memorable world is a group of people building it together.</p>
-            </header>
-            <div className={styles.roleGrid}>
-              {communityRoles.map((member) => (
-                <article key={member.name}>
-                  <span className={`${styles.avatar} ${styles[member.tone]}`} aria-hidden="true">
-                    <i />
-                  </span>
-                  <h3>{member.name}</h3>
-                  <p>{member.role}</p>
-                </article>
-              ))}
-            </div>
-          </section>
+          </div>
         </section>
-      </div>
+      </main>
       <SiteFooter />
-    </main>
+    </div>
   );
 }

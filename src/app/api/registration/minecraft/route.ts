@@ -23,6 +23,8 @@ async function signedIn() {
 
 function ipRateLimited(key: string) {
   const now = Date.now();
+  // Drop expired windows so spoofed or one-off IPs can't grow the map forever.
+  if (ipAttempts.size > 10_000) for (const [k, v] of ipAttempts) if (v.resetsAt <= now) ipAttempts.delete(k);
   const current = ipAttempts.get(key);
   if (!current || current.resetsAt <= now) { ipAttempts.set(key, { count: 1, resetsAt: now + RATE_WINDOW_MS }); return false; }
   if (current.count >= RATE_LIMIT) return true;
@@ -96,8 +98,9 @@ type RpcCall = [string, Record<string, unknown>];
 async function save(request: Request, toRpc: (profile: Profile, id: unknown, userId: string) => RpcCall | null) {
   const { supabase, user, failure } = await signedIn();
   if (failure) return failure;
-  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (ipRateLimited(`ip:${forwardedFor}`)) return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
+  // Vercel sets x-real-ip itself; x-forwarded-for's first hop is client-controlled.
+  const ip = request.headers.get("x-real-ip") || request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() || "unknown";
+  if (ipRateLimited(`ip:${ip}`)) return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
   let allowed: boolean | null;
   try {
     const { data, error } = await supabase.rpc("consume_registration_attempt");

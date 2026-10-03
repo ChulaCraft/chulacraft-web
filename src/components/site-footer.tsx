@@ -1,13 +1,26 @@
 import Link from "next/link";
+import { DEV_LOGIN_ENABLED, DEV_USERS } from "@/lib/dev-login";
 
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      <span>© {new Date().getFullYear()} Chulacraft</span>
-      <span className="footer-mark" aria-hidden="true">✦</span>
-      <span>Java Edition only</span>
-      <span className="footer-mark" aria-hidden="true">✦</span>
-      <span><Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link></span>
+      <div className="container">
+        <span>© {new Date().getFullYear()} ChulaCraft</span>
+        <span aria-hidden="true">✦</span>
+        <span>Java Edition only</span>
+        <span aria-hidden="true">✦</span>
+        <Link href="/privacy">Privacy</Link>
+        <span aria-hidden="true">✦</span>
+        <Link href="/terms">Terms</Link>
+        {DEV_LOGIN_ENABLED && (
+          <span>
+            Dev sign in as:{" "}
+            {Object.keys(DEV_USERS).map((as) => (
+              <a key={as} href={`/api/dev-login?as=${as}`} style={{ marginInline: 6 }}>{as}</a>
+            ))}
+          </span>
+        )}
+      </div>
     </footer>
   );
 }

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import styles from "./admin.module.css";
@@ -14,16 +14,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (role !== "owner" && role !== "admin") notFound();
 
   return (
-    <main className={`${styles.page} auth-scene`}>
-      <div className={`${styles.backdrop} auth-scene-backdrop`} />
-      <SiteHeader user={user} />
-      <div className={styles.shell}>
-        <nav className={styles.adminNav} aria-label="Admin">
-          <Link href="/admin">Players</Link>
-          <Link href="/admin/restore">Restore accounts</Link>
-        </nav>
-        {children}
-      </div>
-    </main>
+    <div className="page">
+      <SiteHeader user={user} active="admin" />
+      <main className={`container ${styles.main}`}>{children}</main>
+      <SiteFooter />
+    </div>
   );
 }

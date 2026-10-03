@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 /**
  * Gate for signed-in pages: signed out → "/", no Discord base → error,
- * not Chula-verified → "/verify". Returns null when Supabase is unreachable
+ * neither Chula-verified nor a guest → "/verify". Returns null when Supabase is unreachable
  * so the page can render its unavailable state.
  */
 export async function requireVerifiedUser() {
@@ -13,7 +13,7 @@ export async function requireVerifiedUser() {
   try {
     ({ data: { user } } = await supabase.auth.getUser());
     if (user) {
-      const { data, error } = await supabase.rpc("am_i_chula_verified");
+      const { data, error } = await supabase.rpc("am_i_player_verified");
       if (error) return null;
       verified = data === true;
     }

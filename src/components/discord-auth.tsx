@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { DiscordIcon } from "@/components/icons";
 
-export function DiscordAuthButton({ compact = false }: { compact?: boolean }) {
+export function DiscordAuthButton({ className = "btn btn-primary btn-lg", children }: { className?: string; children?: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -26,7 +26,7 @@ export function DiscordAuthButton({ compact = false }: { compact?: boolean }) {
     }
   }
 
-  return <button type="button" className={compact ? "button button-header-signup" : "button button-discord"} onClick={signIn} disabled={loading} aria-busy={loading}>
-    {!compact && <DiscordIcon />} {loading ? "Opening Discord…" : compact ? "Sign Up Now!" : "Sign Up with Discord"}
+  return <button type="button" className={className} onClick={signIn} disabled={loading} aria-busy={loading}>
+    {children ?? <><DiscordIcon /> {loading ? "Opening Discord…" : "Continue with Discord"}</>}
   </button>;
 }

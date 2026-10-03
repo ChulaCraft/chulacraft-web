@@ -34,6 +34,11 @@ export async function auditPage(page: Page, testInfo: TestInfo, options: AuditOp
     }
   });
 
+  // Vercel Analytics is only served on Vercel; stub it for local runs.
+  await page.route("**/_vercel/insights/**", (route) =>
+    route.fulfill({ contentType: "text/javascript", body: "" }),
+  );
+
   const navigationResponse = await page.goto(options.path, { waitUntil: "domcontentloaded" });
   expect(new URL(page.url()).pathname, `unexpected redirect from ${options.path}`).toBe(
     options.expectedPath,
@@ -85,6 +90,7 @@ export async function auditPage(page: Page, testInfo: TestInfo, options: AuditOp
       bodyTextLength: bodyText.length,
       brokenImages,
       hasMain: Boolean(main),
+      h1Count: document.querySelectorAll("h1").length,
       mainHeight: mainRect?.height ?? 0,
       overflow: Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) - window.innerWidth,
     };
@@ -107,6 +113,7 @@ export async function auditPage(page: Page, testInfo: TestInfo, options: AuditOp
   expect(failedImages, "failed image responses").toEqual([]);
   expect(renderState.brokenImages, "broken rendered images").toEqual([]);
   expect(renderState.hasMain, "page must render a main landmark").toBe(true);
+  expect(renderState.h1Count, "page must render exactly one h1").toBe(1);
   expect(renderState.mainHeight, "main landmark must have meaningful height").toBeGreaterThan(100);
   expect(renderState.bodyTextLength, "page must not render empty content").toBeGreaterThan(20);
   expect(renderState.overflow, "page must not horizontally overflow the viewport").toBeLessThanOrEqual(1);

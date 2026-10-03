@@ -16,16 +16,22 @@ const byAge = (a: UserIdentity, b: UserIdentity) => (a.created_at ?? "").localeC
  * Sorts a user's identities into the roles the app cares about, oldest first.
  * A Google identity counts as Chula only with a Chula domain AND a verified
  * email; a Chula-domain identity without verification is `invalid`.
+ *
+ * `claimedGoogleSub` is chula_claims.google_sub for the user. That identity is
+ * always the Chula account, even if its email has since left the domain, so it
+ * must never be offered as a personal account the user can unlink.
  */
-export function classifyIdentities(identities: UserIdentity[]) {
+export function classifyIdentities(identities: UserIdentity[], claimedGoogleSub?: string | null) {
   const google = identities.filter((i) => i.provider === "google").sort(byAge);
   const chulaDomain = google.filter((i) => isChulaEmail(identityEmail(i)));
   const verified = (i: UserIdentity) => i.identity_data?.email_verified === true || i.identity_data?.email_verified === "true";
+  // google_sub is stored from identity.id (see reconcile-identities.ts).
+  const claimed = (i: UserIdentity) => Boolean(claimedGoogleSub) && i.id === claimedGoogleSub;
   return {
     discord: identities.find((i) => i.provider === "discord") ?? null,
     cu: chulaDomain.filter(verified),
     invalid: chulaDomain.filter((i) => !verified(i)),
-    personal: google.filter((i) => !isChulaEmail(identityEmail(i))),
+    personal: google.filter((i) => !isChulaEmail(identityEmail(i)) && !claimed(i)),
   };
 }
 
