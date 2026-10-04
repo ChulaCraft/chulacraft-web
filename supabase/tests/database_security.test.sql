@@ -1,6 +1,6 @@
 begin;
 
-select plan(14);
+select plan(15);
 
 select has_table(
   'public',
@@ -109,6 +109,20 @@ select ok(
     'SELECT'
   ),
   'authenticated users cannot read internal Discord identifiers'
+);
+
+select ok(
+  not has_table_privilege(
+    'anon',
+    'public.minecraft_registrations',
+    'SELECT'
+  ) and not has_column_privilege(
+    'anon',
+    'public.minecraft_registrations',
+    'minecraft_username',
+    'SELECT'
+  ),
+  'anonymous users cannot read registrations'
 );
 
 select ok(

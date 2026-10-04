@@ -4,6 +4,7 @@ import { RegistrationPanel } from "@/components/registration-panel";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { classifyIdentities, identityEmail, linkErrorMessage } from "@/lib/chula";
+import type { StudyLevel } from "@/lib/faculties";
 import { REGISTRATION_COLUMNS, toRegistrationView, type RegistrationView } from "@/lib/registration";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireVerifiedUser } from "@/lib/verified-user";
@@ -13,7 +14,7 @@ import { unlinkPersonalGoogle } from "./actions";
 import styles from "./dashboard.module.css";
 import { ServiceUnavailable } from "./service-unavailable";
 
-type Profile = { first_name: string | null; last_name: string | null; nickname: string | null; faculty: string | null; major: string | null };
+type Profile = { first_name: string | null; last_name: string | null; nickname: string | null; study_level: StudyLevel | null; faculty: string | null; major: string | null };
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; unlinked?: string; edit?: string; saved?: string }> }) {
   const { error: errorCode, unlinked, edit, saved } = await searchParams;
@@ -35,7 +36,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         .eq("user_id", user.id)
         .eq("is_active", true)
         .order("created_at"),
-      supabase.from("profiles").select("first_name, last_name, nickname, faculty, major").eq("user_id", user.id).maybeSingle(),
+      supabase.from("profiles").select("first_name, last_name, nickname, study_level, faculty, major").eq("user_id", user.id).maybeSingle(),
       // google_sub is not readable by the authenticated role, so the claim is
       // looked up with the admin client; the user id comes from the session.
       createAdminClient().from("chula_claims").select("email, google_sub").eq("user_id", user.id).maybeSingle(),
@@ -108,7 +109,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                     next="/dashboard"
                     submitLabel="Save changes"
                     cancelHref="/dashboard"
-                    initial={{ first: profile?.first_name ?? "", last: profile?.last_name ?? "", nick: profile?.nickname ?? "", faculty: profile?.faculty ?? "", major: profile?.major ?? "" }}
+                    initial={{ first: profile?.first_name ?? "", last: profile?.last_name ?? "", nick: profile?.nickname ?? "", level: profile?.study_level ?? "undergraduate", faculty: profile?.faculty ?? "", major: profile?.major ?? "" }}
                   />
                 ) : (
                   <dl className={styles.info}>

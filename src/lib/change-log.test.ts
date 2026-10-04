@@ -18,6 +18,7 @@ describe("describeChange", () => {
 
   it("falls back for profile and unknown fields", () => {
     expect(describeChange("faculty", null, "Engineering")).toBe("updated faculty");
+    expect(describeChange("study_level", null, "graduate")).toBe("updated study level");
     expect(describeChange("some_field", "a", "b")).toBe("changed some field");
   });
 });

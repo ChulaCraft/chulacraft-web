@@ -3,7 +3,7 @@
 import { useActionState, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
-import { FACULTIES, validateProfile, type ProfileDetails, type ProfileErrors } from "@/lib/faculties";
+import { FACULTIES, STUDY_LEVELS, validateProfile, type ProfileDetails, type ProfileErrors } from "@/lib/faculties";
 import { saveProfile } from "./actions";
 import styles from "./about-you.module.css";
 
@@ -19,7 +19,12 @@ export function AboutYouForm({ initial, next = "/welcome", submitLabel = "Finish
   const count = Object.keys(e).length;
   const faculty = FACULTIES.find((f) => f.name === v.faculty);
   const set = (k: keyof ProfileDetails) => (ev: { target: { value: string } }) =>
-    setV((s) => ({ ...s, [k]: ev.target.value, ...(k === "faculty" ? { major: "" } : {}) }));
+    setV((s) => {
+      if (k !== "faculty") return { ...s, [k]: ev.target.value };
+      // A single-program faculty has one unit, so it is picked for the player.
+      const majors = FACULTIES.find((f) => f.name === ev.target.value)?.majors ?? [];
+      return { ...s, faculty: ev.target.value, major: majors.length === 1 ? majors[0] : "" };
+    });
 
   function onSubmit(ev: FormEvent<HTMLFormElement>) {
     if (Object.keys(validateProfile(v)).length === 0) return;
@@ -56,6 +61,22 @@ export function AboutYouForm({ initial, next = "/welcome", submitLabel = "Finish
         </div>
         <Field id="nick" label={<>Nickname <span className="optional">(optional)</span></>} error={e.nick && "Keep it to 20 characters."}>
           <input className="input" id="nick" name="nick" value={v.nick} onChange={set("nick")} autoComplete="nickname" maxLength={20} aria-invalid={Boolean(e.nick)} aria-describedby="nick-err" />
+        </Field>
+        <Field id="level" label="Study level" error={e.level && "Choose your study level."}>
+          <div className={`${styles.levels} input`} role="radiogroup" aria-invalid={Boolean(e.level)} aria-describedby="level-err">
+            {STUDY_LEVELS.map((l) => (
+              <label key={l.value} className={styles.level}>
+                <input
+                  type="radio"
+                  name="level"
+                  value={l.value}
+                  checked={v.level === l.value}
+                  onChange={() => setV((s) => ({ ...s, level: l.value }))}
+                />
+                {l.label}
+              </label>
+            ))}
+          </div>
         </Field>
         <Field id="faculty" label="Faculty" error={e.faculty && "Choose your faculty."}>
           <select className="input" id="faculty" name="faculty" value={v.faculty} onChange={set("faculty")} aria-invalid={Boolean(e.faculty)} aria-describedby="faculty-err">

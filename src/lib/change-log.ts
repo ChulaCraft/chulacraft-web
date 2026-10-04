@@ -1,4 +1,4 @@
-const PROFILE_FIELDS: Record<string, string> = { first_name: "first name", last_name: "last name", nickname: "nickname", faculty: "faculty", major: "major" };
+const PROFILE_FIELDS: Record<string, string> = { first_name: "first name", last_name: "last name", nickname: "nickname", study_level: "study level", faculty: "faculty", major: "major" };
 
 /** Turns one account_change_log row into a short past-tense phrase for admin screens. */
 export function describeChange(field: string, oldValue: string | null, newValue: string | null): string {

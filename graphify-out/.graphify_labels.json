@@ -1,5 +1,5 @@
 {
-  "0": "next",
+  "0": "icons.tsx",
   "1": "server.ts",
   "2": "minecraft/route.ts",
   "3": "package.json",
@@ -10,7 +10,7 @@
   "8": "visual-audit.spec.ts",
   "9": "ChulaCraft Web",
   "10": "ChulaCraft Visual Redesign Audit Report",
-  "11": "dashboard/page.tsx",
+  "11": "next",
   "12": "next-env.d.ts",
   "13": "supabase-stub.mjs",
   "14": "Visual TODO",
@@ -26,7 +26,7 @@
   "24": "ref_node_crypto",
   "25": "about-you-form.tsx",
   "26": "ref_next_dev_types_routes_d_ts",
-  "27": "privacy/page.tsx",
+  "27": "3. Findings in detail",
   "28": "dependencies",
   "29": "scripts",
   "30": "app/layout.tsx",
@@ -34,8 +34,9 @@
   "32": "overrides",
   "33": "next_types_root_params_d",
   "34": "src_app_about_you_about_you_module",
-  "35": "ChulaCraft — Redesign + Implementation Plan",
+  "35": "PRD: Auto-assign Discord `verified` role",
   "36": "next_types_routes_d",
+  "37": "dev-login/route.ts",
   "38": "src_app_auth_error_auth_error_module",
   "39": "src_app_not_found_module"
 }

@@ -13,7 +13,7 @@ export default async function AboutYouPage() {
   const { supabase, user } = session;
 
   const [profile, claim] = await Promise.all([
-    supabase.from("profiles").select("first_name, last_name, nickname, faculty, major").eq("user_id", user.id).maybeSingle(),
+    supabase.from("profiles").select("first_name, last_name, nickname, study_level, faculty, major").eq("user_id", user.id).maybeSingle(),
     supabase.from("chula_claims").select("email").eq("user_id", user.id).maybeSingle()
   ]).catch(() => [null, null] as const);
   if (!profile || !claim || profile.error || claim.error) return <ServiceUnavailable />;
@@ -38,7 +38,7 @@ export default async function AboutYouPage() {
           )}
 
           <AboutYouForm
-            initial={{ first: p?.first_name ?? "", last: p?.last_name ?? "", nick: p?.nickname ?? "", faculty: p?.faculty ?? "", major: p?.major ?? "" }}
+            initial={{ first: p?.first_name ?? "", last: p?.last_name ?? "", nick: p?.nickname ?? "", level: p?.study_level ?? "undergraduate", faculty: p?.faculty ?? "", major: p?.major ?? "" }}
           />
         </div>
       </main>
