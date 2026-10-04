@@ -32,10 +32,12 @@
   "30": "app/layout.tsx",
   "31": "allowScripts",
   "32": "overrides",
-  "33": "next_types_root_params_d",
+  "33": "admin/loading.tsx",
   "34": "src_app_about_you_about_you_module",
-  "35": "ChulaCraft — Redesign + Implementation Plan",
-  "36": "next_types_routes_d",
+  "35": "PRD: Auto-assign Discord `verified` role",
+  "36": "next_dev_types_root_params_d",
+  "37": "dev-login/route.ts",
   "38": "src_app_auth_error_auth_error_module",
-  "39": "src_app_not_found_module"
+  "39": "src_app_not_found_module",
+  "40": "next_dev_types_routes_d"
 }

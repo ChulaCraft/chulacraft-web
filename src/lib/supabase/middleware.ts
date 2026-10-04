@@ -18,6 +18,8 @@ export async function updateSession(request: NextRequest) {
     }
   });
 
-  try { await supabase.auth.getUser(); } catch { /* Leave a retryable unauthenticated response; never expose network details. */ }
+  // getClaims verifies the JWT locally against cached JWKS (and still refreshes expired sessions),
+  // so navigations skip the Auth-server round trip getUser() costs. Pages re-check with getUser().
+  try { await supabase.auth.getClaims(); } catch { /* Leave a retryable unauthenticated response; never expose network details. */ }
   return response;
 }

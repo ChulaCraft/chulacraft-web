@@ -56,19 +56,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_components_icons_pixeliconname",
-      "label": "PixelIconName",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "pixeliconname",
-      "source_file": "src/components/icons.tsx",
-      "source_location": "L50"
-    },
-    {
       "id": "src_components_site_header_navid",
       "label": "NavId",
       "_callable": true,
@@ -95,6 +82,19 @@
       "source_location": "L13"
     },
     {
+      "id": "src_lib_bounded_fetch_boundedfetchtimeouterror",
+      "label": "BoundedFetchTimeoutError",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "server.ts",
+      "file_type": "code",
+      "norm_label": "boundedfetchtimeouterror",
+      "source_file": "src/lib/bounded-fetch.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "src_app_dashboard_page_profile",
       "label": "Profile",
       "_callable": true,
@@ -105,7 +105,7 @@
       "file_type": "code",
       "norm_label": "profile",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L16"
+      "source_location": "L17"
     },
     {
       "id": "src_lib_chula_linkerror",
@@ -173,19 +173,6 @@
       "source_location": "L15"
     },
     {
-      "id": "src_lib_bounded_fetch_boundedfetchtimeouterror",
-      "label": "BoundedFetchTimeoutError",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "minecraft/route.ts",
-      "file_type": "code",
-      "norm_label": "boundedfetchtimeouterror",
-      "source_file": "src/lib/bounded-fetch.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_lib_registration_registrationview",
       "label": "RegistrationView",
       "_callable": true,
@@ -197,19 +184,6 @@
       "norm_label": "registrationview",
       "source_file": "src/lib/registration.ts",
       "source_location": "L7"
-    },
-    {
-      "id": "src_lib_registration_syncstatus",
-      "label": "SyncStatus",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "minecraft/route.ts",
-      "file_type": "code",
-      "norm_label": "syncstatus",
-      "source_file": "src/lib/registration.ts",
-      "source_location": "L5"
     },
     {
       "id": "src_app_register_details_actions_saveprofilestate",
@@ -235,7 +209,7 @@
       "file_type": "code",
       "norm_label": "profiledetails",
       "source_file": "src/lib/faculties.ts",
-      "source_location": "L28"
+      "source_location": "L56"
     },
     {
       "id": "src_lib_faculties_profileerrors",
@@ -248,7 +222,20 @@
       "file_type": "code",
       "norm_label": "profileerrors",
       "source_file": "src/lib/faculties.ts",
-      "source_location": "L29"
+      "source_location": "L57"
+    },
+    {
+      "id": "src_lib_faculties_studylevel",
+      "label": "StudyLevel",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 25,
+      "community_name": "about-you-form.tsx",
+      "file_type": "code",
+      "norm_label": "studylevel",
+      "source_file": "src/lib/faculties.ts",
+      "source_location": "L48"
     },
     {
       "id": "src_app_admin_overview_stats",
@@ -355,6 +342,19 @@
       "source_location": "L5"
     },
     {
+      "id": "src_components_icons_pixeliconname",
+      "label": "PixelIconName",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "createClient",
+      "file_type": "code",
+      "norm_label": "pixeliconname",
+      "source_file": "src/components/icons.tsx",
+      "source_location": "L50"
+    },
+    {
       "id": "src_components_verification_badge_verificationkind",
       "label": "VerificationKind",
       "_callable": true,
@@ -379,6 +379,19 @@
       "norm_label": "syncbadge",
       "source_file": "src/lib/registration.ts",
       "source_location": "L63"
+    },
+    {
+      "id": "src_lib_registration_syncstatus",
+      "label": "SyncStatus",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "createClient",
+      "file_type": "code",
+      "norm_label": "syncstatus",
+      "source_file": "src/lib/registration.ts",
+      "source_location": "L5"
     },
     {
       "id": "tests_visual_helpers_audit_page_auditoptions",
@@ -418,18 +431,6 @@
       "source_location": "L9"
     },
     {
-      "id": "src_app_api_dev_login_route_get",
-      "label": "GET()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "get()",
-      "source_file": "src/app/api/dev-login/route.ts",
-      "source_location": "L7"
-    },
-    {
       "id": "src_app_dashboard_service_unavailable_serviceunavailable",
       "label": "ServiceUnavailable()",
       "_callable": true,
@@ -440,6 +441,18 @@
       "norm_label": "serviceunavailable()",
       "source_file": "src/app/dashboard/service-unavailable.tsx",
       "source_location": "L5"
+    },
+    {
+      "id": "src_app_loading_loading",
+      "label": "Loading()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "next",
+      "file_type": "code",
+      "norm_label": "loading()",
+      "source_file": "src/app/loading.tsx",
+      "source_location": "L4"
     },
     {
       "id": "src_app_page_homepage",
@@ -464,42 +477,6 @@
       "norm_label": "aboutyoupage()",
       "source_file": "src/app/register/details/page.tsx",
       "source_location": "L10"
-    },
-    {
-      "id": "src_app_register_page_registerpage",
-      "label": "RegisterPage()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "registerpage()",
-      "source_file": "src/app/register/page.tsx",
-      "source_location": "L12"
-    },
-    {
-      "id": "src_app_verify_page_test_page",
-      "label": "page()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "page()",
-      "source_file": "src/app/verify/page.test.tsx",
-      "source_location": "L20"
-    },
-    {
-      "id": "src_app_verify_page_verifypage",
-      "label": "VerifyPage()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "verifypage()",
-      "source_file": "src/app/verify/page.tsx",
-      "source_location": "L16"
     },
     {
       "id": "src_components_brand_brand",
@@ -658,6 +635,18 @@
       "source_location": "L16"
     },
     {
+      "id": "src_components_icons_pixelicon",
+      "label": "PixelIcon()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "next",
+      "file_type": "code",
+      "norm_label": "pixelicon()",
+      "source_file": "src/components/icons.tsx",
+      "source_location": "L52"
+    },
+    {
       "id": "src_components_icons_shieldicon",
       "label": "ShieldIcon()",
       "_callable": true,
@@ -814,6 +803,30 @@
       "source_location": "L4"
     },
     {
+      "id": "src_app_not_found_notfoundpage",
+      "label": "NotFoundPage()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "server.ts",
+      "file_type": "code",
+      "norm_label": "notfoundpage()",
+      "source_file": "src/app/not-found.tsx",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_components_error_screen_errorscreen",
+      "label": "ErrorScreen()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "server.ts",
+      "file_type": "code",
+      "norm_label": "errorscreen()",
+      "source_file": "src/components/error-screen.tsx",
+      "source_location": "L9"
+    },
+    {
       "id": "src_lib_auth_error_authfailuremessage",
       "label": "authFailureMessage()",
       "_callable": true,
@@ -848,6 +861,18 @@
       "norm_label": "safeauthfailurereason()",
       "source_file": "src/lib/auth-error.ts",
       "source_location": "L28"
+    },
+    {
+      "id": "src_lib_bounded_fetch_boundedfetchtimeouterror_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "server.ts",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/lib/bounded-fetch.ts",
+      "source_location": "L2"
     },
     {
       "id": "src_lib_bounded_fetch_createboundedfetch",
@@ -910,18 +935,6 @@
       "source_location": "L6"
     },
     {
-      "id": "src_lib_supabase_server_createadminclient",
-      "label": "createAdminClient()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "server.ts",
-      "file_type": "code",
-      "norm_label": "createadminclient()",
-      "source_file": "src/lib/supabase/server.ts",
-      "source_location": "L29"
-    },
-    {
       "id": "src_proxy_proxy",
       "label": "proxy()",
       "_callable": true,
@@ -955,7 +968,31 @@
       "file_type": "code",
       "norm_label": "dashboardpage()",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L18"
+      "source_location": "L19"
+    },
+    {
+      "id": "src_app_verify_page_test_page",
+      "label": "page()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "dashboard/page.tsx",
+      "file_type": "code",
+      "norm_label": "page()",
+      "source_file": "src/app/verify/page.test.tsx",
+      "source_location": "L20"
+    },
+    {
+      "id": "src_app_verify_page_verifypage",
+      "label": "VerifyPage()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "dashboard/page.tsx",
+      "file_type": "code",
+      "norm_label": "verifypage()",
+      "source_file": "src/app/verify/page.tsx",
+      "source_location": "L16"
     },
     {
       "id": "src_app_welcome_page_welcomepage",
@@ -1112,6 +1149,18 @@
       "norm_label": "unlinkedids()",
       "source_file": "src/lib/reconcile-identities.test.ts",
       "source_location": "L27"
+    },
+    {
+      "id": "src_lib_supabase_server_createadminclient",
+      "label": "createAdminClient()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "dashboard/page.tsx",
+      "file_type": "code",
+      "norm_label": "createadminclient()",
+      "source_file": "src/lib/supabase/server.ts",
+      "source_location": "L29"
     },
     {
       "id": "src_app_api_registration_minecraft_route_delete",
@@ -1318,18 +1367,6 @@
       "source_location": "L17"
     },
     {
-      "id": "src_lib_bounded_fetch_boundedfetchtimeouterror_constructor",
-      "label": ".constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "minecraft/route.ts",
-      "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/lib/bounded-fetch.ts",
-      "source_location": "L2"
-    },
-    {
       "id": "src_lib_registration_isvalidminecraftusername",
       "label": "isValidMinecraftUsername()",
       "_callable": true,
@@ -1390,18 +1427,6 @@
       "source_location": "L18"
     },
     {
-      "id": "src_app_not_found_notfoundpage",
-      "label": "NotFoundPage()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "about-you-form.tsx",
-      "file_type": "code",
-      "norm_label": "notfoundpage()",
-      "source_file": "src/app/not-found.tsx",
-      "source_location": "L3"
-    },
-    {
       "id": "src_app_register_details_about_you_form_aboutyouform",
       "label": "AboutYouForm()",
       "_callable": true,
@@ -1423,7 +1448,7 @@
       "file_type": "code",
       "norm_label": "onsubmit()",
       "source_file": "src/app/register/details/about-you-form.tsx",
-      "source_location": "L24"
+      "source_location": "L29"
     },
     {
       "id": "src_app_register_details_about_you_form_field",
@@ -1435,7 +1460,7 @@
       "file_type": "code",
       "norm_label": "field()",
       "source_file": "src/app/register/details/about-you-form.tsx",
-      "source_location": "L81"
+      "source_location": "L102"
     },
     {
       "id": "src_app_register_details_actions_saveprofile",
@@ -1450,16 +1475,40 @@
       "source_location": "L11"
     },
     {
-      "id": "src_components_error_screen_errorscreen",
-      "label": "ErrorScreen()",
+      "id": "src_lib_faculties_facultyrole",
+      "label": "facultyRole()",
       "_callable": true,
       "_origin": "ast",
       "community": 25,
       "community_name": "about-you-form.tsx",
       "file_type": "code",
-      "norm_label": "errorscreen()",
-      "source_file": "src/components/error-screen.tsx",
-      "source_location": "L9"
+      "norm_label": "facultyrole()",
+      "source_file": "src/lib/faculties.ts",
+      "source_location": "L39"
+    },
+    {
+      "id": "src_lib_faculties_test_desiredroles",
+      "label": "desiredRoles()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 25,
+      "community_name": "about-you-form.tsx",
+      "file_type": "code",
+      "norm_label": "desiredroles()",
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L18"
+    },
+    {
+      "id": "src_lib_faculties_unitrole",
+      "label": "unitRole()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 25,
+      "community_name": "about-you-form.tsx",
+      "file_type": "code",
+      "norm_label": "unitrole()",
+      "source_file": "src/lib/faculties.ts",
+      "source_location": "L44"
     },
     {
       "id": "src_lib_faculties_validateprofile",
@@ -1471,7 +1520,7 @@
       "file_type": "code",
       "norm_label": "validateprofile()",
       "source_file": "src/lib/faculties.ts",
-      "source_location": "L32"
+      "source_location": "L60"
     },
     {
       "id": "src_app_privacy_page_privacypage",
@@ -1484,6 +1533,18 @@
       "norm_label": "privacypage()",
       "source_file": "src/app/privacy/page.tsx",
       "source_location": "L22"
+    },
+    {
+      "id": "src_app_register_page_registerpage",
+      "label": "RegisterPage()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 27,
+      "community_name": "privacy/page.tsx",
+      "file_type": "code",
+      "norm_label": "registerpage()",
+      "source_file": "src/app/register/page.tsx",
+      "source_location": "L12"
     },
     {
       "id": "src_app_terms_page_termspage",
@@ -1520,6 +1581,30 @@
       "norm_label": "rootlayout()",
       "source_file": "src/app/layout.tsx",
       "source_location": "L14"
+    },
+    {
+      "id": "src_app_admin_loading_loading",
+      "label": "Loading()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "admin/loading.tsx",
+      "file_type": "code",
+      "norm_label": "loading()",
+      "source_file": "src/app/admin/loading.tsx",
+      "source_location": "L2"
+    },
+    {
+      "id": "src_app_api_dev_login_route_get",
+      "label": "GET()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 37,
+      "community_name": "dev-login/route.ts",
+      "file_type": "code",
+      "norm_label": "get()",
+      "source_file": "src/app/api/dev-login/route.ts",
+      "source_location": "L7"
     },
     {
       "id": "src_app_admin_overview_statrow",
@@ -1726,18 +1811,6 @@
       "source_location": "L22"
     },
     {
-      "id": "src_components_icons_pixelicon",
-      "label": "PixelIcon()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "createClient",
-      "file_type": "code",
-      "norm_label": "pixelicon()",
-      "source_file": "src/components/icons.tsx",
-      "source_location": "L52"
-    },
-    {
       "id": "src_components_verification_badge_verificationbadge",
       "label": "VerificationBadge()",
       "_callable": true,
@@ -1853,17 +1926,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_app_api_dev_login_route",
-      "label": "dev-login/route.ts",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "dev-login/route.ts",
-      "source_file": "src/app/api/dev-login/route.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_app_dashboard_service_unavailable",
       "label": "service-unavailable.tsx",
       "_origin": "ast",
@@ -1872,6 +1934,17 @@
       "file_type": "code",
       "norm_label": "service-unavailable.tsx",
       "source_file": "src/app/dashboard/service-unavailable.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_app_loading",
+      "label": "app/loading.tsx",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "next",
+      "file_type": "code",
+      "norm_label": "app/loading.tsx",
+      "source_file": "src/app/loading.tsx",
       "source_location": "L1"
     },
     {
@@ -1930,28 +2003,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_app_register_page_test",
-      "label": "register/page.test.tsx",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "register/page.test.tsx",
-      "source_file": "src/app/register/page.test.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_app_register_page_test_getuser_redirect",
-      "label": "{ getUser, redirect }",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "{ getuser, redirect }",
-      "source_file": "src/app/register/page.test.tsx",
-      "source_location": "L4"
-    },
-    {
       "id": "src_app_verify_page",
       "label": "verify/page.tsx",
       "_origin": "ast",
@@ -1961,28 +2012,6 @@
       "norm_label": "verify/page.tsx",
       "source_file": "src/app/verify/page.tsx",
       "source_location": "L1"
-    },
-    {
-      "id": "src_app_verify_page_test",
-      "label": "verify/page.test.tsx",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "verify/page.test.tsx",
-      "source_file": "src/app/verify/page.test.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_app_verify_page_test_getuser_getuseridentities_rpc_redirect_reconcileidentities",
-      "label": "{ getUser, getUserIdentities, rpc, redirect, reconcileIdentities }",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "{ getuser, getuseridentities, rpc, redirect, reconcileidentities }",
-      "source_file": "src/app/verify/page.test.tsx",
-      "source_location": "L4"
     },
     {
       "id": "src_app_welcome_page",
@@ -2139,37 +2168,26 @@
       "source_location": "L1"
     },
     {
-      "id": "src_lib_dev_login",
-      "label": "dev-login.ts",
+      "id": "src_lib_site_links",
+      "label": "site-links.ts",
       "_origin": "ast",
       "community": 0,
       "community_name": "next",
       "file_type": "code",
-      "norm_label": "dev-login.ts",
-      "source_file": "src/lib/dev-login.ts",
+      "norm_label": "site-links.ts",
+      "source_file": "src/lib/site-links.ts",
       "source_location": "L1"
     },
     {
-      "id": "src_lib_dev_login_dev_login_enabled",
-      "label": "DEV_LOGIN_ENABLED",
+      "id": "src_lib_site_links_discordcommunityurl",
+      "label": "discordCommunityUrl",
       "_origin": "ast",
       "community": 0,
       "community_name": "next",
       "file_type": "code",
-      "norm_label": "dev_login_enabled",
-      "source_file": "src/lib/dev-login.ts",
-      "source_location": "L3"
-    },
-    {
-      "id": "src_lib_dev_login_dev_users",
-      "label": "DEV_USERS",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "next",
-      "file_type": "code",
-      "norm_label": "dev_users",
-      "source_file": "src/lib/dev-login.ts",
-      "source_location": "L7"
+      "norm_label": "discordcommunityurl",
+      "source_file": "src/lib/site-links.ts",
+      "source_location": "L1"
     },
     {
       "id": "src_lib_supabase_client",
@@ -2214,28 +2232,6 @@
       "norm_label": "react",
       "source_file": "package.json",
       "source_location": "L22"
-    },
-    {
-      "id": "next_config",
-      "label": "next.config.ts",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "server.ts",
-      "file_type": "code",
-      "norm_label": "next.config.ts",
-      "source_file": "next.config.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "next_config_nextconfig",
-      "label": "nextConfig",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "server.ts",
-      "file_type": "code",
-      "norm_label": "nextconfig",
-      "source_file": "next.config.ts",
-      "source_location": "L4"
     },
     {
       "id": "src_app_auth_callback_route",
@@ -2290,6 +2286,17 @@
       "file_type": "code",
       "norm_label": "error/page.tsx",
       "source_file": "src/app/auth/error/page.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_app_not_found",
+      "label": "not-found.tsx",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "server.ts",
+      "file_type": "code",
+      "norm_label": "not-found.tsx",
+      "source_file": "src/app/not-found.tsx",
       "source_location": "L1"
     },
     {
@@ -2425,17 +2432,6 @@
       "source_location": "L8"
     },
     {
-      "id": "vitest_config",
-      "label": "vitest.config.ts",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "server.ts",
-      "file_type": "code",
-      "norm_label": "vitest.config.ts",
-      "source_file": "vitest.config.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "ref_supabase_ssr",
       "label": "@supabase/ssr",
       "_origin": "ast",
@@ -2445,17 +2441,6 @@
       "norm_label": "@supabase/ssr",
       "source_file": "package.json",
       "source_location": "L18"
-    },
-    {
-      "id": "ref_vitest",
-      "label": "vitest",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "server.ts",
-      "file_type": "concept",
-      "norm_label": "vitest",
-      "source_file": "package.json",
-      "source_location": "L36"
     },
     {
       "id": "visual_results_audit_report",
@@ -2682,6 +2667,28 @@
       "norm_label": "dashboard/page.tsx",
       "source_file": "src/app/dashboard/page.tsx",
       "source_location": "L1"
+    },
+    {
+      "id": "src_app_verify_page_test",
+      "label": "verify/page.test.tsx",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "dashboard/page.tsx",
+      "file_type": "code",
+      "norm_label": "verify/page.test.tsx",
+      "source_file": "src/app/verify/page.test.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_app_verify_page_test_getuser_getuseridentities_rpc_redirect_reconcileidentities",
+      "label": "{ getUser, getUserIdentities, rpc, redirect, reconcileIdentities }",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "dashboard/page.tsx",
+      "file_type": "code",
+      "norm_label": "{ getuser, getuseridentities, rpc, redirect, reconcileidentities }",
+      "source_file": "src/app/verify/page.test.tsx",
+      "source_location": "L4"
     },
     {
       "id": "src_lib_chula",
@@ -3171,6 +3178,28 @@
       "source_location": "L1"
     },
     {
+      "id": "next_config",
+      "label": "next.config.ts",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "minecraft/route.ts",
+      "file_type": "code",
+      "norm_label": "next.config.ts",
+      "source_file": "next.config.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "next_config_nextconfig",
+      "label": "nextConfig",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "minecraft/route.ts",
+      "file_type": "code",
+      "norm_label": "nextconfig",
+      "source_file": "next.config.ts",
+      "source_location": "L4"
+    },
+    {
       "id": "src_app_api_registration_minecraft_route",
       "label": "minecraft/route.ts",
       "_origin": "ast",
@@ -3281,6 +3310,28 @@
       "source_location": "L1"
     },
     {
+      "id": "vitest_config",
+      "label": "vitest.config.ts",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "minecraft/route.ts",
+      "file_type": "code",
+      "norm_label": "vitest.config.ts",
+      "source_file": "vitest.config.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "ref_vitest",
+      "label": "vitest",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "minecraft/route.ts",
+      "file_type": "concept",
+      "norm_label": "vitest",
+      "source_file": "package.json",
+      "source_location": "L36"
+    },
+    {
       "id": "visual_results_cycle_03_report",
       "label": "cycle-03/report.md",
       "_origin": "ast",
@@ -3377,17 +3428,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_app_not_found",
-      "label": "not-found.tsx",
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "about-you-form.tsx",
-      "file_type": "code",
-      "norm_label": "not-found.tsx",
-      "source_file": "src/app/not-found.tsx",
-      "source_location": "L1"
-    },
-    {
       "id": "src_app_register_details_about_you_form",
       "label": "about-you-form.tsx",
       "_origin": "ast",
@@ -3429,7 +3469,18 @@
       "file_type": "code",
       "norm_label": "faculties",
       "source_file": "src/lib/faculties.ts",
-      "source_location": "L3"
+      "source_location": "L12"
+    },
+    {
+      "id": "src_lib_faculties_study_levels",
+      "label": "STUDY_LEVELS",
+      "_origin": "ast",
+      "community": 25,
+      "community_name": "about-you-form.tsx",
+      "file_type": "code",
+      "norm_label": "study_levels",
+      "source_file": "src/lib/faculties.ts",
+      "source_location": "L51"
     },
     {
       "id": "src_lib_faculties_test",
@@ -3443,6 +3494,28 @@
       "source_location": "L1"
     },
     {
+      "id": "src_lib_faculties_test_allpairs",
+      "label": "allPairs",
+      "_origin": "ast",
+      "community": 25,
+      "community_name": "about-you-form.tsx",
+      "file_type": "code",
+      "norm_label": "allpairs",
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L22"
+    },
+    {
+      "id": "src_lib_faculties_test_examples",
+      "label": "EXAMPLES",
+      "_origin": "ast",
+      "community": 25,
+      "community_name": "about-you-form.tsx",
+      "file_type": "code",
+      "norm_label": "examples",
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L7"
+    },
+    {
       "id": "src_lib_faculties_test_ok",
       "label": "ok",
       "_origin": "ast",
@@ -3452,90 +3525,6 @@
       "norm_label": "ok",
       "source_file": "src/lib/faculties.test.ts",
       "source_location": "L4"
-    },
-    {
-      "id": "docs_redesign_plan_phase_1_foundation",
-      "label": "Phase 1 \u2014 Foundation",
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "about-you-form.tsx",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "phase 1 \u2014 foundation",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L354"
-    },
-    {
-      "id": "docs_redesign_plan_phase_2_public_pages",
-      "label": "Phase 2 \u2014 Public pages",
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "about-you-form.tsx",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "phase 2 \u2014 public pages",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L366"
-    },
-    {
-      "id": "docs_redesign_plan_phase_3_onboarding_flow",
-      "label": "Phase 3 \u2014 Onboarding flow",
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "about-you-form.tsx",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "phase 3 \u2014 onboarding flow",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L374"
-    },
-    {
-      "id": "docs_redesign_plan_phase_4_player_dashboard",
-      "label": "Phase 4 \u2014 Player dashboard",
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "about-you-form.tsx",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "phase 4 \u2014 player dashboard",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L381"
-    },
-    {
-      "id": "docs_redesign_plan_phase_5_admin_restyle_existing_data_only",
-      "label": "Phase 5 \u2014 Admin restyle (existing data only)",
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "about-you-form.tsx",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "phase 5 \u2014 admin restyle (existing data only)",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L391"
-    },
-    {
-      "id": "docs_redesign_plan_phase_6_pr_1_checks",
-      "label": "Phase 6 \u2014 PR 1 checks",
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "about-you-form.tsx",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "phase 6 \u2014 pr 1 checks",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L403"
-    },
-    {
-      "id": "docs_redesign_plan_pr_1_redesign",
-      "label": "PR 1 \u2014 Redesign",
-      "_origin": "ast",
-      "community": 25,
-      "community_name": "about-you-form.tsx",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "pr 1 \u2014 redesign",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L352"
     },
     {
       "id": "src_app_privacy_legal_pages_test",
@@ -3580,6 +3569,28 @@
       "norm_label": "metadata",
       "source_file": "src/app/privacy/page.tsx",
       "source_location": "L7"
+    },
+    {
+      "id": "src_app_register_page_test",
+      "label": "register/page.test.tsx",
+      "_origin": "ast",
+      "community": 27,
+      "community_name": "privacy/page.tsx",
+      "file_type": "code",
+      "norm_label": "register/page.test.tsx",
+      "source_file": "src/app/register/page.test.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_app_register_page_test_getuser_redirect",
+      "label": "{ getUser, redirect }",
+      "_origin": "ast",
+      "community": 27,
+      "community_name": "privacy/page.tsx",
+      "file_type": "code",
+      "norm_label": "{ getuser, redirect }",
+      "source_file": "src/app/register/page.test.tsx",
+      "source_location": "L4"
     },
     {
       "id": "src_app_terms_page",
@@ -3635,28 +3646,6 @@
       "norm_label": "max_minecraft_accounts",
       "source_file": "src/lib/registration.ts",
       "source_location": "L3"
-    },
-    {
-      "id": "src_lib_site_links",
-      "label": "site-links.ts",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "privacy/page.tsx",
-      "file_type": "code",
-      "norm_label": "site-links.ts",
-      "source_file": "src/lib/site-links.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_site_links_discordcommunityurl",
-      "label": "discordCommunityUrl",
-      "_origin": "ast",
-      "community": 27,
-      "community_name": "privacy/page.tsx",
-      "file_type": "code",
-      "norm_label": "discordcommunityurl",
-      "source_file": "src/lib/site-links.ts",
-      "source_location": "L1"
     },
     {
       "id": "ref_react_dom",
@@ -4176,232 +4165,227 @@
       "source_location": "L39"
     },
     {
-      "id": "docs_redesign_plan",
-      "label": "redesign-plan.md",
+      "id": "src_app_admin_loading",
+      "label": "admin/loading.tsx",
       "_origin": "ast",
-      "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "redesign-plan.md",
-      "source_file": "docs/redesign-plan.md",
+      "community": 33,
+      "community_name": "admin/loading.tsx",
+      "file_type": "code",
+      "norm_label": "admin/loading.tsx",
+      "source_file": "src/app/admin/loading.tsx",
       "source_location": "L1"
     },
     {
-      "id": "docs_redesign_plan_1_goal",
-      "label": "1. Goal",
+      "id": "docs_prd_discord_verified_role",
+      "label": "PRD-discord-verified-role.md",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "prd-discord-verified-role.md",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_prd_discord_verified_role_1_problem",
+      "label": "1. Problem",
+      "_origin": "ast",
+      "community": 35,
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "1. goal",
-      "source_file": "docs/redesign-plan.md",
+      "norm_label": "1. problem",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "docs_prd_discord_verified_role_2_goal",
+      "label": "2. Goal",
+      "_origin": "ast",
+      "community": 35,
+      "community_name": "PRD: Auto-assign Discord `verified` role",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "2. goal",
+      "source_file": "docs/PRD-discord-verified-role.md",
       "source_location": "L8"
     },
     {
-      "id": "docs_redesign_plan_2_design_route_map",
-      "label": "2. Design \u2192 route map",
+      "id": "docs_prd_discord_verified_role_3_scope",
+      "label": "3. Scope",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "2. design \u2192 route map",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L23"
+      "norm_label": "3. scope",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L11"
     },
     {
-      "id": "docs_redesign_plan_3_design_system_phase_1",
-      "label": "3. Design system (Phase 1)",
+      "id": "docs_prd_discord_verified_role_4_user_stories",
+      "label": "4. User stories",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "3. design system (phase 1)",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L47"
+      "norm_label": "4. user stories",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L15"
     },
     {
-      "id": "docs_redesign_plan_4_erd_current_as_of_migration_20261003000001",
-      "label": "4. ERD \u2014 current (as of migration `20261003000001`)",
+      "id": "docs_prd_discord_verified_role_5_1_database_chulacraft_web_new_migration",
+      "label": "5.1 Database (chulacraft-web, new migration)",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "4. erd \u2014 current (as of migration `20261003000001`)",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L92"
+      "norm_label": "5.1 database (chulacraft-web, new migration)",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L30"
     },
     {
-      "id": "docs_redesign_plan_5_gap_analysis_what_the_design_needs_vs_what_the_db_has",
-      "label": "5. Gap analysis: what the design needs vs. what the DB has",
+      "id": "docs_prd_discord_verified_role_5_2_bot_chulacraft_discord",
+      "label": "5.2 Bot (chulacraft-discord)",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "5. gap analysis: what the design needs vs. what the db has",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L187"
+      "norm_label": "5.2 bot (chulacraft-discord)",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L37"
     },
     {
-      "id": "docs_redesign_plan_6_1_schema_diff",
-      "label": "6.1 Schema diff",
+      "id": "docs_prd_discord_verified_role_5_3_discord_server_setup",
+      "label": "5.3 Discord server setup",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "6.1 schema diff",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L292"
+      "norm_label": "5.3 discord server setup",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L46"
     },
     {
-      "id": "docs_redesign_plan_6_2_verification_model_new",
-      "label": "6.2 Verification model (new)",
+      "id": "docs_prd_discord_verified_role_5_design",
+      "label": "5. Design",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "6.2 verification model (new)",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L310"
+      "norm_label": "5. design",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L20"
     },
     {
-      "id": "docs_redesign_plan_6_3_rpc_changes",
-      "label": "6.3 RPC changes",
+      "id": "docs_prd_discord_verified_role_6_acceptance_criteria",
+      "label": "6. Acceptance criteria",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "6.3 rpc changes",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L324"
+      "norm_label": "6. acceptance criteria",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L49"
     },
     {
-      "id": "docs_redesign_plan_6_erd_new_proposed_migration_20261004000001_redesign_admin_sql",
-      "label": "6. ERD \u2014 new (proposed migration `20261004000001_redesign_admin.sql`)",
+      "id": "docs_prd_discord_verified_role_7_tests",
+      "label": "7. Tests",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "6. erd \u2014 new (proposed migration `20261004000001_redesign_admin.sql`)",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L205"
+      "norm_label": "7. tests",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L60"
     },
     {
-      "id": "docs_redesign_plan_7_phases",
-      "label": "7. Phases",
+      "id": "docs_prd_discord_verified_role_8_rollout",
+      "label": "8. Rollout",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "7. phases",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L343"
+      "norm_label": "8. rollout",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L65"
     },
     {
-      "id": "docs_redesign_plan_8_risks_notes",
-      "label": "8. Risks / notes",
+      "id": "docs_prd_discord_verified_role_9_risks",
+      "label": "9. Risks",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "8. risks / notes",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L446"
+      "norm_label": "9. risks",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L73"
     },
     {
-      "id": "docs_redesign_plan_9_decisions",
-      "label": "9. Decisions",
+      "id": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
+      "label": "PRD: Auto-assign Discord `verified` role",
       "_origin": "ast",
       "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
+      "community_name": "PRD: Auto-assign Discord `verified` role",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "9. decisions",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L455"
-    },
-    {
-      "id": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "label": "ChulaCraft \u2014 Redesign + Implementation Plan",
-      "_origin": "ast",
-      "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "chulacraft \u2014 redesign + implementation plan",
-      "source_file": "docs/redesign-plan.md",
+      "norm_label": "prd: auto-assign discord `verified` role",
+      "source_file": "docs/PRD-discord-verified-role.md",
       "source_location": "L1"
     },
     {
-      "id": "docs_redesign_plan_deploy_order_pr_2",
-      "label": "Deploy order (PR 2)",
+      "id": "src_app_api_dev_login_route",
+      "label": "dev-login/route.ts",
       "_origin": "ast",
-      "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "deploy order (pr 2)",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L437"
+      "community": 37,
+      "community_name": "dev-login/route.ts",
+      "file_type": "code",
+      "norm_label": "dev-login/route.ts",
+      "source_file": "src/app/api/dev-login/route.ts",
+      "source_location": "L1"
     },
     {
-      "id": "docs_redesign_plan_phase_0_prep",
-      "label": "Phase 0 \u2014 Prep",
+      "id": "src_lib_dev_login",
+      "label": "dev-login.ts",
       "_origin": "ast",
-      "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "phase 0 \u2014 prep",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L347"
+      "community": 37,
+      "community_name": "dev-login/route.ts",
+      "file_type": "code",
+      "norm_label": "dev-login.ts",
+      "source_file": "src/lib/dev-login.ts",
+      "source_location": "L1"
     },
     {
-      "id": "docs_redesign_plan_phase_7_db_migration",
-      "label": "Phase 7 \u2014 DB migration",
+      "id": "src_lib_dev_login_dev_login_enabled",
+      "label": "DEV_LOGIN_ENABLED",
       "_origin": "ast",
-      "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "phase 7 \u2014 db migration",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L412"
+      "community": 37,
+      "community_name": "dev-login/route.ts",
+      "file_type": "code",
+      "norm_label": "dev_login_enabled",
+      "source_file": "src/lib/dev-login.ts",
+      "source_location": "L3"
     },
     {
-      "id": "docs_redesign_plan_phase_8_admin_overview_guest_ui",
-      "label": "Phase 8 \u2014 Admin overview + guest UI",
+      "id": "src_lib_dev_login_dev_users",
+      "label": "DEV_USERS",
       "_origin": "ast",
-      "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "phase 8 \u2014 admin overview + guest ui",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L422"
-    },
-    {
-      "id": "docs_redesign_plan_pr_2_guest_model_admin_data",
-      "label": "PR 2 \u2014 Guest model + admin data",
-      "_origin": "ast",
-      "community": 35,
-      "community_name": "ChulaCraft \u2014 Redesign + Implementation Plan",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "pr 2 \u2014 guest model + admin data",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L410"
+      "community": 37,
+      "community_name": "dev-login/route.ts",
+      "file_type": "code",
+      "norm_label": "dev_users",
+      "source_file": "src/lib/dev-login.ts",
+      "source_location": "L7"
     },
     {
       "id": "src_app_admin_overview",
@@ -4427,12 +4411,12 @@
     },
     {
       "id": "src_app_admin_players_loading",
-      "label": "loading.tsx",
+      "label": "players/loading.tsx",
       "_origin": "ast",
       "community": 4,
       "community_name": "createClient",
       "file_type": "code",
-      "norm_label": "loading.tsx",
+      "norm_label": "players/loading.tsx",
       "source_file": "src/app/admin/players/loading.tsx",
       "source_location": "L1"
     },
@@ -5560,18 +5544,6 @@
       "type": "external"
     },
     {
-      "id": "ref_node_url",
-      "label": "ref_node_url",
-      "_origin": "semantic",
-      "community": 1,
-      "community_name": "server.ts",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "ref_node_url",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "src_app_dashboard_dashboard_module",
       "label": "src_app_dashboard_dashboard_module",
       "_origin": "semantic",
@@ -5584,26 +5556,26 @@
       "type": "external"
     },
     {
-      "id": "next_dev_types_root_params_d",
-      "label": "next_dev_types_root_params_d",
+      "id": "next_types_root_params_d",
+      "label": "next_types_root_params_d",
       "_origin": "semantic",
       "community": 12,
       "community_name": "next-env.d.ts",
       "external": true,
       "file_type": "concept",
-      "norm_label": "next_dev_types_root_params_d",
+      "norm_label": "next_types_root_params_d",
       "source_file": "",
       "type": "external"
     },
     {
-      "id": "next_dev_types_routes_d",
-      "label": "next_dev_types_routes_d",
+      "id": "next_types_routes_d",
+      "label": "next_types_routes_d",
       "_origin": "semantic",
       "community": 12,
       "community_name": "next-env.d.ts",
       "external": true,
       "file_type": "concept",
-      "norm_label": "next_dev_types_routes_d",
+      "norm_label": "next_types_routes_d",
       "source_file": "",
       "type": "external"
     },
@@ -5616,6 +5588,18 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "ref_node_http",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "ref_node_url",
+      "label": "ref_node_url",
+      "_origin": "semantic",
+      "community": 2,
+      "community_name": "minecraft/route.ts",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "ref_node_url",
       "source_file": "",
       "type": "external"
     },
@@ -5692,18 +5676,6 @@
       "type": "external"
     },
     {
-      "id": "next_types_root_params_d",
-      "label": "next_types_root_params_d",
-      "_origin": "semantic",
-      "community": 33,
-      "community_name": "next_types_root_params_d",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "next_types_root_params_d",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "src_app_about_you_about_you_module",
       "label": "src_app_about_you_about_you_module",
       "_origin": "semantic",
@@ -5716,14 +5688,14 @@
       "type": "external"
     },
     {
-      "id": "next_types_routes_d",
-      "label": "next_types_routes_d",
+      "id": "next_dev_types_root_params_d",
+      "label": "next_dev_types_root_params_d",
       "_origin": "semantic",
       "community": 36,
-      "community_name": "next_types_routes_d",
+      "community_name": "next_dev_types_root_params_d",
       "external": true,
       "file_type": "concept",
-      "norm_label": "next_types_routes_d",
+      "norm_label": "next_dev_types_root_params_d",
       "source_file": "",
       "type": "external"
     },
@@ -5764,6 +5736,30 @@
       "type": "external"
     },
     {
+      "id": "next_dev_types_routes_d",
+      "label": "next_dev_types_routes_d",
+      "_origin": "semantic",
+      "community": 40,
+      "community_name": "next_dev_types_routes_d",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "next_dev_types_routes_d",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "ref_node_child_process",
+      "label": "ref_node_child_process",
+      "_origin": "semantic",
+      "community": 8,
+      "community_name": "visual-audit.spec.ts",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "ref_node_child_process",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "ref_node_fs",
       "label": "ref_node_fs",
       "_origin": "semantic",
@@ -5784,17 +5780,6 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "ref_node_path",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "ref_node_child_process",
-      "label": "ref_node_child_process",
-      "community": 8,
-      "community_name": "visual-audit.spec.ts",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "ref_node_child_process",
       "source_file": "",
       "type": "external"
     }
@@ -6421,7 +6406,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0
     },
     {
@@ -6433,7 +6418,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L41",
+      "source_location": "L42",
       "weight": 1.0
     },
     {
@@ -6445,7 +6430,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L52",
+      "source_location": "L53",
       "weight": 1.0
     },
     {
@@ -6457,7 +6442,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L52",
+      "source_location": "L53",
       "weight": 1.0
     },
     {
@@ -6469,7 +6454,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L53",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -6493,7 +6478,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/register/details/about-you-form.tsx",
-      "source_location": "L25",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -6517,7 +6502,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/register/details/actions.ts",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -6529,7 +6514,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/app/register/details/actions.ts",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0
     },
     {
@@ -6893,6 +6878,30 @@
       "weight": 1.0
     },
     {
+      "source": "src_lib_faculties_test_desiredroles",
+      "target": "src_lib_faculties_facultyrole",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties_test_desiredroles",
+      "target": "src_lib_faculties_unitrole",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
       "source": "src_lib_reconcile_identities_logfirstseen",
       "target": "src_lib_chula_identityemail",
       "relation": "calls",
@@ -7106,6 +7115,18 @@
       "context": "call",
       "source_file": "src/lib/chula.test.ts",
       "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties_test",
+      "target": "src_lib_faculties_test_desiredroles",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -8286,19 +8307,19 @@
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "src_app_register_details_about_you_form_aboutyouform",
+      "target": "src_lib_verified_user_requireverifieduser",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L11",
+      "source_location": "L10",
       "weight": 1.0
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "src_app_dashboard_actions_unlinkpersonalgoogle",
+      "target": "src_app_register_details_about_you_form_aboutyouform",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -8310,6 +8331,18 @@
     },
     {
       "source": "src_app_dashboard_page",
+      "target": "src_app_dashboard_actions_unlinkpersonalgoogle",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/dashboard/page.tsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_dashboard_page",
       "target": "src_app_dashboard_service_unavailable_serviceunavailable",
       "relation": "imports",
       "_origin": "ast",
@@ -8317,7 +8350,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -8406,43 +8439,19 @@
     },
     {
       "source": "src_app_dashboard_page",
+      "target": "src_lib_faculties_studylevel",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/dashboard/page.tsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_dashboard_page",
       "target": "src_lib_registration_registration_columns",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0
-    },
-    {
-      "source": "src_app_dashboard_page",
-      "target": "src_lib_registration_registrationview",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0
-    },
-    {
-      "source": "src_app_dashboard_page",
-      "target": "src_lib_registration_toregistrationview",
-      "relation": "imports",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L7",
-      "weight": 1.0
-    },
-    {
-      "source": "src_app_dashboard_page",
-      "target": "src_lib_supabase_server_createadminclient",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -8454,7 +8463,31 @@
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "src_lib_verified_user_requireverifieduser",
+      "target": "src_lib_registration_registrationview",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/dashboard/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_dashboard_page",
+      "target": "src_lib_registration_toregistrationview",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/dashboard/page.tsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_dashboard_page",
+      "target": "src_lib_supabase_server_createadminclient",
       "relation": "imports",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -8534,6 +8567,18 @@
       "context": "import",
       "source_file": "src/app/layout.tsx",
       "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_loading",
+      "target": "src_components_brand_brand",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/loading.tsx",
+      "source_location": "L1",
       "weight": 1.0
     },
     {
@@ -8730,6 +8775,18 @@
     },
     {
       "source": "src_app_register_details_about_you_form",
+      "target": "src_lib_faculties_study_levels",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/register/details/about-you-form.tsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_register_details_about_you_form",
       "target": "src_lib_faculties_validateprofile",
       "relation": "imports",
       "_origin": "ast",
@@ -8750,6 +8807,18 @@
       "context": "import",
       "source_file": "src/app/register/details/about-you-form.tsx",
       "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_register_details_actions",
+      "target": "src_lib_faculties_profiledetails",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/register/details/actions.ts",
+      "source_location": "L4",
       "weight": 1.0
     },
     {
@@ -9762,6 +9831,54 @@
     },
     {
       "source": "src_lib_faculties_test",
+      "target": "src_lib_faculties_faculties",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties_test",
+      "target": "src_lib_faculties_facultyrole",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties_test",
+      "target": "src_lib_faculties_profiledetails",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties_test",
+      "target": "src_lib_faculties_unitrole",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties_test",
       "target": "src_lib_faculties_validateprofile",
       "relation": "imports",
       "_origin": "ast",
@@ -10063,7 +10180,7 @@
     },
     {
       "source": "next_env_d",
-      "target": "next_dev_types_routes_d",
+      "target": "next_types_routes_d",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -10075,7 +10192,7 @@
     },
     {
       "source": "next_env_d",
-      "target": "next_dev_types_root_params_d",
+      "target": "next_types_root_params_d",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -11048,7 +11165,7 @@
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "ref_next",
+      "target": "src_lib_verified_user",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -11060,7 +11177,7 @@
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "src_app_register_details_about_you_form",
+      "target": "ref_next",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -11072,7 +11189,7 @@
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "src_app_dashboard_actions",
+      "target": "src_app_register_details_about_you_form",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -11084,7 +11201,7 @@
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "src_app_dashboard_dashboard_module",
+      "target": "src_app_dashboard_actions",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -11096,7 +11213,7 @@
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "src_app_dashboard_service_unavailable",
+      "target": "src_app_dashboard_dashboard_module",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -11104,6 +11221,18 @@
       "context": "import",
       "source_file": "src/app/dashboard/page.tsx",
       "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_dashboard_page",
+      "target": "src_app_dashboard_service_unavailable",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/dashboard/page.tsx",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -11168,7 +11297,7 @@
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "src_lib_registration",
+      "target": "src_lib_faculties",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -11176,11 +11305,12 @@
       "context": "import",
       "source_file": "src/app/dashboard/page.tsx",
       "source_location": "L7",
+      "type_only": true,
       "weight": 1.0
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "src_lib_supabase_server",
+      "target": "src_lib_registration",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -11192,7 +11322,7 @@
     },
     {
       "source": "src_app_dashboard_page",
-      "target": "src_lib_verified_user",
+      "target": "src_lib_supabase_server",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -11285,6 +11415,18 @@
       "context": "import",
       "source_file": "src/app/layout.tsx",
       "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_loading",
+      "target": "src_components_brand",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/app/loading.tsx",
+      "source_location": "L1",
       "weight": 1.0
     },
     {
@@ -13237,278 +13379,146 @@
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan",
-      "target": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
+      "source": "docs_prd_discord_verified_role",
+      "target": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
+      "source_file": "docs/PRD-discord-verified-role.md",
       "source_location": "L1",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_6_erd_new_proposed_migration_20261004000001_redesign_admin_sql",
-      "target": "docs_redesign_plan_6_1_schema_diff",
+      "source": "docs_prd_discord_verified_role_5_design",
+      "target": "docs_prd_discord_verified_role_5_1_database_chulacraft_web_new_migration",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L292",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_6_erd_new_proposed_migration_20261004000001_redesign_admin_sql",
-      "target": "docs_redesign_plan_6_2_verification_model_new",
+      "source": "docs_prd_discord_verified_role_5_design",
+      "target": "docs_prd_discord_verified_role_5_2_bot_chulacraft_discord",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L310",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L37",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_6_erd_new_proposed_migration_20261004000001_redesign_admin_sql",
-      "target": "docs_redesign_plan_6_3_rpc_changes",
+      "source": "docs_prd_discord_verified_role_5_design",
+      "target": "docs_prd_discord_verified_role_5_3_discord_server_setup",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L324",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L46",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_7_phases",
-      "target": "docs_redesign_plan_phase_0_prep",
+      "source": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
+      "target": "docs_prd_discord_verified_role_3_scope",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L347",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L11",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_5_gap_analysis_what_the_design_needs_vs_what_the_db_has",
+      "source": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
+      "target": "docs_prd_discord_verified_role_4_user_stories",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L187",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_6_erd_new_proposed_migration_20261004000001_redesign_admin_sql",
+      "source": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
+      "target": "docs_prd_discord_verified_role_5_design",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L205",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_2_design_route_map",
+      "source": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
+      "target": "docs_prd_discord_verified_role_6_acceptance_criteria",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L23",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L49",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_7_phases",
+      "source": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
+      "target": "docs_prd_discord_verified_role_1_problem",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L343",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L5",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_pr_1_redesign",
+      "source": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
+      "target": "docs_prd_discord_verified_role_7_tests",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L352",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L60",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_pr_2_guest_model_admin_data",
+      "source": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
+      "target": "docs_prd_discord_verified_role_8_rollout",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L410",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L65",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_8_risks_notes",
+      "source": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
+      "target": "docs_prd_discord_verified_role_9_risks",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L446",
+      "source_file": "docs/PRD-discord-verified-role.md",
+      "source_location": "L73",
       "weight": 1.0
     },
     {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_9_decisions",
+      "source": "docs_prd_discord_verified_role_prd_auto_assign_discord_verified_role",
+      "target": "docs_prd_discord_verified_role_2_goal",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L455",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_3_design_system_phase_1",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L47",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_1_goal",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
+      "source_file": "docs/PRD-discord-verified-role.md",
       "source_location": "L8",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_chulacraft_redesign_implementation_plan",
-      "target": "docs_redesign_plan_4_erd_current_as_of_migration_20261003000001",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L92",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_pr_1_redesign",
-      "target": "docs_redesign_plan_phase_1_foundation",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L354",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_pr_1_redesign",
-      "target": "docs_redesign_plan_phase_2_public_pages",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L366",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_pr_1_redesign",
-      "target": "docs_redesign_plan_phase_3_onboarding_flow",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L374",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_pr_1_redesign",
-      "target": "docs_redesign_plan_phase_4_player_dashboard",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L381",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_pr_1_redesign",
-      "target": "docs_redesign_plan_phase_5_admin_restyle_existing_data_only",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L391",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_pr_1_redesign",
-      "target": "docs_redesign_plan_phase_6_pr_1_checks",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L403",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_pr_2_guest_model_admin_data",
-      "target": "docs_redesign_plan_phase_7_db_migration",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L412",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_pr_2_guest_model_admin_data",
-      "target": "docs_redesign_plan_phase_8_admin_overview_guest_ui",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L422",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_pr_2_guest_model_admin_data",
-      "target": "docs_redesign_plan_deploy_order_pr_2",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L437",
       "weight": 1.0
     },
     {
@@ -14271,6 +14281,17 @@
       "weight": 1.0
     },
     {
+      "source": "src_app_admin_loading",
+      "target": "src_app_admin_loading_loading",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/admin/loading.tsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
       "source": "src_app_admin_overview",
       "target": "src_app_admin_overview_tool",
       "relation": "contains",
@@ -14795,7 +14816,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0
     },
     {
@@ -14806,7 +14827,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
@@ -14840,6 +14861,17 @@
       "confidence_score": 1.0,
       "source_file": "src/app/layout.tsx",
       "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_loading",
+      "target": "src_app_loading_loading",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/loading.tsx",
+      "source_location": "L4",
       "weight": 1.0
     },
     {
@@ -14921,6 +14953,17 @@
     },
     {
       "source": "src_app_register_details_about_you_form",
+      "target": "src_app_register_details_about_you_form_field",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/app/register/details/about-you-form.tsx",
+      "source_location": "L102",
+      "weight": 1.0
+    },
+    {
+      "source": "src_app_register_details_about_you_form",
       "target": "src_app_register_details_about_you_form_aboutyouform",
       "relation": "contains",
       "_origin": "ast",
@@ -14931,17 +14974,6 @@
       "weight": 1.0
     },
     {
-      "source": "src_app_register_details_about_you_form",
-      "target": "src_app_register_details_about_you_form_field",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/app/register/details/about-you-form.tsx",
-      "source_location": "L81",
-      "weight": 1.0
-    },
-    {
       "source": "src_app_register_details_about_you_form_aboutyouform",
       "target": "src_app_register_details_about_you_form_aboutyouform_onsubmit",
       "relation": "contains",
@@ -14949,7 +14981,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/app/register/details/about-you-form.tsx",
-      "source_location": "L24",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -15812,13 +15844,68 @@
     },
     {
       "source": "src_lib_faculties",
+      "target": "src_lib_faculties_faculties",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/faculties.ts",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties",
+      "target": "src_lib_faculties_facultyrole",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/faculties.ts",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties",
+      "target": "src_lib_faculties_unitrole",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/faculties.ts",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties",
+      "target": "src_lib_faculties_studylevel",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/faculties.ts",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties",
+      "target": "src_lib_faculties_study_levels",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/faculties.ts",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties",
       "target": "src_lib_faculties_profiledetails",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/faculties.ts",
-      "source_location": "L28",
+      "source_location": "L56",
       "weight": 1.0
     },
     {
@@ -15829,18 +15916,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/faculties.ts",
-      "source_location": "L29",
-      "weight": 1.0
-    },
-    {
-      "source": "src_lib_faculties",
-      "target": "src_lib_faculties_faculties",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/lib/faculties.ts",
-      "source_location": "L3",
+      "source_location": "L57",
       "weight": 1.0
     },
     {
@@ -15851,7 +15927,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/lib/faculties.ts",
-      "source_location": "L32",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties_test",
+      "target": "src_lib_faculties_test_allpairs",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L22",
       "weight": 1.0
     },
     {
@@ -15863,6 +15950,17 @@
       "confidence_score": 1.0,
       "source_file": "src/lib/faculties.test.ts",
       "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_lib_faculties_test",
+      "target": "src_lib_faculties_test_examples",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/lib/faculties.test.ts",
+      "source_location": "L7",
       "weight": 1.0
     },
     {
@@ -17063,7 +17161,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "src/app/dashboard/page.tsx",
-      "source_location": "L46",
+      "source_location": "L47",
       "weight": 1.0
     },
     {
@@ -17149,56 +17247,8 @@
       "source_file": "src/components/google-auth.tsx",
       "source_location": "L29",
       "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_phase_2_public_pages",
-      "target": "src_components_error_screen_errorscreen",
-      "relation": "references",
-      "_origin": "ast",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "context": "ErrorScreen",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L371",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_phase_3_onboarding_flow",
-      "target": "src_app_register_details_actions_saveprofile",
-      "relation": "references",
-      "_origin": "ast",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "context": "saveProfile",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L377",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_phase_4_player_dashboard",
-      "target": "src_app_register_details_actions_saveprofile",
-      "relation": "references",
-      "_origin": "ast",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "context": "saveProfile",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L382",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_redesign_plan_5_gap_analysis_what_the_design_needs_vs_what_the_db_has",
-      "target": "src_app_dashboard_actions_unlinkpersonalgoogle",
-      "relation": "references",
-      "_origin": "ast",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "context": "unlinkPersonalGoogle",
-      "source_file": "docs/redesign-plan.md",
-      "source_location": "L193",
-      "weight": 1.0
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "3445b18c600d17d9e2affab06af57e4d978344c0"
+  "built_at_commit": "933c4d9e4bcf1981e76bf84b82075a9c23b51379"
 }

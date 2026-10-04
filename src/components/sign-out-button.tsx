@@ -1,18 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useFormStatus } from "react-dom";
+import { signOut } from "@/app/auth/actions";
 import { PixelIcon } from "@/components/icons";
 
+function SubmitButton({ className }: { className?: string }) {
+  const { pending } = useFormStatus();
+  return <button type="submit" className={className} disabled={pending} aria-busy={pending}><PixelIcon name="signout" />{pending ? "Signing out…" : "Sign out"}</button>;
+}
+
 export function SignOutButton({ className }: { className?: string }) {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  async function signOut() {
-    setLoading(true);
-    await createClient().auth.signOut();
-    router.replace("/");
-    router.refresh();
-  }
-  return <button type="button" className={className} onClick={signOut} disabled={loading} aria-busy={loading}><PixelIcon name="signout" />{loading ? "Signing out…" : "Sign out"}</button>;
+  return <form action={signOut} style={{ display: "contents" }}><SubmitButton className={className} /></form>;
 }
