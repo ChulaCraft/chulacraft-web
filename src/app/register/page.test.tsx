@@ -11,12 +11,6 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 vi.mock("next/navigation", () => ({ redirect }));
-vi.mock("@/components/site-header", () => ({
-  SiteHeader: () => <header>Site header</header>,
-}));
-vi.mock("@/components/site-footer", () => ({
-  SiteFooter: () => <footer>Site footer</footer>,
-}));
 vi.mock("@/components/discord-auth", () => ({
   DiscordAuthButton: () => <button>Sign Up with Discord</button>,
 }));
@@ -60,8 +54,6 @@ describe("RegisterPage", () => {
     expect(markup).toContain("Choose sign-in method");
     expect(markup).toContain("Sign Up with Discord");
     expect(markup).toContain("Sign In with Google");
-    expect(markup).toContain("Site header");
-    expect(markup).toContain("Site footer");
     expect(redirect).not.toHaveBeenCalled();
   });
 });

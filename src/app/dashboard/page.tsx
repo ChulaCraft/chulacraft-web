@@ -1,8 +1,6 @@
 import { LinkGoogleButton } from "@/components/google-auth";
 import { PixelIcon } from "@/components/icons";
 import { RegistrationPanel } from "@/components/registration-panel";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { classifyIdentities, identityEmail, linkErrorMessage } from "@/lib/chula";
 import type { StudyLevel } from "@/lib/faculties";
 import { REGISTRATION_COLUMNS, toRegistrationView, type RegistrationView } from "@/lib/registration";
@@ -67,8 +65,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   ] as const;
 
   return (
-    <div className="page">
-      <SiteHeader user={user} active="dashboard" />
+    <>
       <main className={`container ${styles.main}`}>
         <div className="stack" style={{ "--gap": "10px" } as React.CSSProperties}>
           <span className="kicker" aria-hidden="true" />
@@ -165,7 +162,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           </div>
         )}
       </main>
-      <SiteFooter />
-    </div>
+    </>
   );
 }

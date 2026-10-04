@@ -2,8 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
 import { CopyButton } from "@/components/copy-button";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { serverAddress } from "@/components/server-address-card";
 import { discordCommunityUrl } from "@/lib/site-links";
 import styles from "./home.module.css";
@@ -25,8 +23,7 @@ const steps = [
 
 export default function HomePage() {
   return (
-    <div className="page">
-      <SiteHeader active="home" overlay />
+    <>
       <main>
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroFrame}>
@@ -114,7 +111,6 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
-    </div>
+    </>
   );
 }

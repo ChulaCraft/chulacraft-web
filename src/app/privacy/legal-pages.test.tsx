@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/components/site-header", () => ({ SiteHeader: () => <header /> }));
 
 import PrivacyPage from "./page";
 import TermsPage from "../terms/page";

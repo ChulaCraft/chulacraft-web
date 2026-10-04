@@ -2,8 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LinkGoogleButton } from "@/components/google-auth";
 import { SignOutButton } from "@/components/sign-out-button";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { PixelIcon } from "@/components/icons";
 import { StepProgress } from "@/components/step-progress";
 import { linkErrorMessage } from "@/lib/chula";
@@ -46,8 +44,7 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
   const errorMessage = linkErrorMessage(errorCode);
 
   return (
-    <div className="page">
-      <SiteHeader user={user} />
+    <>
       <main className="narrow" style={{ "--narrow": "540px" } as React.CSSProperties}>
         <div>
           <div className="stack">
@@ -84,7 +81,6 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
           </div>
         </div>
       </main>
-      <SiteFooter />
-    </div>
+    </>
   );
 }

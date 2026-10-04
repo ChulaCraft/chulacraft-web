@@ -11,7 +11,6 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 vi.mock("@/lib/reconcile-identities", () => ({ reconcileIdentities }));
 vi.mock("next/navigation", () => ({ redirect }));
-vi.mock("@/components/site-header", () => ({ SiteHeader: () => <header /> }));
 vi.mock("@/components/sign-out-button", () => ({ SignOutButton: () => <button>Sign out</button> }));
 vi.mock("@/components/google-auth", () => ({ LinkGoogleButton: () => <button>Verify with Chula Google</button> }));
 

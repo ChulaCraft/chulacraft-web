@@ -2,8 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import styles from "./register.module.css";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { DiscordAuthButton } from "@/components/discord-auth";
 import { GoogleSignInButton } from "@/components/google-auth";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
@@ -23,8 +21,7 @@ export default async function RegisterPage() {
   if (user) redirect("/welcome");
 
   return (
-    <div className="page">
-      <SiteHeader user={null} />
+    <>
       <main className="narrow" style={{ "--narrow": "520px" } as React.CSSProperties}>
         <div>
           <div className="stack" style={{ "--gap": "10px" } as React.CSSProperties}>
@@ -71,7 +68,6 @@ export default async function RegisterPage() {
           </div>
         </div>
       </main>
-      <SiteFooter />
-    </div>
+    </>
   );
 }

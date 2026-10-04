@@ -1,6 +1,4 @@
 import { PixelIcon } from "@/components/icons";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { StepProgress } from "@/components/step-progress";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import { ServiceUnavailable } from "../../dashboard/service-unavailable";
@@ -20,8 +18,7 @@ export default async function AboutYouPage() {
   const p = profile.data;
 
   return (
-    <div className="page">
-      <SiteHeader user={user} />
+    <>
       <main className="narrow" style={{ "--narrow": "560px" } as React.CSSProperties}>
         <div>
           <div className="stack">
@@ -42,7 +39,6 @@ export default async function AboutYouPage() {
           />
         </div>
       </main>
-      <SiteFooter />
-    </div>
+    </>
   );
 }

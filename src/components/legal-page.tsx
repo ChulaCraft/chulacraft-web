@@ -1,5 +1,3 @@
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import styles from "./legal-page.module.css";
 
 export const LEGAL_EFFECTIVE_DATE = "27 September 2026";
@@ -7,8 +5,7 @@ export const LEGAL_EFFECTIVE_DATE = "27 September 2026";
 /** Shared shell for /privacy and /terms. Section headings use ids s1…sN to match `sections`. */
 export function LegalPage({ title, sections, children }: { title: string; sections: string[]; children: React.ReactNode }) {
   return (
-    <div className="page">
-      <SiteHeader />
+    <>
       <main className={`container ${styles.main}`}>
         <header className={styles.header}>
           <span className="kicker" aria-hidden="true" />
@@ -23,7 +20,6 @@ export function LegalPage({ title, sections, children }: { title: string; sectio
           <article className={styles.doc} aria-labelledby="legal-title">{children}</article>
         </div>
       </main>
-      <SiteFooter />
-    </div>
+    </>
   );
 }

@@ -3,8 +3,6 @@ import { redirect } from "next/navigation";
 import { LinkGoogleButton } from "@/components/google-auth";
 import { PixelIcon } from "@/components/icons";
 import { ServerAddressRow } from "@/components/server-address-card";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { classifyIdentities, identityEmail } from "@/lib/chula";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireVerifiedUser } from "@/lib/verified-user";
@@ -71,8 +69,7 @@ export default async function WelcomePage() {
   ];
 
   return (
-    <div className="page">
-      <SiteHeader user={user} />
+    <>
       <main className="narrow">
         <div>
           <div className="stack" style={{ "--gap": "10px" } as React.CSSProperties}>
@@ -121,7 +118,6 @@ export default async function WelcomePage() {
           <Link className="btn" href="/dashboard" style={{ alignSelf: "flex-start" }}>Go to your profile <span aria-hidden="true">→</span></Link>
         </div>
       </main>
-      <SiteFooter />
-    </div>
+    </>
   );
 }

@@ -1,9 +1,9 @@
 {
-  "0": "next",
+  "0": "icons.tsx",
   "1": "server.ts",
   "2": "minecraft/route.ts",
   "3": "package.json",
-  "4": "createClient",
+  "4": "next",
   "5": "compilerOptions",
   "6": "ChulaCraft Redesign Implementation Plan",
   "7": "devDependencies",
@@ -26,7 +26,7 @@
   "24": "ref_node_crypto",
   "25": "about-you-form.tsx",
   "26": "ref_next_dev_types_routes_d_ts",
-  "27": "privacy/page.tsx",
+  "27": "about/page.tsx",
   "28": "dependencies",
   "29": "scripts",
   "30": "app/layout.tsx",
@@ -35,9 +35,8 @@
   "33": "admin/loading.tsx",
   "34": "src_app_about_you_about_you_module",
   "35": "PRD: Auto-assign Discord `verified` role",
-  "36": "next_dev_types_root_params_d",
-  "37": "dev-login/route.ts",
+  "36": "next_types_root_params_d",
+  "37": "next_types_routes_d",
   "38": "src_app_auth_error_auth_error_module",
-  "39": "src_app_not_found_module",
-  "40": "next_dev_types_routes_d"
+  "39": "src_app_not_found_module"
 }

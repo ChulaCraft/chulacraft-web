@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { DiscordIcon } from "@/components/icons";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { discordCommunityUrl } from "@/lib/site-links";
 import styles from "./about.module.css";
 
@@ -26,8 +24,7 @@ const gallery = [
 
 export default function AboutPage() {
   return (
-    <div className="page">
-      <SiteHeader active="about" />
+    <>
       <main>
         <section className={styles.hero} aria-labelledby="about-title">
           <Image className={styles.heroImage} src="/images/collection/current/2026-08-23_17.58.05.webp" alt="" fill preload sizes="100vw" />
@@ -73,7 +70,6 @@ export default function AboutPage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
-    </div>
+    </>
   );
 }

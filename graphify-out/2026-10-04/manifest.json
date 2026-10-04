@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   "next-env.d.ts": {
-    "mtime": 1791119172.3162696,
-    "seen": 1791119181.9528725,
-    "ast_hash": "8195d2c60ce847a459ae9d308d6a5724",
+    "mtime": 1791120888.3519416,
+    "seen": 1791120904.883498,
+    "ast_hash": "aa94238a90e7d04b7a47ecc3145ba6a0",
     "semantic_hash": ""
   },
   "next.config.ts": {
@@ -168,9 +168,9 @@
     "semantic_hash": ""
   },
   "src/components/sign-out-button.tsx": {
-    "mtime": 1791053781.912981,
-    "seen": 1791055561.1904685,
-    "ast_hash": "913e729ee28c4e59e17c34d90237af38",
+    "mtime": 1791120874.2567308,
+    "seen": 1791120904.8847625,
+    "ast_hash": "63a5ae9a790a6e1c76fc3384fbf51c4a",
     "semantic_hash": ""
   },
   "src/components/site-footer.tsx": {
@@ -246,8 +246,8 @@
     "semantic_hash": ""
   },
   "src/lib/supabase/middleware.ts": {
-    "mtime": 1791119146.9487357,
-    "seen": 1791119181.954404,
+    "mtime": 1791120874.2568202,
+    "seen": 1791120904.8852675,
     "ast_hash": "00c2d23f908c77436442f36ff21ba6a8",
     "semantic_hash": ""
   },
@@ -1479,6 +1479,12 @@
     "mtime": 1791119154.5198534,
     "seen": 1791119181.9535053,
     "ast_hash": "82040c7f25c13f9f211ce93d55f11644",
+    "semantic_hash": ""
+  },
+  "src/app/auth/actions.ts": {
+    "mtime": 1791120865.0267086,
+    "seen": 1791120904.8840063,
+    "ast_hash": "3ca6986338d44974cf02e0044fcfa0b1",
     "semantic_hash": ""
   }
 }

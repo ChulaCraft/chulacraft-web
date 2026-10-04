@@ -2,11 +2,9 @@ import Link from "next/link";
 import { Brand } from "@/components/brand";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
 import { discordCommunityUrl } from "@/lib/site-links";
-import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
-
-export type NavId = "home" | "about" | "dashboard" | "admin";
+import { HeaderShell, NavLinks } from "./site-nav";
 
 function Avatar({ src, name, size = 36 }: { src: string | null; name: string; size?: number }) {
   return src
@@ -15,14 +13,15 @@ function Avatar({ src, name, size = 36 }: { src: string | null; name: string; si
     : <span className="avatar" aria-hidden="true" style={{ width: size, height: size }}>{name.charAt(0).toUpperCase()}</span>;
 }
 
-export async function SiteHeader({ user, active, overlay }: { user?: User | null; active?: NavId; overlay?: boolean }) {
+// Rendered once by the root layout; client navigations keep it, so this runs on
+// full loads and after sign-out (which revalidates the layout), not per page.
+export async function SiteHeader() {
   const supabase = await createClient();
-  if (user === undefined) {
-    try {
-      ({ data: { user } } = await supabase.auth.getUser());
-    } catch {
-      user = null;
-    }
+  let user = null;
+  try {
+    ({ data: { user } } = await supabase.auth.getUser());
+  } catch {
+    // Signed-out header is the safe fallback.
   }
 
   let isAdmin = false;
@@ -39,16 +38,12 @@ export async function SiteHeader({ user, active, overlay }: { user?: User | null
   const name = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Player";
   const avatar = typeof meta.avatar_url === "string" ? meta.avatar_url : null;
 
-  const links: { id: NavId; label: string; href: string }[] = [
-    { id: "home", label: "Home", href: "/" },
-    { id: "about", label: "About", href: "/about" },
-  ];
-  if (user) links.push({ id: "dashboard", label: "Profile", href: "/dashboard" });
-  if (isAdmin) links.push({ id: "admin", label: "Admin", href: "/admin" });
-  const navLinks = links.map((l) => <Link key={l.id} href={l.href} aria-current={l.id === active ? "page" : undefined}>{l.label}</Link>);
+  const links = [{ label: "Home", href: "/" }, { label: "About", href: "/about" }];
+  if (user) links.push({ label: "Profile", href: "/dashboard" });
+  if (isAdmin) links.push({ label: "Admin", href: "/admin" });
+  const navLinks = <NavLinks links={links} />;
 
-  // On the landing page the header floats over the hero and drops in on scroll.
-  return <header className={`site-header${overlay ? " site-header-overlay" : ""}`}><div className="container header-inner">
+  return <HeaderShell><div className="container header-inner">
     <Brand />
     <nav className="main-nav" aria-label="Main">{navLinks}</nav>
     <div className="header-actions">
@@ -89,5 +84,5 @@ export async function SiteHeader({ user, active, overlay }: { user?: User | null
             </div>}
       </nav>
     </details>
-  </div></header>;
+  </div></HeaderShell>;
 }

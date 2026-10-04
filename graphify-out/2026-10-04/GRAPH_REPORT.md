@@ -1,12 +1,12 @@
 # Graph Report - chulacraft-web  (2026-10-04)
 
 ## Corpus Check
-- 130 files · ~2,347,248 words
+- 131 files · ~2,347,293 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 20 file(s) not represented in the graph (top: .css 12, (none) 2, .toml 2)
 
 ## Summary
-- 497 nodes · 983 edges · 41 communities (22 shown, 19 thin omitted)
+- 499 nodes · 985 edges · 40 communities (21 shown, 19 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 9 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
@@ -16,11 +16,11 @@
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- next
+- icons.tsx
 - server.ts
 - minecraft/route.ts
 - package.json
-- createClient
+- next
 - compilerOptions
 - ChulaCraft Redesign Implementation Plan
 - devDependencies
@@ -43,7 +43,7 @@
 - ref_node_crypto
 - about-you-form.tsx
 - ref_next_dev_types_routes_d_ts
-- privacy/page.tsx
+- about/page.tsx
 - dependencies
 - scripts
 - app/layout.tsx
@@ -51,15 +51,14 @@
 - overrides
 - src_app_about_you_about_you_module
 - PRD: Auto-assign Discord `verified` role
-- next_dev_types_root_params_d
-- dev-login/route.ts
+- next_types_root_params_d
+- next_types_routes_d
 - src_app_auth_error_auth_error_module
 - src_app_not_found_module
-- next_dev_types_routes_d
 
 ## God Nodes (most connected - your core abstractions)
 1. `next` - 38 edges
-2. `createClient()` - 32 edges
+2. `createClient()` - 34 edges
 3. `PixelIcon()` - 20 edges
 4. `createAdminClient()` - 18 edges
 5. `compilerOptions` - 16 edges
@@ -70,12 +69,12 @@
 10. `SiteFooter()` - 12 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `GET()` --calls--> `createClient()`  [EXTRACTED]
-  src/app/api/dev-login/route.ts → src/lib/supabase/server.ts
 - `DashboardPage()` --indirect_call--> `toRegistrationView()`  [INFERRED]
   src/app/dashboard/page.tsx → src/lib/registration.ts
 - `AdminLayout()` --calls--> `requireVerifiedUser()`  [EXTRACTED]
   src/app/admin/layout.tsx → src/lib/verified-user.ts
+- `AdminUserPage()` --calls--> `when()`  [EXTRACTED]
+  src/app/admin/users/[id]/page.tsx → src/app/admin/overview.tsx
 - `AdminPlayersPage()` --calls--> `createClient()`  [EXTRACTED]
   src/app/admin/players/page.tsx → src/lib/supabase/server.ts
 - `RestorePage()` --calls--> `createClient()`  [EXTRACTED]
@@ -84,27 +83,27 @@
 ## Import Cycles
 - None detected.
 
-## Communities (41 total, 19 thin omitted)
+## Communities (40 total, 19 thin omitted)
 
-### Community 0 - "next"
-Cohesion: 0.07
-Nodes (44): next, react, src_app_about_about_module, gallery, metadata, values, AdminLayout(), ServiceUnavailable() (+36 more)
+### Community 0 - "icons.tsx"
+Cohesion: 0.06
+Nodes (41): react-dom, AdminLayout(), signOut(), ServiceUnavailable(), src_app_home_module, features, steps, AboutYouPage() (+33 more)
 
 ### Community 1 - "server.ts"
 Cohesion: 0.11
-Nodes (22): @supabase/ssr, authErrorResponse(), GET(), { exchangeCodeForSession, getUserIdentities, signOut, reconcileIdentities }, ok, AuthErrorPage(), ErrorScreen(), AUTH_FAILURE_REASONS (+14 more)
+Nodes (24): nextConfig, ref_node_url, @supabase/ssr, vitest, authErrorResponse(), GET(), { exchangeCodeForSession, getUserIdentities, signOut, reconcileIdentities }, ok (+16 more)
 
 ### Community 2 - "minecraft/route.ts"
 Cohesion: 0.09
-Nodes (34): nextConfig, ref_node_url, vitest, DELETE(), GET(), ipAttempts, ipRateLimited(), PATCH() (+26 more)
+Nodes (34): AdminUserPage(), DELETE(), GET(), ipAttempts, ipRateLimited(), PATCH(), POST(), Profile (+26 more)
 
 ### Community 3 - "package.json"
 Cohesion: 0.14
 Nodes (14): name, private, version, @emnapi/core, @emnapi/runtime, eslint, eslint-config-next, @eslint/js (+6 more)
 
-### Community 4 - "createClient"
+### Community 4 - "next"
 Cohesion: 0.08
-Nodes (37): src_app_admin_admin_module, StatRow(), Stats, timeSince(), Tool, ToolCards(), when(), Activity (+29 more)
+Nodes (39): next, react, src_app_admin_admin_module, StatRow(), Stats, timeSince(), Tool, ToolCards() (+31 more)
 
 ### Community 5 - "compilerOptions"
 Cohesion: 0.11
@@ -136,7 +135,7 @@ Nodes (28): @supabase/supabase-js, unlinkPersonalGoogle(), src_app_dashboard_das
 
 ### Community 12 - "next-env.d.ts"
 Cohesion: 0.50
-Nodes (3): NOTE: This file should not be edited, next_types_root_params_d, next_types_routes_d
+Nodes (3): next_dev_types_root_params_d, next_dev_types_routes_d, NOTE: This file should not be edited
 
 ### Community 14 - "Visual TODO"
 Cohesion: 0.25
@@ -150,9 +149,9 @@ Nodes (7): Chulacraft registration runbook, Normal operations, Roles and Chula v
 Cohesion: 0.18
 Nodes (17): AboutYouForm(), onSubmit(), src_app_register_details_about_you_module, saveProfile(), SaveProfileState, FACULTIES, facultyRole(), ProfileDetails (+9 more)
 
-### Community 27 - "privacy/page.tsx"
-Cohesion: 0.16
-Nodes (12): react-dom, collected, metadata, PrivacyPage(), RegisterPage(), { getUser, redirect }, metadata, TermsPage() (+4 more)
+### Community 27 - "about/page.tsx"
+Cohesion: 0.14
+Nodes (14): src_app_about_about_module, gallery, metadata, values, collected, metadata, PrivacyPage(), metadata (+6 more)
 
 ### Community 28 - "dependencies"
 Cohesion: 0.20
@@ -170,29 +169,25 @@ Nodes (6): @vercel/analytics, src_app_globals, metadata, bodyFont, displayFont, 
 Cohesion: 0.14
 Nodes (13): 1. Problem, 2. Goal, 3. Scope, 4. User stories, 5.1 Database (chulacraft-web, new migration), 5.2 Bot (chulacraft-discord), 5.3 Discord server setup, 5. Design (+5 more)
 
-### Community 37 - "dev-login/route.ts"
-Cohesion: 0.60
-Nodes (3): GET(), DEV_LOGIN_ENABLED, DEV_USERS
-
 ## Knowledge Gaps
 - **195 isolated node(s):** `nextConfig`, `name`, `private`, `version`, `dev` (+190 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 252 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 253 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `next` to `server.ts`, `minecraft/route.ts`, `package.json`, `createClient`, `dev-login/route.ts`, `dashboard/page.tsx`, `about-you-form.tsx`, `privacy/page.tsx`, `app/layout.tsx`?**
-  _High betweenness centrality (0.185) - this node is a cross-community bridge._
-- **Why does `vitest` connect `minecraft/route.ts` to `server.ts`, `package.json`, `createClient`, `dashboard/page.tsx`, `about-you-form.tsx`, `privacy/page.tsx`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
-- **Why does `@playwright/test` connect `visual-audit.spec.ts` to `package.json`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
+- **Why does `next` connect `next` to `icons.tsx`, `server.ts`, `minecraft/route.ts`, `package.json`, `dashboard/page.tsx`, `about-you-form.tsx`, `about/page.tsx`, `app/layout.tsx`?**
+  _High betweenness centrality (0.183) - this node is a cross-community bridge._
+- **Why does `vitest` connect `server.ts` to `icons.tsx`, `minecraft/route.ts`, `package.json`, `next`, `dashboard/page.tsx`, `about-you-form.tsx`, `about/page.tsx`?**
+  _High betweenness centrality (0.048) - this node is a cross-community bridge._
+- **Why does `createClient()` connect `next` to `icons.tsx`, `server.ts`, `minecraft/route.ts`, `dashboard/page.tsx`?**
+  _High betweenness centrality (0.032) - this node is a cross-community bridge._
 - **What connects `nextConfig`, `name`, `private` to the rest of the system?**
   _195 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `next` be split into smaller, more focused modules?**
-  _Cohesion score 0.07293594964827842 - nodes in this community are weakly interconnected._
+- **Should `icons.tsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.06455399061032864 - nodes in this community are weakly interconnected._
 - **Should `server.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.1126984126984127 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10512820512820513 - nodes in this community are weakly interconnected._
 - **Should `minecraft/route.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.08826945412311266 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09446693657219973 - nodes in this community are weakly interconnected._
