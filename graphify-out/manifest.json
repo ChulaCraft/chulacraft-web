@@ -6,8 +6,8 @@
     "semantic_hash": ""
   },
   "next-env.d.ts": {
-    "mtime": 1791122027.2976432,
-    "seen": 1791122053.3619597,
+    "mtime": 1791122431.9829755,
+    "seen": 1791122466.8318253,
     "ast_hash": "aa94238a90e7d04b7a47ecc3145ba6a0",
     "semantic_hash": ""
   },
@@ -1254,9 +1254,9 @@
     "semantic_hash": ""
   },
   "src/app/privacy/legal-pages.test.tsx": {
-    "mtime": 1791122016.6847825,
-    "seen": 1791122053.3625565,
-    "ast_hash": "f4b15705d9c62096aefc80d2c1c4c6db",
+    "mtime": 1791122418.8828852,
+    "seen": 1791122466.832624,
+    "ast_hash": "181289ae31fabe8c5191dbe91336d208",
     "semantic_hash": ""
   },
   "src/app/privacy/page.tsx": {
@@ -1488,9 +1488,9 @@
     "semantic_hash": ""
   },
   "src/components/site-nav.tsx": {
-    "mtime": 1791121993.0839894,
-    "seen": 1791122053.362894,
-    "ast_hash": "cda6c112e920a0db91aac76e2826ab6d",
+    "mtime": 1791122406.5512722,
+    "seen": 1791122466.8331826,
+    "ast_hash": "15bf48712cb6fa229f10d324d35d6908",
     "semantic_hash": ""
   }
 }

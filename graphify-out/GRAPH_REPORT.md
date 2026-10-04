@@ -1,17 +1,17 @@
 # Graph Report - chulacraft-web  (2026-10-04)
 
 ## Corpus Check
-- 132 files · ~2,347,142 words
+- 132 files · ~2,347,192 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 20 file(s) not represented in the graph (top: .css 12, (none) 2, .toml 2)
 
 ## Summary
-- 501 nodes · 947 edges · 42 communities (22 shown, 20 thin omitted)
+- 501 nodes · 948 edges · 42 communities (22 shown, 20 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 9 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `9f059918`
+- Built from commit: `476186eb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -183,7 +183,7 @@ Nodes (8): admin, cu, discord, gmail, m, query, run(), session
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `next` connect `next` to `icons.tsx`, `callback/route.ts`, `minecraft/route.ts`, `package.json`, `createClient`, `about-you-form.tsx`, `about/page.tsx`, `site-header.tsx`?**
-  _High betweenness centrality (0.202) - this node is a cross-community bridge._
+  _High betweenness centrality (0.201) - this node is a cross-community bridge._
 - **Why does `vitest` connect `callback/route.ts` to `icons.tsx`, `minecraft/route.ts`, `package.json`, `createClient`, `reconcile-identities.test.ts`, `next`, `about-you-form.tsx`, `about/page.tsx`?**
   _High betweenness centrality (0.050) - this node is a cross-community bridge._
 - **Why does `createClient()` connect `createClient` to `icons.tsx`, `callback/route.ts`, `minecraft/route.ts`, `next`, `site-header.tsx`?**

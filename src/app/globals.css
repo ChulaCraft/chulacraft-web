@@ -30,8 +30,13 @@
 }
 
 html {
+  scrollbar-width: none;
   min-width: 320px;
   background: var(--bg);
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -595,45 +600,24 @@ select.input {
 }
 
 /* Landing page only: the header floats over the hero, out of flow, and slides
-   down once the reader scrolls. */
+   down once the reader scrolls (site-nav.tsx toggles .is-shown). */
 .site-header-overlay {
   position: fixed;
   inset-inline: 0;
   top: 0;
-  animation: header-drop-in linear both;
-  animation-timeline: scroll(root block);
-  animation-range: 0 72px;
+  translate: 0 -100%;
+  transition: translate 200ms ease;
 }
 
 /* Keyboard users must never have the nav hidden above them. */
+.site-header-overlay.is-shown,
 .site-header-overlay:focus-within {
-  animation: none;
   translate: 0 0;
-}
-
-@keyframes header-drop-in {
-  from {
-    translate: 0 -100%;
-  }
-
-  to {
-    translate: 0 0;
-  }
-}
-
-/* Without scroll timelines the header would be stuck off-screen, so drop the
-   animation and let it sit at the top of the hero instead. */
-@supports not (animation-timeline: scroll()) {
-  .site-header-overlay {
-    animation: none;
-    translate: 0 0;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .site-header-overlay {
-    animation: none;
-    translate: 0 0;
+    transition: none;
   }
 }
 

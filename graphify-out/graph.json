@@ -1531,7 +1531,7 @@
       "file_type": "code",
       "norm_label": "headershell()",
       "source_file": "src/components/site-nav.tsx",
-      "source_location": "L9"
+      "source_location": "L10"
     },
     {
       "id": "src_components_site_nav_navlinks",
@@ -1543,7 +1543,7 @@
       "file_type": "code",
       "norm_label": "navlinks()",
       "source_file": "src/components/site-nav.tsx",
-      "source_location": "L14"
+      "source_location": "L24"
     },
     {
       "id": "src_app_admin_loading_loading",
@@ -12401,6 +12401,18 @@
       "weight": 1.0
     },
     {
+      "source": "src_components_site_nav",
+      "target": "ref_react",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/components/site-nav.tsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
       "source": "src_components_verification_badge",
       "target": "src_components_icons",
       "relation": "imports_from",
@@ -15147,24 +15159,24 @@
     },
     {
       "source": "src_components_site_nav",
-      "target": "src_components_site_nav_navlinks",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/components/site-nav.tsx",
-      "source_location": "L14",
-      "weight": 1.0
-    },
-    {
-      "source": "src_components_site_nav",
       "target": "src_components_site_nav_headershell",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/components/site-nav.tsx",
-      "source_location": "L9",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_site_nav",
+      "target": "src_components_site_nav_navlinks",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/components/site-nav.tsx",
+      "source_location": "L24",
       "weight": 1.0
     },
     {
@@ -16861,5 +16873,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "9f05991856709c725c7490597f84d52a68f1b3a3"
+  "built_at_commit": "476186eb72268d793e6a435cb6682538405c3aa3"
 }

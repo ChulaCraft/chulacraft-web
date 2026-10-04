@@ -2,13 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // The header lives in the root layout and isn't re-rendered on navigation,
 // so the bits that depend on the current page are worked out here instead.
 
 export function HeaderShell({ children }: { children: React.ReactNode }) {
+  const home = usePathname() === "/";
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    if (!home) return;
+    const onScroll = () => setScrolled(window.scrollY > 72);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [home]);
   // On the landing page the header floats over the hero and drops in on scroll.
-  return <header className={`site-header${usePathname() === "/" ? " site-header-overlay" : ""}`}>{children}</header>;
+  return <header className={`site-header${home ? " site-header-overlay" : ""}${home && scrolled ? " is-shown" : ""}`}>{children}</header>;
 }
 
 export function NavLinks({ links }: { links: { label: string; href: string }[] }) {
