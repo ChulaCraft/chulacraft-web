@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ConfirmAction } from "@/components/confirm-action";
 import { setRole } from "./actions";
+import styles from "../../admin.module.css";
 
 const BODY: Record<string, (name: string) => string> = {
   admin: () => "Admins can search players, reset Chula links, and restore accounts.",
@@ -16,8 +17,8 @@ export function RoleControl({ userId, role, name, handle }: { userId: string; ro
   return (
     <div className="field">
       <label htmlFor="role" className="label">Role</label>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-        <select id="role" className="input" style={{ flex: "1 1 140px", width: "auto" }} value={draft} onChange={(e) => setDraft(e.target.value)}>
+      <div className={styles.roleField}>
+        <select id="role" className={`input ${styles.roleSelect}`} value={draft} onChange={(e) => setDraft(e.target.value)}>
           <option value="user">User</option>
           <option value="admin">Admin</option>
           <option value="owner">Owner</option>

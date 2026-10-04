@@ -1,0 +1,563 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
+      account_change_log: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          entity: string
+          entity_id: string | null
+          field: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          source: string
+          target_user_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          field: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          source?: string
+          target_user_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          field?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          source?: string
+          target_user_id?: string
+        }
+        Relationships: []
+      }
+      chula_claims: {
+        Row: {
+          claimed_at: string
+          discord_id: string
+          email: string
+          google_sub: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          discord_id: string
+          email: string
+          google_sub: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          discord_id?: string
+          email?: string
+          google_sub?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      minecraft_registrations: {
+        Row: {
+          created_at: string
+          desired_whitelisted: boolean
+          discord_user_id: string
+          discord_username: string | null
+          id: string
+          is_active: boolean
+          last_sync_error_at: string | null
+          last_sync_error_code: string | null
+          minecraft_username: string
+          minecraft_username_key: string
+          minecraft_uuid: string
+          next_sync_at: string
+          revoked_at: string | null
+          sync_attempts: number
+          sync_failing_since: string | null
+          sync_status: string
+          updated_at: string
+          user_id: string
+          whitelisted_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          desired_whitelisted?: boolean
+          discord_user_id: string
+          discord_username?: string | null
+          id?: string
+          is_active?: boolean
+          last_sync_error_at?: string | null
+          last_sync_error_code?: string | null
+          minecraft_username: string
+          minecraft_username_key: string
+          minecraft_uuid: string
+          next_sync_at?: string
+          revoked_at?: string | null
+          sync_attempts?: number
+          sync_failing_since?: string | null
+          sync_status?: string
+          updated_at?: string
+          user_id: string
+          whitelisted_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          desired_whitelisted?: boolean
+          discord_user_id?: string
+          discord_username?: string | null
+          id?: string
+          is_active?: boolean
+          last_sync_error_at?: string | null
+          last_sync_error_code?: string | null
+          minecraft_username?: string
+          minecraft_username_key?: string
+          minecraft_uuid?: string
+          next_sync_at?: string
+          revoked_at?: string | null
+          sync_attempts?: number
+          sync_failing_since?: string | null
+          sync_status?: string
+          updated_at?: string
+          user_id?: string
+          whitelisted_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          faculty: string | null
+          first_name: string | null
+          guest_verified_at: string | null
+          guest_verified_by: string | null
+          last_name: string | null
+          major: string | null
+          nickname: string | null
+          role: string
+          study_level: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          faculty?: string | null
+          first_name?: string | null
+          guest_verified_at?: string | null
+          guest_verified_by?: string | null
+          last_name?: string | null
+          major?: string | null
+          nickname?: string | null
+          role?: string
+          study_level?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          faculty?: string | null
+          first_name?: string | null
+          guest_verified_at?: string | null
+          guest_verified_by?: string | null
+          last_name?: string | null
+          major?: string | null
+          nickname?: string | null
+          role?: string
+          study_level?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles_major_backup_20261005: {
+        Row: {
+          faculty: string | null
+          major: string | null
+          user_id: string | null
+        }
+        Insert: {
+          faculty?: string | null
+          major?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          faculty?: string | null
+          major?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      registration_attempt_windows: {
+        Row: {
+          attempts: number
+          user_id: string
+          window_started_at: string
+        }
+        Insert: {
+          attempts?: number
+          user_id: string
+          window_started_at?: string
+        }
+        Update: {
+          attempts?: number
+          user_id?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      add_minecraft_account: {
+        Args: {
+          p_minecraft_username: string
+          p_minecraft_uuid: string
+          p_user_id: string
+        }
+        Returns: {
+          created: boolean
+          desired_whitelisted: boolean
+          id: string
+          minecraft_username: string
+          sync_status: string
+          updated_at: string
+        }[]
+      }
+      admin_display_name: { Args: { p_user_id: string }; Returns: string }
+      admin_get_user: { Args: { p_user_id: string }; Returns: Json }
+      admin_mark_guest: { Args: { p_user_id: string }; Returns: undefined }
+      admin_newest_players: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          display_name: string
+          handle: string
+          user_id: string
+          verification_kind: string
+        }[]
+      }
+      admin_overview_stats: {
+        Args: never
+        Returns: {
+          guests: number
+          oldest_failing_since: string
+          pending_sync: number
+          players: number
+          removed_accounts: number
+          retrying_sync: number
+          unverified: number
+          verified: number
+          whitelisted_accounts: number
+        }[]
+      }
+      admin_recent_activity: {
+        Args: { p_limit?: number }
+        Returns: {
+          actor_name: string
+          created_at: string
+          entity: string
+          field: string
+          new_value: string
+          old_value: string
+          target_name: string
+          target_user_id: string
+        }[]
+      }
+      admin_removed_accounts: {
+        Args: never
+        Returns: {
+          discord_username: string
+          id: string
+          is_active: boolean
+          minecraft_username: string
+          removed_at: string
+          removed_by: string
+          user_id: string
+        }[]
+      }
+      admin_reset_chula: { Args: { p_user_id: string }; Returns: undefined }
+      admin_search_users: {
+        Args: { p_query: string }
+        Returns: {
+          chula_email: string
+          created_at: string
+          discord_username: string
+          email: string
+          minecraft_usernames: string
+          role: string
+          user_id: string
+          verification_kind: string
+        }[]
+      }
+      admin_set_role: {
+        Args: { p_role: string; p_user_id: string }
+        Returns: undefined
+      }
+      admin_set_whitelisted: {
+        Args: { p_registration_id: string; p_value: boolean }
+        Returns: undefined
+      }
+      am_i_player_verified: { Args: never; Returns: boolean }
+      change_minecraft_account: {
+        Args: {
+          p_minecraft_username: string
+          p_minecraft_uuid: string
+          p_registration_id: string
+          p_user_id: string
+        }
+        Returns: {
+          created: boolean
+          desired_whitelisted: boolean
+          id: string
+          minecraft_username: string
+          sync_status: string
+          updated_at: string
+        }[]
+      }
+      claim_chula: {
+        Args: { p_email: string; p_google_sub: string; p_user_id: string }
+        Returns: undefined
+      }
+      consume_registration_attempt: { Args: never; Returns: boolean }
+      current_app_role: { Args: never; Returns: string }
+      hook_only_discord_signups: { Args: { event: Json }; Returns: Json }
+      is_chula_email: { Args: { p_email: string }; Returns: boolean }
+      is_chula_verified: { Args: { p_user_id: string }; Returns: boolean }
+      is_player_verified: { Args: { p_user_id: string }; Returns: boolean }
+      log_account_change: {
+        Args: {
+          p_actor: string
+          p_entity: string
+          p_entity_id: string
+          p_field: string
+          p_new: string
+          p_old: string
+          p_source: string
+          p_target: string
+        }
+        Returns: undefined
+      }
+      log_identity_change: {
+        Args: {
+          p_field: string
+          p_identity_id: string
+          p_new: string
+          p_old: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      my_chula_claim: {
+        Args: never
+        Returns: {
+          email: string
+          google_sub: string
+        }[]
+      }
+      remove_minecraft_account: {
+        Args: { p_registration_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      revoked_by_admin: {
+        Args: { p_registration_id: string }
+        Returns: boolean
+      }
+      update_profile_details: {
+        Args: {
+          p_faculty: string
+          p_first_name: string
+          p_last_name: string
+          p_major: string
+          p_nickname: string
+          p_study_level?: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      verified_members: {
+        Args: { p_discord_ids?: string[]; p_user_ids?: string[] }
+        Returns: {
+          discord_id: string
+          faculty: string
+          is_chula: boolean
+          major: string
+          study_level: string
+        }[]
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const
+

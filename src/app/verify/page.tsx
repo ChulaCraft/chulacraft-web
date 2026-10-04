@@ -45,7 +45,7 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
 
   return (
     <>
-      <main className="narrow" style={{ "--narrow": "540px" } as React.CSSProperties}>
+      <main className="narrow w-540">
         <div>
           <div className="stack">
             <StepProgress step={2} />
@@ -56,7 +56,7 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
           {errorMessage && (
             <div className="alert alert-error" role="alert">
               <PixelIcon name="warning" />
-              <div className="stack" style={{ "--gap": "4px" } as React.CSSProperties}>
+              <div className="stack gap-4">
                 <p className="alert-title">Verification didn&apos;t finish</p>
                 <p className="alert-body">{errorMessage}</p>
               </div>
@@ -64,7 +64,7 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
           )}
 
           <section className={`panel ${styles.card}`} aria-label="Verify Chula account">
-            <div className="stack" style={{ "--gap": "6px" } as React.CSSProperties}>
+            <div className="stack gap-6">
               <p className={styles.label}>Accepted accounts</p>
               <div className={styles.chips}><span className="chip">@chula.ac.th</span><span className="chip">@student.chula.ac.th</span></div>
             </div>

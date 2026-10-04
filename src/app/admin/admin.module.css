@@ -130,6 +130,54 @@
   font-size: 13px;
 }
 
+/* Loading skeletons */
+
+.skHead {
+  width: 200px;
+  height: 36px;
+}
+
+.skLines {
+  height: 120px;
+}
+
+.skTall {
+  height: 200px;
+}
+
+.skRowLines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skRowLines > :first-child {
+  width: 40%;
+  height: 12px;
+}
+
+.skRowLines > :last-child {
+  width: 60%;
+  height: 10px;
+}
+
+.skBadge {
+  width: 90px;
+  height: 22px;
+}
+
+.avatarSm {
+  width: 40px;
+  height: 40px;
+}
+
+.avatarLg {
+  width: 56px;
+  height: 56px;
+  font-size: 26px;
+}
+
 .skeletonRow,
 .removedRow {
   padding: 14px 18px;
@@ -254,6 +302,17 @@
 .roleRow {
   padding-top: 14px;
   border-top: 2px solid var(--surface-2);
+}
+
+.roleField {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.roleSelect {
+  flex: 1 1 140px;
+  width: auto;
 }
 
 .flush {

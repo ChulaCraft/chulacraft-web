@@ -2,10 +2,11 @@ import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { describeChange } from "@/lib/change-log";
 import { createClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/database.types";
 import styles from "./admin.module.css";
 import { StatRow, timeSince, ToolCards, when, type Stats } from "./overview";
 
-type Activity = { created_at: string; actor_name: string | null; field: string; old_value: string | null; new_value: string | null; target_user_id: string; target_name: string | null };
+type Activity = Database["public"]["Functions"]["admin_recent_activity"]["Returns"][number];
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -14,7 +15,7 @@ export default async function AdminPage() {
     supabase.rpc("admin_recent_activity", { p_limit: 5 }),
   ]);
   const s = stats.data;
-  const log = (activity.data ?? []) as Activity[];
+  const log: Activity[] = activity.data ?? [];
 
   return <>
     <div className={styles.titleRow}>
@@ -30,7 +31,7 @@ export default async function AdminPage() {
       <div className="alert alert-error" role="alert"><PixelIcon name="warning" /><p className="alert-body">Couldn&apos;t load the numbers. Please reload.</p></div>
     ) : <>
       {(s.retrying_sync > 0 || s.unverified > 0) && (
-        <section aria-labelledby="att-title" className="stack" style={{ "--gap": "10px" } as React.CSSProperties}>
+        <section aria-labelledby="att-title" className="stack gap-10">
           <h2 id="att-title" className="section-title">Needs attention</h2>
           <ul className={styles.attention}>
             {s.retrying_sync > 0 && (

@@ -22,9 +22,9 @@ export default async function RegisterPage() {
 
   return (
     <>
-      <main className="narrow" style={{ "--narrow": "520px" } as React.CSSProperties}>
+      <main className="narrow w-520">
         <div>
-          <div className="stack" style={{ "--gap": "10px" } as React.CSSProperties}>
+          <div className="stack gap-10">
             <p className="eyebrow">Welcome to ChulaCraft</p>
             <h1 className="page-title">Choose sign-in method</h1>
             <p className="lead">New here? Continue with Discord. Next, you&apos;ll verify your Chula Google account and add your faculty and major.</p>
@@ -33,14 +33,14 @@ export default async function RegisterPage() {
           {unavailable && (
             <div className="alert alert-error pixel-4" role="alert">
               <PixelIcon name="warning" />
-              <div className="stack" style={{ "--gap": "4px" } as React.CSSProperties}>
+              <div className="stack gap-4">
                 <p className="alert-title">Registration is temporarily unavailable</p>
                 <p className="alert-body">We couldn&apos;t reach the sign-in service. Try again in a few minutes. If it keeps happening, let us know on <a href={discordCommunityUrl} target="_blank" rel="noreferrer">Discord</a>.</p>
               </div>
             </div>
           )}
 
-          <div className="stack" style={{ "--gap": "14px" } as React.CSSProperties}>
+          <div className="stack gap-14">
             <DiscordAuthButton className={`${styles.provider} ${styles.providerPrimary}`}>
               <span className={styles.providerIcon} aria-hidden="true"><DiscordIcon /></span>
               <span className={styles.providerText}>

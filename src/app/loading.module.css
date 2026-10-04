@@ -1,0 +1,21 @@
+.main {
+  padding-block: 48px;
+}
+
+.title {
+  width: 240px;
+  height: 36px;
+}
+
+.lines {
+  width: 60%;
+  height: 14px;
+}
+
+.panel {
+  height: 160px;
+}
+
+.panelShort {
+  height: 120px;
+}

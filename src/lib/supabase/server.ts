@@ -3,12 +3,13 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { getPublicSupabaseEnvironment, getSecretSupabaseEnvironment } from "@/lib/env";
 import { createBoundedFetch } from "@/lib/bounded-fetch";
+import type { Database } from "@/lib/supabase/database.types";
 
 export async function createClient() {
   const cookieStore = await cookies();
   const { url, key } = getPublicSupabaseEnvironment();
 
-  return createServerClient(url, key, {
+  return createServerClient<Database>(url, key, {
     global: { fetch: createBoundedFetch() },
     cookies: {
       getAll() {
@@ -28,7 +29,7 @@ export async function createClient() {
 /** Service-role client with no cookies, so admin sessions never reach the browser. Server-only. */
 export function createAdminClient() {
   const { url, key } = getSecretSupabaseEnvironment();
-  return createSupabaseClient(url, key, {
+  return createSupabaseClient<Database>(url, key, {
     global: { fetch: createBoundedFetch() },
     auth: { persistSession: false, autoRefreshToken: false }
   });

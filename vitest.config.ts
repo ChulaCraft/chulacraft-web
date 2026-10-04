@@ -9,6 +9,6 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    exclude: [...configDefaults.exclude, "tests/visual/**"]
+    exclude: [...configDefaults.exclude, "tests/visual/**", ".claude/**"]
   }
 });

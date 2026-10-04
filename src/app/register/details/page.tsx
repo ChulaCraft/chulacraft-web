@@ -1,5 +1,6 @@
 import { PixelIcon } from "@/components/icons";
 import { StepProgress } from "@/components/step-progress";
+import { toStudyLevel } from "@/lib/faculties";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import { ServiceUnavailable } from "../../dashboard/service-unavailable";
 import { AboutYouForm } from "./about-you-form";
@@ -19,7 +20,7 @@ export default async function AboutYouPage() {
 
   return (
     <>
-      <main className="narrow" style={{ "--narrow": "560px" } as React.CSSProperties}>
+      <main className="narrow w-560">
         <div>
           <div className="stack">
             <StepProgress step={3} />
@@ -35,7 +36,7 @@ export default async function AboutYouPage() {
           )}
 
           <AboutYouForm
-            initial={{ first: p?.first_name ?? "", last: p?.last_name ?? "", nick: p?.nickname ?? "", level: p?.study_level ?? "undergraduate", faculty: p?.faculty ?? "", major: p?.major ?? "" }}
+            initial={{ first: p?.first_name ?? "", last: p?.last_name ?? "", nick: p?.nickname ?? "", level: toStudyLevel(p?.study_level), faculty: p?.faculty ?? "", major: p?.major ?? "" }}
           />
         </div>
       </main>

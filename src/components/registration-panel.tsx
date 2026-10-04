@@ -14,6 +14,9 @@ import styles from "./registration-panel.module.css";
 
 type Pending = { type: "remove"; account: RegistrationView } | { type: "replace"; account: RegistrationView; newName: string };
 
+const POLL_MIN_MS = 3500;
+const POLL_MAX_MS = 60_000;
+
 async function send(method: "POST" | "PATCH" | "DELETE", body: object): Promise<string | null> {
   try {
     const response = await fetch("/api/registration/minecraft", {
@@ -41,6 +44,7 @@ export function RegistrationPanel({ initialRegistrations }: { initialRegistratio
   const [pending, setPending] = useState<Pending | null>(null);
   const [flash, setFlash] = useState("");
   const [actionError, setActionError] = useState("");
+  const [pulse, setPulse] = useState(0);
 
   const reload = useCallback(async () => {
     try {
@@ -53,11 +57,24 @@ export function RegistrationPanel({ initialRegistrations }: { initialRegistratio
     }
   }, []);
 
+  // "failed" is still retried server-side, so keep polling (backed off) until it syncs.
+  const waiting = accounts.some((account) => account.desiredWhitelisted && account.syncStatus !== "synced");
+  const delay = useRef(POLL_MIN_MS);
+
   useEffect(() => {
-    if (!accounts.some((account) => account.desiredWhitelisted && account.syncStatus !== "synced")) return;
-    const interval = window.setInterval(reload, 3500);
-    return () => window.clearInterval(interval);
-  }, [accounts, reload]);
+    if (!waiting) return;
+    // A user's own change is the moment to poll eagerly again.
+    delay.current = POLL_MIN_MS;
+    let timer = 0;
+    const tick = async () => {
+      // A hidden tab has nothing to show; the chain stays armed for when it returns.
+      if (!document.hidden) await reload();
+      delay.current = Math.min(delay.current * 2, POLL_MAX_MS);
+      timer = window.setTimeout(tick, delay.current);
+    };
+    timer = window.setTimeout(tick, delay.current);
+    return () => window.clearTimeout(timer);
+  }, [waiting, pulse, reload]);
 
   const full = accounts.length >= MAX_MINECRAFT_ACCOUNTS;
 
@@ -66,6 +83,7 @@ export function RegistrationPanel({ initialRegistrations }: { initialRegistratio
     if (error) return error;
     setAdding(false);
     setFlash(`Added ${name}. It's pending until the server adds it to the whitelist.`);
+    setPulse((count) => count + 1);
     await reload();
     return null;
   }
@@ -85,13 +103,14 @@ export function RegistrationPanel({ initialRegistrations }: { initialRegistratio
       setEditingId(null);
     }
     setPending(null);
+    setPulse((count) => count + 1);
     await reload();
   }
 
   return (
     <section id="add-account" className={`panel ${styles.panel}`} aria-labelledby="mc-title">
       <div className={styles.head}>
-        <div className="stack" style={{ "--gap": "6px" } as React.CSSProperties}>
+        <div className="stack gap-6">
           <h2 id="mc-title" className={styles.title}>Minecraft accounts</h2>
           <div className={styles.slots}>
             <div aria-hidden="true">

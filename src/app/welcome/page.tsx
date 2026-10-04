@@ -72,7 +72,7 @@ export default async function WelcomePage() {
     <>
       <main className="narrow">
         <div>
-          <div className="stack" style={{ "--gap": "10px" } as React.CSSProperties}>
+          <div className="stack gap-10">
             <span className="kicker" aria-hidden="true" />
             <h1 className="page-title">{state === "allset" ? `You're all set, ${shortName}` : state === "almost" ? `Almost there, ${shortName}` : `Welcome to ChulaCraft, ${shortName}`}</h1>
             <p className="lead">{state === "allset" ? "Everything is ready. Here is how to connect." : state === "almost" ? "Your account is in. The server just needs a moment to add you." : "A few steps and you can start playing."}</p>
@@ -81,7 +81,7 @@ export default async function WelcomePage() {
           {state === "almost" && first && (
             <div className="alert" role="status">
               <PixelIcon name="clock" />
-              <div className="stack" style={{ "--gap": "4px" } as React.CSSProperties}>
+              <div className="stack gap-4">
                 <p className="alert-title">Almost there: {first.minecraft_username} is pending</p>
                 <p className="alert-body">Waiting for the server to add it to the whitelist. This usually takes a few minutes, so check back later.</p>
               </div>
@@ -90,7 +90,7 @@ export default async function WelcomePage() {
           {state === "allset" && synced && (
             <div className="alert alert-success" role="status">
               <PixelIcon name="check" />
-              <div className="stack" style={{ "--gap": "4px" } as React.CSSProperties}>
+              <div className="stack gap-4">
                 <p className="alert-title">All set: {synced.minecraft_username} is on the whitelist</p>
                 <p className="alert-body">You can join now. See you in the world.</p>
               </div>
@@ -115,7 +115,7 @@ export default async function WelcomePage() {
             ))}
           </ol>
 
-          <Link className="btn" href="/dashboard" style={{ alignSelf: "flex-start" }}>Go to your profile <span aria-hidden="true">→</span></Link>
+          <Link className={`btn ${styles.selfStart}`} href="/dashboard">Go to your profile <span aria-hidden="true">→</span></Link>
         </div>
       </main>
     </>

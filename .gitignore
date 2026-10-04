@@ -12,5 +12,8 @@
 
 tsconfig.tsbuildinfo
 next-env.d.ts
-visual-results/test-artifacts/
+visual-results/
+mem.html
+sa.html
+memory-prices.csv
 graphify-out/cache/

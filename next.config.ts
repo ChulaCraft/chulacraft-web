@@ -22,9 +22,8 @@ const nextConfig: NextConfig = {
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "X-Frame-Options", value: "DENY" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-        // ponytail: no script-src yet (Next's inline scripts need a nonce via proxy.ts); this blocks plugins, <base> hijacks and off-site form posts.
-        { key: "Content-Security-Policy", value: "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" }
+        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" }
+        // Content-Security-Policy is built per request in src/proxy.ts so it can carry a nonce.
       ]
     }];
   }

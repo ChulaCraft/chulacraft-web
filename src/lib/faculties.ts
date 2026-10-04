@@ -47,6 +47,12 @@ export function unitRole(unit: string): string {
 
 export type StudyLevel = "undergraduate" | "graduate";
 
+/** study_level is a text column, so the generator types it as string. The check
+ * constraint in 20261005000002 limits it to exactly these two values. */
+export function toStudyLevel(value: string | null | undefined): StudyLevel {
+  return value === "graduate" ? "graduate" : "undergraduate";
+}
+
 /** The level choice, in the order the form and the database column use. */
 export const STUDY_LEVELS: { value: StudyLevel; label: string }[] = [
   { value: "undergraduate", label: "Undergraduate" },

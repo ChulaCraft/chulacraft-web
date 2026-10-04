@@ -4,13 +4,15 @@ import { ConfirmAction } from "@/components/confirm-action";
 import { PixelIcon } from "@/components/icons";
 import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
 import { describeChange } from "@/lib/change-log";
-import { MAX_MINECRAFT_ACCOUNTS, syncBadge, type SyncStatus } from "@/lib/registration";
+import { MAX_MINECRAFT_ACCOUNTS, syncBadge, toSyncStatus } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../../admin.module.css";
 import { when } from "../../overview";
 import { markGuest, resetChula, setWhitelisted } from "./actions";
 import { RoleControl } from "./role-control";
 
+/** admin_get_user returns a jsonb document, so it can't be derived from the
+ * generated table types; this mirrors the keys built in 20261004000001. */
 type Detail = {
   user: { id: string; email: string | null; created_at: string; role: string } | null;
   discord: { id: string; username: string | null } | null;
@@ -81,7 +83,7 @@ export default async function AdminUserPage({ params, searchParams }: {
     </div>
 
     <section className={`panel ${styles.userHead}`} aria-labelledby="p-name">
-      <span className="avatar" aria-hidden="true" style={{ width: 56, height: 56, fontSize: 26 }}>{name.charAt(0).toUpperCase()}</span>
+      <span className={`avatar ${styles.avatarLg}`} aria-hidden="true">{name.charAt(0).toUpperCase()}</span>
       <div className={styles.userName}>
         <h1 id="p-name" className={styles.title}>{name}</h1>
         {detail.discord?.username && <p className="muted">@{detail.discord.username}</p>}
@@ -159,7 +161,7 @@ export default async function AdminUserPage({ params, searchParams }: {
                 <thead><tr><th scope="col">Name</th><th scope="col">UUID</th><th scope="col">Whitelist</th><th scope="col">Sync</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
                 <tbody>
                   {detail.registrations.map((account) => {
-                    const badge = syncBadge({ desiredWhitelisted: account.desired_whitelisted, syncStatus: account.sync_status as SyncStatus });
+                    const badge = syncBadge({ desiredWhitelisted: account.desired_whitelisted, syncStatus: toSyncStatus(account.sync_status) });
                     return (
                       <tr key={account.id}>
                         <td className="mono" data-dim={!account.desired_whitelisted || undefined}>{account.minecraft_username}</td>

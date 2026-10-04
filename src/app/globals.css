@@ -138,6 +138,20 @@ p {
   gap: var(--gap, 12px);
 }
 
+.gap-4 { --gap: 4px; }
+.gap-6 { --gap: 6px; }
+.gap-10 { --gap: 10px; }
+.gap-14 { --gap: 14px; }
+.gap-16 { --gap: 16px; }
+
+.w-520 { --narrow: 520px; }
+.w-540 { --narrow: 540px; }
+.w-560 { --narrow: 560px; }
+
+.contents {
+  display: contents;
+}
+
 /* ---------- Type ---------- */
 
 .display {
@@ -903,6 +917,10 @@ select.input {
 
 .site-footer [aria-hidden="true"] {
   color: var(--edge-strong);
+}
+
+.site-footer .dev-link {
+  margin-inline: 6px;
 }
 
 /* ---------- Misc ---------- */

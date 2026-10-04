@@ -3,18 +3,11 @@ import { ConfirmAction } from "@/components/confirm-action";
 import { PixelIcon } from "@/components/icons";
 import { MAX_MINECRAFT_ACCOUNTS } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/database.types";
 import styles from "../admin.module.css";
 import { restoreAccount } from "./actions";
 
-type RemovedRow = {
-  id: string;
-  user_id: string;
-  minecraft_username: string;
-  discord_username: string | null;
-  is_active: boolean;
-  removed_by: string | null;
-  removed_at: string;
-};
+type RemovedRow = Database["public"]["Functions"]["admin_removed_accounts"]["Returns"][number];
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to restore this player's account.",
@@ -26,11 +19,11 @@ export default async function RestorePage({ searchParams }: { searchParams: Prom
   const { error: code, restored } = await searchParams;
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_removed_accounts");
-  const rows = (data ?? []) as RemovedRow[];
+  const rows: RemovedRow[] = data ?? [];
 
   return <>
     <Link href="/admin/players" className="back-link"><PixelIcon name="back" />Players</Link>
-    <div className="stack" style={{ "--gap": "6px" } as React.CSSProperties}>
+    <div className="stack gap-6">
       <h1 className={styles.title}>Removed accounts</h1>
       <p className="muted">Minecraft accounts removed by a player or an admin. Restoring puts the account back on the player&apos;s profile and the whitelist.</p>
     </div>

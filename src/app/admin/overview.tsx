@@ -1,18 +1,9 @@
 import Link from "next/link";
 import { PixelIcon, type PixelIconName } from "@/components/icons";
+import type { Database } from "@/lib/supabase/database.types";
 import styles from "./admin.module.css";
 
-export type Stats = {
-  players: number;
-  verified: number;
-  guests: number;
-  unverified: number;
-  whitelisted_accounts: number;
-  pending_sync: number;
-  retrying_sync: number;
-  oldest_failing_since: string | null;
-  removed_accounts: number;
-};
+export type Stats = Database["public"]["Functions"]["admin_overview_stats"]["Returns"][number];
 
 export type Tool = { title: string; desc: string; icon: PixelIconName; href?: string; cta?: string; count?: string };
 

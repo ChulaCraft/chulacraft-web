@@ -10,5 +10,5 @@ function SubmitButton({ className }: { className?: string }) {
 }
 
 export function SignOutButton({ className }: { className?: string }) {
-  return <form action={signOut} style={{ display: "contents" }}><SubmitButton className={className} /></form>;
+  return <form action={signOut} className="contents"><SubmitButton className={className} /></form>;
 }

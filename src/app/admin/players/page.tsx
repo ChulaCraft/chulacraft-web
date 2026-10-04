@@ -2,20 +2,16 @@ import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
 import { createClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/database.types";
 import styles from "../admin.module.css";
 import { StatRow, ToolCards, type Stats } from "../overview";
 
-type UserRow = {
-  user_id: string;
-  role: string;
-  email: string | null;
-  discord_username: string | null;
-  chula_email: string | null;
-  minecraft_usernames: string | null;
-  verification_kind: VerificationKind;
-};
+type Fn = Database["public"]["Functions"];
+type UserRow = Fn["admin_search_users"]["Returns"][number];
+type Newest = Fn["admin_newest_players"]["Returns"][number];
 
-type Newest = { user_id: string; display_name: string | null; handle: string | null; verification_kind: VerificationKind; created_at: string };
+/** verification_kind is a text column with no check constraint, so narrow it here. */
+const kind = (value: string): VerificationKind => (value === "verified" || value === "guest" ? value : "unverified");
 
 export default async function AdminPlayersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const q = (await searchParams).q?.trim() ?? "";
@@ -26,7 +22,7 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
   let newest: Newest[] = [];
   if (q) {
     const { data, error } = await supabase.rpc("admin_search_users", { p_query: q });
-    users = (data ?? []) as UserRow[];
+    users = data ?? [];
     failed = Boolean(error);
   } else {
     const [s, n] = await Promise.all([
@@ -34,7 +30,7 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
       supabase.rpc("admin_newest_players", { p_limit: 5 }),
     ]);
     stats = s.data;
-    newest = (n.data ?? []) as Newest[];
+    newest = n.data ?? [];
     failed = Boolean(s.error || n.error);
   }
 
@@ -86,7 +82,7 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
               <li key={n.user_id}>
                 <Link href={`/admin/users/${n.user_id}`}>
                   <strong>{n.display_name ?? n.handle ?? "Player"}{n.handle && n.handle !== n.display_name && <span className="hint"> @{n.handle}</span>}</strong>
-                  <VerificationBadge kind={n.verification_kind} />
+                  <VerificationBadge kind={kind(n.verification_kind)} />
                   <time dateTime={n.created_at}>{new Date(n.created_at).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", dateStyle: "medium" })}</time>
                 </Link>
               </li>
@@ -106,13 +102,13 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
           return (
             <li key={user.user_id}>
               <Link href={`/admin/users/${user.user_id}`}>
-                <span className="avatar" aria-hidden="true" style={{ width: 40, height: 40 }}>{name.charAt(0).toUpperCase()}</span>
+                <span className={`avatar ${styles.avatarSm}`} aria-hidden="true">{name.charAt(0).toUpperCase()}</span>
                 <span className={styles.resultMain}>
                   <strong>{name}{user.role !== "user" && <span className="optional"> · {user.role}</span>}</strong>
                   <span className={`mono ${styles.small}`}>{user.chula_email ?? user.email ?? "No email"}</span>
                 </span>
                 <span className={`mono ${styles.resultMc}`}>{user.minecraft_usernames ?? "—"}</span>
-                <VerificationBadge kind={user.verification_kind} />
+                <VerificationBadge kind={kind(user.verification_kind)} />
                 <PixelIcon name="arrow" />
               </Link>
             </li>

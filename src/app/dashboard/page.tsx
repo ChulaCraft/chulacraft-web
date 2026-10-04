@@ -2,17 +2,17 @@ import { LinkGoogleButton } from "@/components/google-auth";
 import { PixelIcon } from "@/components/icons";
 import { RegistrationPanel } from "@/components/registration-panel";
 import { classifyIdentities, identityEmail, linkErrorMessage } from "@/lib/chula";
-import type { StudyLevel } from "@/lib/faculties";
+import { toStudyLevel } from "@/lib/faculties";
 import { REGISTRATION_COLUMNS, toRegistrationView, type RegistrationView } from "@/lib/registration";
-import { createAdminClient } from "@/lib/supabase/server";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import Link from "next/link";
+import { Fragment } from "react";
 import { AboutYouForm } from "../register/details/about-you-form";
 import { unlinkPersonalGoogle } from "./actions";
 import styles from "./dashboard.module.css";
 import { ServiceUnavailable } from "./service-unavailable";
 
-type Profile = { first_name: string | null; last_name: string | null; nickname: string | null; study_level: StudyLevel | null; faculty: string | null; major: string | null };
+type Profile = { first_name: string | null; last_name: string | null; nickname: string | null; study_level: string | null; faculty: string | null; major: string | null };
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; unlinked?: string; edit?: string; saved?: string }> }) {
   const { error: errorCode, unlinked, edit, saved } = await searchParams;
@@ -35,9 +35,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         .eq("is_active", true)
         .order("created_at"),
       supabase.from("profiles").select("first_name, last_name, nickname, study_level, faculty, major").eq("user_id", user.id).maybeSingle(),
-      // google_sub is not readable by the authenticated role, so the claim is
-      // looked up with the admin client; the user id comes from the session.
-      createAdminClient().from("chula_claims").select("email, google_sub").eq("user_id", user.id).maybeSingle(),
+      // my_chula_claim() returns the caller's own row, so this page never needs
+      // the service-role client just to show which account is claimed.
+      supabase.rpc("my_chula_claim").maybeSingle(),
     ]);
     lookupFailed = Boolean(accounts.error || profileRow.error || claim.error);
     chulaEmail = claim.data?.email ?? null;
@@ -67,7 +67,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   return (
     <>
       <main className={`container ${styles.main}`}>
-        <div className="stack" style={{ "--gap": "10px" } as React.CSSProperties}>
+        <div className="stack gap-10">
           <span className="kicker" aria-hidden="true" />
           <h1 className="page-title">Your profile</h1>
           <p className="lead">Manage how you sign in and which Minecraft accounts are on the whitelist.</p>
@@ -106,15 +106,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                     next="/dashboard"
                     submitLabel="Save changes"
                     cancelHref="/dashboard"
-                    initial={{ first: profile?.first_name ?? "", last: profile?.last_name ?? "", nick: profile?.nickname ?? "", level: profile?.study_level ?? "undergraduate", faculty: profile?.faculty ?? "", major: profile?.major ?? "" }}
+                    initial={{ first: profile?.first_name ?? "", last: profile?.last_name ?? "", nick: profile?.nickname ?? "", level: toStudyLevel(profile?.study_level), faculty: profile?.faculty ?? "", major: profile?.major ?? "" }}
                   />
                 ) : (
                   <dl className={styles.info}>
                     {infoRows.map(([label, value]) => (
-                      <div key={label} style={{ display: "contents" }}>
+                      <Fragment key={label}>
                         <dt>{label}</dt>
                         <dd data-empty={!value || undefined}>{value || "Not set"}</dd>
-                      </div>
+                      </Fragment>
                     ))}
                   </dl>
                 )}

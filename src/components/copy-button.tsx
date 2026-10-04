@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PixelIcon } from "@/components/icons";
+import styles from "./copy-button.module.css";
 
 export function CopyButton({ text, className = "btn btn-primary" }: { text: string; className?: string }) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
@@ -23,7 +24,7 @@ export function CopyButton({ text, className = "btn btn-primary" }: { text: stri
     <span className="sr-only" role="status" aria-live="polite">
       {state === "copied" ? "Server address copied" : state === "failed" ? "Couldn't copy. Select the address and copy it manually." : ""}
     </span>
-    <button type="button" className={className} onClick={copy} style={{ minWidth: 112 }}>
+    <button type="button" className={`${className} ${styles.copyButton}`} onClick={copy}>
       <PixelIcon name={state === "copied" ? "check" : "copy"} />
       {state === "copied" ? "Copied" : "Copy"}
     </button>

@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
-import { isValidMinecraftUsername, normalizeMinecraftUsername, REGISTRATION_COLUMNS, registrationError, toRegistrationView } from "@/lib/registration";
+import { isValidMinecraftUsername, normalizeMinecraftUsername, REGISTRATION_COLUMNS, registrationError, toRegistrationView, UUID, type RegistrationRow } from "@/lib/registration";
 
 export const runtime = "nodejs";
-
-const ipAttempts = new Map<string, { count: number; resetsAt: number }>();
-const RATE_LIMIT = 5;
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The signed-in user's client, or the response to send when there isn't one. */
 async function signedIn() {
@@ -19,17 +14,6 @@ async function signedIn() {
   } catch {
     return { failure: NextResponse.json({ error: "Authentication is temporarily unavailable." }, { status: 503 }) };
   }
-}
-
-function ipRateLimited(key: string) {
-  const now = Date.now();
-  // Drop expired windows so spoofed or one-off IPs can't grow the map forever.
-  if (ipAttempts.size > 10_000) for (const [k, v] of ipAttempts) if (v.resetsAt <= now) ipAttempts.delete(k);
-  const current = ipAttempts.get(key);
-  if (!current || current.resetsAt <= now) { ipAttempts.set(key, { count: 1, resetsAt: now + RATE_WINDOW_MS }); return false; }
-  if (current.count >= RATE_LIMIT) return true;
-  current.count += 1;
-  return false;
 }
 
 async function resolveMinecraftProfile(username: string) {
@@ -64,7 +48,9 @@ export async function GET() {
 
 /** Add a new Minecraft account (+ button). */
 export async function POST(request: Request) {
-  return save(request, (profile, _id, userId) => ["add_minecraft_account", { p_user_id: userId, p_minecraft_uuid: profile.uuid, p_minecraft_username: profile.username }]);
+  return save(request, (profile, _id, userId) => [
+    "add_minecraft_account", { p_user_id: userId, p_minecraft_uuid: profile.uuid, p_minecraft_username: profile.username }
+  ]);
 }
 
 /** Change an existing account's name (pen → Save). */
@@ -93,14 +79,13 @@ export async function DELETE(request: Request) {
 }
 
 type Profile = { uuid: string; username: string };
-type RpcCall = [string, Record<string, unknown>];
+type SaveRpc =
+  | ["add_minecraft_account", { p_user_id: string; p_minecraft_uuid: string; p_minecraft_username: string }]
+  | ["change_minecraft_account", { p_user_id: string; p_registration_id: string; p_minecraft_uuid: string; p_minecraft_username: string }];
 
-async function save(request: Request, toRpc: (profile: Profile, id: unknown, userId: string) => RpcCall | null) {
+async function save(request: Request, toRpc: (profile: Profile, id: unknown, userId: string) => SaveRpc | null) {
   const { supabase, user, failure } = await signedIn();
   if (failure) return failure;
-  // Vercel sets x-real-ip itself; x-forwarded-for's first hop is client-controlled.
-  const ip = request.headers.get("x-real-ip") || request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() || "unknown";
-  if (ipRateLimited(`ip:${ip}`)) return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
   let allowed: boolean | null;
   try {
     const { data, error } = await supabase.rpc("consume_registration_attempt");
@@ -120,16 +105,27 @@ async function save(request: Request, toRpc: (profile: Profile, id: unknown, use
 
   const call = toRpc(profile, id, user.id);
   if (!call) return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 });
+  const [fn, args] = call;
 
-  let data;
-  let error;
   // The account RPCs are service-role only so players can't skip the Mojang lookup above.
-  try { ({ data, error } = await createAdminClient().rpc(...call)); }
+  const admin = createAdminClient();
+  let data: (RegistrationRow & { created?: boolean })[] | null;
+  let error: { message: string; code?: string } | null;
+  try {
+    // The two RPCs differ only by name and one arg, so the call is split rather
+    // than spread: supabase-js types each overload separately.
+    const result = fn === "add_minecraft_account"
+      ? await admin.rpc("add_minecraft_account", args as { p_user_id: string; p_minecraft_uuid: string; p_minecraft_username: string })
+      : await admin.rpc("change_minecraft_account", args as { p_user_id: string; p_registration_id: string; p_minecraft_uuid: string; p_minecraft_username: string });
+    data = result.data;
+    error = result.error;
+  }
   catch { return NextResponse.json({ error: "We couldn’t save the registration. Please try again." }, { status: 503 }); }
   if (error) {
     const failure = registrationError(error.message, error.code);
     return NextResponse.json({ error: failure.error }, { status: failure.status });
   }
-  const registration = Array.isArray(data) ? data[0] : data;
-  return NextResponse.json({ registration: toRegistrationView(registration as Record<string, unknown>) }, { status: registration?.created ? 201 : 200 });
+  const registration = data?.[0];
+  if (!registration) return NextResponse.json({ error: "We couldn’t save the registration. Please try again." }, { status: 503 });
+  return NextResponse.json({ registration: toRegistrationView(registration) }, { status: "created" in registration && registration.created ? 201 : 200 });
 }

@@ -16,7 +16,7 @@ export function SiteFooter() {
           <span>
             Dev sign in as:{" "}
             {Object.keys(DEV_USERS).map((as) => (
-              <a key={as} href={`/api/dev-login?as=${as}`} style={{ marginInline: 6 }}>{as}</a>
+              <a key={as} href={`/api/dev-login?as=${as}`} className="dev-link">{as}</a>
             ))}
           </span>
         )}
