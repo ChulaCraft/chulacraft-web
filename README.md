@@ -109,6 +109,9 @@ This asynchronous boundary keeps registrations durable while the Minecraft host 
 | --- | --- |
 | `/` | Public landing page, Discord sign-in, community link, and server-address card |
 | `/about` | Community mission, values, and server overview |
+| `/announcements` | Public server news; the pinned one is also the site-wide banner |
+| `/admin/announcements` | Admin-only: write, schedule, pin, and send announcements to Discord |
+| `/admin/server` | Admin-only: server status, live console, start/stop/restart through `chulacraft-server-manager` |
 | `/register` | Public Discord or Google sign-in page; authenticated users redirect to `/welcome` |
 | `/verify` | Link a Chula Google account; the only page an unverified user can use |
 | `/welcome` | Protected Minecraft registration and synchronization status |

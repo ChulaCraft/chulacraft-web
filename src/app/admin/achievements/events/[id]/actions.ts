@@ -2,6 +2,7 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { instant } from "@/lib/bangkok-time";
 import { dbErrorCode } from "@/lib/db-error";
 import { UUID } from "@/lib/registration";
 import { UPCOMING_EVENTS_TAG } from "@/components/event-card";
@@ -26,15 +27,6 @@ function finish(eventId: string | null, error: { message: string } | null, done:
   revalidatePath(`/admin/achievements/events/${eventId}`);
   updateTag(UPCOMING_EVENTS_TAG);
   redirect(`/admin/achievements/events/${eventId}${code ? `?error=${code}` : `?done=${done}`}`);
-}
-
-/** The form submits `datetime-local` in Asia/Bangkok (D8), which is what the
- *  server parses here; browsers are told the same zone by the input's value. */
-function instant(formData: FormData, field: string): string | null {
-  const value = String(formData.get(field) ?? "").trim();
-  if (!value) return null;
-  const parsed = new Date(`${value}:00+07:00`);
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
 export async function saveEvent(formData: FormData) {

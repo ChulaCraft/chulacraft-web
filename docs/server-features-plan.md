@@ -10,9 +10,11 @@ Apache puts in `X-Remote-User`.
 
 Decisions that follow:
 
-- **The web app never calls the manager.** `/cmd` is a root-equivalent console
-  over GET; exposing it to Vercel means a leaked secret = full server control.
-  It also doesn't know player counts, only systemd state.
+- **The web app reaches the manager only with short-lived signed tokens**
+  (Phase 6). `/cmd` is a root-equivalent console, so the manager checks a
+  permission bitmask on every request and the web signs with a key the manager
+  can't use to mint tokens itself. Player counts still come from SLP below; the
+  manager only knows systemd state.
 - **Supabase stays the source of truth.** The existing whitelist worker already
   turns DB rows into server state, and admin revoke (`revoked_by_admin`) already
   blocks re-registration. Bans build on that instead of sending `/ban`.
@@ -69,6 +71,15 @@ no new column.
 
 ## Phase 2 — Announcements (#3)
 
+**Done (uncommitted in `chulacraft-web` and `chulacraft-discord`).** Built as
+below with three changes: access is definer RPCs with the table revoked (the
+repo's convention since achievements) rather than RLS policies; `discord_posted_at`
+became `revision` / `discord_revision`, so the bot knows an edit from its own
+write-back; and delete is soft (`deleted_at`) so the bot can still find the
+message to remove. The bot also polls every 60 s, which is what publishes
+scheduled posts. Deploy order: apply `20261009000001_announcements.sql`, then
+set `DISCORD_WEB_NEWS_CHANNEL_ID` on the bot.
+
 - Migration `announcements(id, title, body, severity info|warning|maintenance,
   pinned bool, published_at, expires_at, created_by)`. RLS: anyone selects rows
   where `published_at <= now()` and not expired; writes via
@@ -93,8 +104,9 @@ no new column.
 
 ## Phase 2b — Downtime alerts (chulacraft-discord bot)
 
-New `src/status-monitor.js` in the bot; posts to
-`DISCORD_STATUS_ALERT_CHANNEL_ID=1556586342484287498`. Every 60 s it checks:
+**Done (uncommitted in `chulacraft-discord`).** New `src/status-monitor.js`
+in the bot; posts to `DISCORD_STATUS_CHANNEL_ID=1556586342484287498` (status
+only; `1556576724416864336` is news only). Every 60 s it checks:
 
 | Service | Check | Down when |
 | --- | --- | --- |
@@ -167,6 +179,112 @@ heartbeat table.
 - `/admin/audit` page: table, filters (actor, target, entity, date), keyset
   pagination. Link per-user filtered view from `/admin/users/[id]`.
 
+## Phase 6 — Server console from the website (`chulacraft-server-manager`)
+
+**Done (uncommitted in `chulacraft-web` and a local clone of
+`chulacraft-server-manager`, branch `main_rust`).** Built as below, except:
+
+- Path is `/api/mcsv_manager/` (the manager's Apache config); `mcsv_manaer`
+  was a typo.
+- Manager: `src/auth.rs` is an axum extractor (`Auth`) each handler calls
+  `require(BITS)` on; `jsonwebtoken` 11 with the `rust_crypto` backend. The
+  public key is read from `MCSV_JWT_PUBLIC_KEY` in `/etc/mcsv_manager/env`
+  (PEM or its one-line base64 body); the manager refuses to start without it.
+  `/cmd` takes a JSON body `{"command": …}`, so commands stay out of the
+  access log. The logs route is `/server/{id}/rlog`, not `/logs`. Inside the
+  console socket, `command` needs `CONSOLE_WRITE`, `status_*` `STATUS`,
+  `get_*logs` `LOGS`; anything else gets `{"type":"error","message":"Forbidden"}`.
+- Web: each token carries only the bits its request needs, not the role's
+  whole mask. `admin_server_console_access(jti, server, action)`
+  (`20261010000001_server_console.sql`) is the role check and the audit write
+  in one call, so it doesn't wait on Phase 5; it also logs `start`, and a
+  refused attempt is logged too. Console history is the last 200 `rlog` lines
+  fetched by the page; live lines come over the socket.
+- The function allowlist guard (`default_function_privileges.test.sql`) now
+  also lists the Phase 2 announcement RPCs, which it was missing.
+
+Admins open the console, logs and start/stop/restart from `/admin/server`. The
+website mints a JWT per request and calls
+`https://mc.chulacraft.com/api/mcsv_manager/…` with
+`Authorization: Bearer <jwt>`.
+
+### Token
+
+```json
+{
+  "iss": "chulacraft-web",
+  "aud": "mcsv-manager",
+  "sub": "Krisanapon",
+  "jti": "5b0c6c3e-8a51-4f0e-9a39-0d5f1f6f6b1e",
+  "iat": 1791199326,
+  "exp": 1791199626,
+  "permission": 2147483647
+}
+```
+
+| Claim | Meaning |
+| --- | --- |
+| `sub` | Admin's display name, for the manager's log line only, never for authorization. |
+| `jti` | Random UUID per token. The manager logs it with every command, so a log line can be matched to the web audit log (Phase 5). |
+| `iat` / `exp` | **Seconds**, not milliseconds (RFC 7519). `1791199626561` read as seconds is the year 58,000, so a ms value would be a token that never expires. Lifetime: 60 s for HTTP calls and for opening the console WebSocket (checked once at upgrade). |
+| `iss` / `aud` | Fixed strings; the manager rejects anything else. Stops a token minted for another service being replayed here. |
+| `permission` | Bitmask, below. Fits in 31 bits so it's a positive `i32` in Rust and safe with JS bitwise ops. |
+
+Signing: **EdDSA (Ed25519)**. The private key lives only in Vercel
+(`MCSV_JWT_PRIVATE_KEY`); the manager gets the public key
+(`MCSV_JWT_PUBLIC_KEY`). A compromised manager host then can't mint tokens, which
+a shared HS256 secret would allow. The manager pins `alg = EdDSA` (no `none`, no
+HS/RS fallback) and allows 30 s clock leeway. In Rust: `jsonwebtoken` with
+`Validation::new(Algorithm::EdDSA)`, `set_issuer`, `set_audience`.
+
+### Permission bits
+
+| Bit | Value | Name | Endpoints |
+| --- | --- | --- | --- |
+| 0 | 1 | `STATUS` | `/status`, `/servers`, `/server/{id}/status` |
+| 1 | 2 | `LOGS` | `/server/{id}/logs` |
+| 2 | 4 | `CONSOLE_READ` | console WebSocket, output only |
+| 3 | 8 | `CONSOLE_WRITE` | console WebSocket input, `/server/{id}/cmd` |
+| 4 | 16 | `START` | `/server/{id}/start` |
+| 5 | 32 | `STOP` | `/server/{id}/stop` |
+| 6 | 64 | `RESTART` | `/server/{id}/restart` |
+| 7–30 | | reserved | unknown bits are ignored |
+
+The manager checks `permission & REQUIRED == REQUIRED` per route; no bit = 403.
+`2147483647` (all bits) is "everything, including bits added later", so only the
+owner gets it. The website maps `profiles.role` when minting:
+
+| Role | Mask |
+| --- | --- |
+| owner | `2147483647` |
+| admin | `STATUS + LOGS + CONSOLE_READ + RESTART` = `71` |
+| everyone else | no token (the route handler refuses before signing) |
+
+### Wiring
+
+- Web: `src/lib/mcsv-token.ts` signs with `node:crypto` (`crypto.sign(null, …)`
+  on an Ed25519 key): no new dependency. Only server code mints; HTTP calls go
+  Vercel → manager, so those tokens never reach the browser.
+- Console WebSocket: browsers can't set `Authorization` on a WebSocket, so a
+  server action mints a 60 s token and the browser sends it as the subprotocol
+  (`new WebSocket(url, ["mcsv.jwt", token])`). The manager reads it from
+  `Sec-WebSocket-Protocol` and echoes back `mcsv.jwt`. Not a query string, which
+  would land in Apache's access log.
+- Apache: on `/api/mcsv_manager/` turn off its own auth (Basic auth also uses the
+  `Authorization` header) and drop any client-sent `X-Remote-User`
+  (`RequestHeader unset X-Remote-User`), so the JWT is the only identity on that
+  path.
+- Manager: `/cmd` and start/stop/restart move from GET to POST, so a link or
+  prefetch can't fire them. It logs `jti`, `sub`, route and command for every
+  `CONSOLE_WRITE`/`START`/`STOP`/`RESTART`.
+- Web audit: minting a token with `CONSOLE_WRITE`, `STOP` or `RESTART` writes an
+  `account_change_log` row (entity `server_console`, Phase 5) with the `jti`.
+- Rotation: generate a new key pair, set both env vars, redeploy both. Old tokens
+  die within 60 s, so no overlap window is needed.
+
+Ponytail: one mask for every server the manager runs. Add a
+`servers: ["survival"]` claim if a second server needs different admins.
+
 ## Order and size
 
 | Phase | Depends on | Size |
@@ -178,13 +296,13 @@ heartbeat table.
 | 5 Audit log | — (do before 3/4 so they log from day one) | S |
 | 3 Bans/appeals | 0 (kick), 5 | M |
 | 4 Reports | 3 | S |
+| 6 Server console (web + manager + Apache) | — (logs through its own RPC) | M |
 
 Each phase = one PR with migration + pgTAP test + unit tests + visual audit
 route where a public page is added.
 
 ## Open questions
 
-1. The bot docs list an existing Server Status channel `1533034852054732827`.
-   Does the alert channel `1556586342484287498` replace it, or are they
-   separate (public status vs. admin alerts)?
-2. Does the bot run on the same host as the Minecraft server?
+None. Bot and worker currently share the Minecraft host (Docker); a possible
+move to Oracle Cloud free tier would also remove the "bot dies with the host"
+blind spot for Minecraft alerts.

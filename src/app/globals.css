@@ -635,6 +635,40 @@ select.input {
   }
 }
 
+/* Pinned announcement, full width under the header; its text lines up with
+   the page container. */
+.announcement-banner {
+  align-items: center;
+  padding-block: 6px;
+  padding-inline: max(var(--gutter), calc((100% - var(--content-width)) / 2 + var(--gutter)));
+}
+
+.announcement-banner > svg {
+  margin-top: 0;
+}
+
+.announcement-banner .alert-body {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.announcement-dismiss {
+  flex: none;
+  min-width: 40px;
+  min-height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.announcement-dismiss:hover {
+  color: var(--tone);
+}
+
 .header-inner {
   height: 68px;
   display: flex;

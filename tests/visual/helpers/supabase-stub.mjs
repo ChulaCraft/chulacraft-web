@@ -53,6 +53,20 @@ const server = createServer((request, response) => {
     return;
   }
 
+  // One pinned announcement, so every audited page also carries the banner.
+  if (request.method === "POST" && url.pathname === "/rest/v1/rpc/list_announcements") {
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify([{
+      id: "00000000-0000-4000-8000-0000000000a1",
+      title: "Maintenance on Saturday night",
+      body: "The server restarts at 22:00 for a plugin update.\nExpect about 15 minutes of downtime.",
+      severity: "maintenance",
+      pinned: true,
+      published_at: "2026-10-01T12:00:00.000Z"
+    }]));
+    return;
+  }
+
   response.writeHead(405, { "content-type": "application/json" });
   response.end(JSON.stringify({ message: "Visual audit stub is read-only" }));
 });

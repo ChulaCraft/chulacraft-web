@@ -27,6 +27,7 @@ const authCookieValue = `base64-${encode({
 const routes = [
   { name: "home", path: "/", expectedPath: "/", expectedStatus: 200, authenticated: false },
   { name: "about", path: "/about", expectedPath: "/about", expectedStatus: 200, authenticated: false },
+  { name: "announcements", path: "/announcements", expectedPath: "/announcements", expectedStatus: 200, authenticated: false },
   { name: "register-unauthenticated", path: "/register", expectedPath: "/register", expectedStatus: 200, authenticated: false },
   { name: "register", path: "/register", expectedPath: "/welcome", expectedStatus: 200, authenticated: true },
   { name: "dashboard", path: "/dashboard", expectedPath: "/dashboard", expectedStatus: 200, authenticated: true },

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AnnouncementBanner } from "@/components/announcement-banner";
 import { Brand } from "@/components/brand";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
 import { discordCommunityUrl } from "@/lib/site-links";
@@ -34,11 +35,21 @@ export async function SiteHeader() {
     }
   }
 
+  // list_announcements puts pinned rows first, so the banner is the first row
+  // when that row is pinned. Any failure just means no banner.
+  let banner = null;
+  try {
+    const { data } = await supabase.rpc("list_announcements", { p_limit: 1 });
+    if (data?.[0]?.pinned) banner = data[0];
+  } catch {
+    // No banner.
+  }
+
   const meta = user?.user_metadata ?? {};
   const name = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Player";
   const avatar = typeof meta.avatar_url === "string" ? meta.avatar_url : null;
 
-  const links = [{ label: "Home", href: "/" }, { label: "Events", href: "/events" }];
+  const links = [{ label: "Home", href: "/" }, { label: "Events", href: "/events" }, { label: "News", href: "/announcements" }];
   // D1: search and profiles are signed-in only, so the entry point is hidden
   // rather than linked-and-redirected for a logged-out visitor. Profile and
   // Settings live in the account menu, not here.
@@ -47,7 +58,7 @@ export async function SiteHeader() {
   if (isAdmin) links.push({ label: "Admin", href: "/admin" });
   const navLinks = <NavLinks links={links} />;
 
-  return <HeaderShell><div className="container header-inner">
+  return <><HeaderShell><div className="container header-inner">
     <Brand />
     <nav className="main-nav" aria-label="Main">{navLinks}</nav>
     <div className="header-actions">
@@ -90,5 +101,7 @@ export async function SiteHeader() {
             </div>}
       </nav>
     </details>
-  </div></HeaderShell>;
+  </div></HeaderShell>
+  {banner && <AnnouncementBanner id={banner.id} title={banner.title} severity={banner.severity} />}
+  </>;
 }

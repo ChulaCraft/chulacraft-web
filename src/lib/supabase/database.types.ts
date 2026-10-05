@@ -232,6 +232,12 @@ isOneToOne: false
               "image_path": string,"removed": number
             }[]
                            },
+"admin_delete_announcement":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
+"admin_server_console_access":
+{ Args: { "p_action": string,"p_jti": string,"p_server": string }; Returns: string
+                           },
 "admin_delete_event":
 { Args: { "p_id": string }; Returns: {
               "image_path": string,"removed": number
@@ -246,6 +252,11 @@ isOneToOne: false
 "admin_list_achievements":
 { Args: Record<PropertyKey, never>; Returns: {
               "award_count": number,"created_at": string,"description": string,"id": string,"image_path": string,"name": string,"status": string,"updated_at": string
+            }[]
+                           },
+"admin_list_announcements":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "body": string,"discord_message_id": string,"expires_at": string,"id": string,"pinned": boolean,"post_to_discord": boolean,"published_at": string,"severity": string,"title": string,"updated_at": string
             }[]
                            },
 "admin_list_awards":
@@ -311,11 +322,19 @@ isOneToOne: false
 "admin_upsert_achievement":
 { Args: { "p_description": string,"p_id": string,"p_image_path": string,"p_name": string,"p_status": string }; Returns: string
                            },
+"admin_upsert_announcement":
+{ Args: { "p_body": string,"p_expires_at": string,"p_id": string,"p_pinned": boolean,"p_post_to_discord": boolean,"p_published_at": string,"p_severity": string,"p_title": string }; Returns: string
+                           },
 "admin_upsert_event":
 { Args: { "p_description": string,"p_ends_at": string,"p_id": string,"p_image_path": string,"p_location": string,"p_name": string,"p_starts_at": string,"p_status": string }; Returns: string
                            },
 "am_i_player_verified":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"announcements_discord_queue":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "body": string,"deleted": boolean,"discord_message_id": string,"id": string,"revision": number,"severity": string,"title": string
+            }[]
                            },
 "are_friends":
 { Args: { "p_a": string,"p_b": string }; Returns: boolean
@@ -363,6 +382,11 @@ isOneToOne: false
                            },
 "is_player_verified":
 { Args: { "p_user_id": string }; Returns: boolean
+                           },
+"list_announcements":
+{ Args: { "p_limit"?: number }; Returns: {
+              "body": string,"id": string,"pinned": boolean,"published_at": string,"severity": string,"title": string
+            }[]
                            },
 "list_past_events":
 { Args: { "p_limit"?: number }; Returns: {
