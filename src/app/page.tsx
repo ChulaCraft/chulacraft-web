@@ -4,7 +4,7 @@ import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
 import { CopyButton } from "@/components/copy-button";
-import { serverAddress } from "@/components/server-address-card";
+import { serverAddress, ServerStatus } from "@/components/server-address-card";
 import { EventCard, UPCOMING_EVENTS_TAG, type UpcomingEvent } from "@/components/event-card";
 import { createBoundedFetch } from "@/lib/bounded-fetch";
 import { getPublicSupabaseEnvironment } from "@/lib/env";
@@ -97,6 +97,7 @@ export default async function HomePage() {
           <section className={`panel panel-edge ${styles.address}`} aria-labelledby="addr-label">
             <div className={styles.addressText}>
               <h2 id="addr-label" className={styles.addressLabel}>Server address</h2>
+              <ServerStatus />
               <p className={`mono ${styles.addressValue}`}>{serverAddress ?? "Coming soon"}</p>
               <p className={styles.addressNote}>
                 <PixelIcon name="info" className="tone-amber" />

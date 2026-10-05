@@ -1,13 +1,13 @@
 # Graph Report - chulacraft-web  (2026-10-05)
 
 ## Corpus Check
-- 160 files · ~139,975 words
+- 162 files · ~141,261 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 26 file(s) not represented in the graph (top: .css 20, (none) 2, .toml 2)
 
 ## Summary
-- 661 nodes · 1523 edges · 36 communities (22 shown, 14 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 32 edges (avg confidence: 0.85)
+- 671 nodes · 1547 edges · 33 communities (19 shown, 14 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 33 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
@@ -16,17 +16,15 @@
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- dashboard/page.tsx
-- server.ts
+- vitest
 - registration.ts
 - package.json
-- users/[id]/page.tsx
+- createClient
 - compilerOptions
-- next
+- dbErrorCode
 - devDependencies
 - visual-audit.spec.ts
 - ChulaCraft Web
-- createClient
 - settings/page.tsx
 - next_dev_types_root_params_d
 - supabase-stub.mjs
@@ -35,10 +33,9 @@
 - CLAUDE.md
 - supabase/README.md
 - app/events/[id]/page.tsx
-- auth-error.ts
 - engines
 - ref_node_crypto
-- about-you-form.tsx
+- next
 - ref_next_dev_types_routes_d_ts
 - icons.tsx
 - dependencies
@@ -55,8 +52,8 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `createClient()` - 73 edges
-2. `next` - 56 edges
-3. `PixelIcon()` - 30 edges
+2. `next` - 57 edges
+3. `PixelIcon()` - 31 edges
 4. `dbErrorCode()` - 26 edges
 5. `vitest` - 24 edges
 6. `createAdminClient()` - 16 edges
@@ -66,12 +63,12 @@
 10. `classifyIdentities()` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `RestorePage()` --calls--> `createClient()`  [EXTRACTED]
-  src/app/admin/restore/page.tsx → src/lib/supabase/server.ts
 - `GET()` --calls--> `createClient()`  [EXTRACTED]
   src/app/api/dev-login/route.ts → src/lib/supabase/server.ts
 - `EventsPage()` --calls--> `createClient()`  [EXTRACTED]
   src/app/events/page.tsx → src/lib/supabase/server.ts
+- `PlayersPage()` --calls--> `createClient()`  [EXTRACTED]
+  src/app/players/page.tsx → src/lib/supabase/server.ts
 - `SettingsPage()` --indirect_call--> `toRegistrationView()`  [INFERRED]
   src/app/settings/page.tsx → src/lib/registration.ts
 - `saveAchievement()` --calls--> `createClient()`  [EXTRACTED]
@@ -80,35 +77,31 @@
 ## Import Cycles
 - None detected.
 
-## Communities (36 total, 14 thin omitted)
+## Communities (33 total, 14 thin omitted)
 
-### Community 0 - "dashboard/page.tsx"
-Cohesion: 0.11
-Nodes (24): finish(), LEVELS, otherId(), removeFriend(), respondFriendRequest(), allPublic(), form(), m (+16 more)
-
-### Community 1 - "server.ts"
-Cohesion: 0.08
-Nodes (36): @supabase/ssr, authErrorResponse(), GET(), { exchangeCodeForSession, getUserIdentities, signOut, reconcileIdentities }, ok, src_app_home_module, HomePage(), loadUpcomingEvents() (+28 more)
+### Community 1 - "vitest"
+Cohesion: 0.07
+Nodes (35): nextConfig, ref_node_url, @supabase/ssr, vitest, restoreAccount(), m, redirected(), signOut() (+27 more)
 
 ### Community 2 - "registration.ts"
-Cohesion: 0.10
-Nodes (35): AdminUserPage(), DELETE(), GET(), PATCH(), POST(), Profile, resolveMinecraftProfile(), runtime (+27 more)
+Cohesion: 0.07
+Nodes (47): DELETE(), GET(), PATCH(), POST(), Profile, resolveMinecraftProfile(), runtime, save() (+39 more)
 
 ### Community 3 - "package.json"
 Cohesion: 0.12
 Nodes (16): allowScripts, unrs-resolver@1.12.2, name, private, version, @emnapi/core, @emnapi/runtime, eslint (+8 more)
 
-### Community 4 - "users/[id]/page.tsx"
-Cohesion: 0.08
-Nodes (33): react, StatRow(), Stats, timeSince(), Tool, ToolCards(), Activity, AdminPage() (+25 more)
+### Community 4 - "createClient"
+Cohesion: 0.05
+Nodes (60): react, AdminEventPage(), bangkokInput(), DONE, ERRORS, AdminAchievementPage(), DONE, ERRORS (+52 more)
 
 ### Community 5 - "compilerOptions"
 Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
-### Community 6 - "next"
-Cohesion: 0.06
-Nodes (43): next, deleteEvent(), finish(), instant(), postedId(), saveEvent(), form(), m (+35 more)
+### Community 6 - "dbErrorCode"
+Cohesion: 0.07
+Nodes (32): EventForm(), onCover(), pickFile(), EventFormValues, LOADED_AT, noSubscribe(), shrink(), toIso() (+24 more)
 
 ### Community 7 - "devDependencies"
 Cohesion: 0.18
@@ -122,13 +115,9 @@ Nodes (9): ref_node_child_process, ref_node_fs, ref_node_path, @playwright/test,
 Cohesion: 0.11
 Nodes (18): Architecture, Chula verification (Google), ChulaCraft Web, Commands, Current implementation caveats, Deployment, Discord authentication, Environment (+10 more)
 
-### Community 10 - "createClient"
-Cohesion: 0.14
-Nodes (21): signOut(), blockPlayer(), finish(), playerId(), removeFriend(), respondFriendRequest(), sendFriendRequest(), ask() (+13 more)
-
 ### Community 11 - "settings/page.tsx"
-Cohesion: 0.06
-Nodes (41): nextConfig, ref_node_url, @supabase/supabase-js, vitest, AdminLayout(), unlinkPersonalGoogle(), src_app_dashboard_dashboard_module, LEVEL_OPTIONS (+33 more)
+Cohesion: 0.07
+Nodes (41): @supabase/supabase-js, finish(), LEVELS, otherId(), removeFriend(), respondFriendRequest(), allPublic(), form() (+33 more)
 
 ### Community 14 - "award/actions.ts"
 Cohesion: 0.16
@@ -142,17 +131,13 @@ Nodes (7): Chulacraft registration runbook, Normal operations, Roles and Chula v
 Cohesion: 0.08
 Nodes (29): src_app_events_events_module, eventId(), signInPath(), form(), interested(), m, redirected(), toggleInterest() (+21 more)
 
-### Community 21 - "auth-error.ts"
-Cohesion: 0.22
-Nodes (9): AuthErrorPage(), Action, ErrorScreen(), src_components_error_screen_module, AUTH_FAILURE_REASONS, authFailureMessage(), AuthFailureReason, classifyOAuthCallbackFailure() (+1 more)
-
-### Community 25 - "about-you-form.tsx"
-Cohesion: 0.18
-Nodes (17): AboutYouForm(), onSubmit(), src_app_register_details_about_you_module, saveProfile(), SaveProfileState, FACULTIES, facultyRole(), ProfileDetails (+9 more)
+### Community 25 - "next"
+Cohesion: 0.06
+Nodes (50): next, AdminLayout(), DashboardPage(), Profile, Social, SOCIAL_DONE, SOCIAL_ERRORS, SocialPerson (+42 more)
 
 ### Community 27 - "icons.tsx"
 Cohesion: 0.06
-Nodes (37): react-dom, src_app_about_about_module, gallery, metadata, values, ServiceUnavailable(), collected, metadata (+29 more)
+Nodes (40): react-dom, src_app_about_about_module, gallery, metadata, values, src_app_home_module, HomePage(), loadUpcomingEvents() (+32 more)
 
 ### Community 28 - "dependencies"
 Cohesion: 0.20
@@ -163,32 +148,32 @@ Cohesion: 0.20
 Nodes (10): scripts, build, db:types, dev, lint, start, test, test:visual (+2 more)
 
 ### Community 30 - "app/layout.tsx"
-Cohesion: 0.18
-Nodes (11): @vercel/analytics, GET(), src_app_globals, metadata, SiteFooter(), SiteHeader(), DEV_LOGIN_ENABLED, DEV_USERS (+3 more)
+Cohesion: 0.19
+Nodes (10): @vercel/analytics, GET(), src_app_globals, metadata, SiteFooter(), DEV_LOGIN_ENABLED, DEV_USERS, bodyFont (+2 more)
 
 ### Community 35 - "PRD: Auto-assign Discord `verified` role"
 Cohesion: 0.14
 Nodes (13): 1. Problem, 2. Goal, 3. Scope, 4. User stories, 5.1 Database (chulacraft-web, new migration), 5.2 Bot (chulacraft-discord), 5.3 Discord server setup, 5. Design (+5 more)
 
 ## Knowledge Gaps
-- **199 isolated node(s):** `nextConfig`, `name`, `private`, `node`, `version` (+194 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 276 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **200 isolated node(s):** `nextConfig`, `name`, `private`, `node`, `version` (+195 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 278 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **14 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `next` to `dashboard/page.tsx`, `server.ts`, `registration.ts`, `package.json`, `users/[id]/page.tsx`, `createClient`, `settings/page.tsx`, `award/actions.ts`, `app/events/[id]/page.tsx`, `auth-error.ts`, `about-you-form.tsx`, `icons.tsx`, `app/layout.tsx`?**
-  _High betweenness centrality (0.255) - this node is a cross-community bridge._
-- **Why does `createClient()` connect `createClient` to `dashboard/page.tsx`, `server.ts`, `registration.ts`, `users/[id]/page.tsx`, `next`, `settings/page.tsx`, `award/actions.ts`, `app/events/[id]/page.tsx`, `icons.tsx`, `app/layout.tsx`?**
-  _High betweenness centrality (0.104) - this node is a cross-community bridge._
-- **Why does `vitest` connect `settings/page.tsx` to `dashboard/page.tsx`, `server.ts`, `registration.ts`, `package.json`, `users/[id]/page.tsx`, `next`, `createClient`, `award/actions.ts`, `app/events/[id]/page.tsx`, `auth-error.ts`, `about-you-form.tsx`, `icons.tsx`?**
-  _High betweenness centrality (0.085) - this node is a cross-community bridge._
+- **Why does `next` connect `next` to `vitest`, `registration.ts`, `package.json`, `createClient`, `dbErrorCode`, `settings/page.tsx`, `award/actions.ts`, `app/events/[id]/page.tsx`, `icons.tsx`, `app/layout.tsx`?**
+  _High betweenness centrality (0.257) - this node is a cross-community bridge._
+- **Why does `createClient()` connect `createClient` to `vitest`, `registration.ts`, `dbErrorCode`, `settings/page.tsx`, `award/actions.ts`, `app/events/[id]/page.tsx`, `next`, `icons.tsx`, `app/layout.tsx`?**
+  _High betweenness centrality (0.102) - this node is a cross-community bridge._
+- **Why does `vitest` connect `vitest` to `registration.ts`, `package.json`, `createClient`, `dbErrorCode`, `settings/page.tsx`, `award/actions.ts`, `app/events/[id]/page.tsx`, `next`, `icons.tsx`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
 - **What connects `nextConfig`, `name`, `private` to the rest of the system?**
-  _199 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `dashboard/page.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.11494252873563218 - nodes in this community are weakly interconnected._
-- **Should `server.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.08163265306122448 - nodes in this community are weakly interconnected._
+  _200 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `vitest` be split into smaller, more focused modules?**
+  _Cohesion score 0.06568832983927324 - nodes in this community are weakly interconnected._
 - **Should `registration.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.09634146341463415 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0677555958862674 - nodes in this community are weakly interconnected._
+- **Should `package.json` be split into smaller, more focused modules?**
+  _Cohesion score 0.12418300653594772 - nodes in this community are weakly interconnected._
