@@ -7,6 +7,7 @@ import styles from "../admin.module.css";
 import { serverAction } from "./actions";
 import { SERVER_ID, grant, managerFetch } from "./manager";
 import { ServerConsole } from "./server-console";
+import { SubmitButton } from "@/components/submit-button";
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to do that.",
@@ -88,7 +89,7 @@ export default async function AdminServerPage({ searchParams }: { searchParams: 
           {can(PERMISSION.START) && (
             <form action={serverAction}>
               <input type="hidden" name="server" value={data.server} />
-              <button type="submit" className="btn btn-sm" name="action" value="start">Start</button>
+              <SubmitButton className="btn btn-sm" name="action" value="start">Start</SubmitButton>
             </form>
           )}
           {can(PERMISSION.RESTART) && (

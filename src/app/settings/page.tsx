@@ -8,6 +8,7 @@ import Link from "next/link";
 import { unlinkPersonalGoogle, updatePrivacy } from "../dashboard/actions";
 import styles from "../dashboard/dashboard.module.css";
 import { ServiceUnavailable } from "../dashboard/service-unavailable";
+import { SubmitButton } from "@/components/submit-button";
 
 /** my_privacy() builds jsonb, so generated types cannot describe it; a
  *  missing row reads back as all-public. */
@@ -107,7 +108,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                   </div>
                 ))}
                 <div className={styles.privacyActions}>
-                  <button type="submit" className="btn btn-primary">Save privacy</button>
+                  <SubmitButton className="btn btn-primary">Save privacy</SubmitButton>
                   <p className="hint">Everything is public unless you change it here.</p>
                 </div>
               </form>
@@ -139,7 +140,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                   <form action={unlinkPersonalGoogle} className={styles.methodRow}>
                     <p className="mono">{identityEmail(personalIdentity)}</p>
                     <input type="hidden" name="identityId" value={personalIdentity.identity_id} />
-                    <button type="submit" className="btn btn-sm btn-outline">Unlink</button>
+                    <SubmitButton className="btn btn-sm btn-outline">Unlink</SubmitButton>
                   </form>
                 ) : (
                   <div className={styles.methodRow}>

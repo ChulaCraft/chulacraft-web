@@ -21,4 +21,19 @@ describe("describeChange", () => {
     expect(describeChange("study_level", null, "graduate")).toBe("updated study level");
     expect(describeChange("some_field", "a", "b")).toBe("changed some field");
   });
+
+  it("phrases content and server console actions", () => {
+    expect(describeChange("banned", null, "2026-10-12 00:00:00+00")).toBe("issued a temporary ban");
+    expect(describeChange("banned", null, null)).toBe("issued a permanent ban");
+    expect(describeChange("appeal", null, "rejected")).toBe("rejected an appeal");
+    expect(describeChange("report", null, "dismissed")).toBe("dismissed a report");
+    expect(describeChange("awarded_on", null, "2026-10-05")).toBe("gave an achievement");
+    expect(describeChange("awarded_on", "2026-10-05", null)).toBe("took back an achievement");
+    expect(describeChange("created", null, "Server rules")).toBe("created Server rules");
+    expect(describeChange("deleted", "Server rules", null)).toBe("deleted Server rules");
+    expect(describeChange("console_write", null, "survival")).toBe("opened the console on survival");
+    expect(describeChange("start", null, "survival")).toBe("started survival");
+    expect(describeChange("stop", null, "survival")).toBe("stopped survival");
+    expect(describeChange("restart", null, "survival")).toBe("restarted survival");
+  });
 });

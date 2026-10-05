@@ -8,8 +8,9 @@ import { MAX_MINECRAFT_ACCOUNTS, syncBadge, toSyncStatus } from "@/lib/registrat
 import { createClient } from "@/lib/supabase/server";
 import styles from "../../admin.module.css";
 import { when } from "../../overview";
-import { markGuest, resetChula, setWhitelisted } from "./actions";
+import { banUser, liftBan, markGuest, resetChula, setWhitelisted } from "./actions";
 import { RoleControl } from "./role-control";
+import { SubmitButton } from "@/components/submit-button";
 
 /** admin_get_user returns a jsonb document, so it can't be derived from the
  * generated table types; this mirrors the keys built in 20261004000001. */
@@ -31,6 +32,10 @@ const ERRORS: Record<string, string> = {
   OWNER_ROLE_PROTECTED: "Owners are peers, so you can't change another owner's role.",
   NOT_FOUND: "That record no longer exists. Refresh and try again.",
   ALREADY_VERIFIED: "This player is already Chula-verified.",
+  ALREADY_BANNED: "This player is already banned.",
+  SELF_BAN: "You can't ban yourself.",
+  BANNED: "This player is banned. Lift the ban to put accounts back on the whitelist.",
+  INVALID: "Give a reason and pick how long the ban lasts.",
 };
 
 const DONE: Record<string, string> = {
@@ -39,6 +44,8 @@ const DONE: Record<string, string> = {
   role: "Role changed.",
   restored: "Account put back on the whitelist.",
   removed: "Account removed from the whitelist.",
+  banned: "Player banned. Their accounts leave the whitelist and they're kicked within a few seconds.",
+  lifted: "Ban lifted. The accounts it removed are going back on the whitelist.",
 };
 
 export default async function AdminUserPage({ params, searchParams }: {
@@ -50,10 +57,11 @@ export default async function AdminUserPage({ params, searchParams }: {
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const supabase = await createClient();
-  const [{ data, error }, { data: myRole }, { data: { user: me } }] = await Promise.all([
+  const [{ data, error }, { data: myRole }, { data: { user: me } }, { data: bans }] = await Promise.all([
     supabase.rpc("admin_get_user", { p_user_id: id }),
     supabase.rpc("current_app_role"),
     supabase.auth.getUser(),
+    supabase.rpc("admin_user_bans", { p_user_id: id }),
   ]);
   if (error) {
     return <>
@@ -73,6 +81,7 @@ export default async function AdminUserPage({ params, searchParams }: {
   const canManage = isOwner || target.role === "user";
   const name = detail.discord?.username ?? target.email ?? target.id;
   const handle = detail.discord?.username ?? target.id.slice(0, 8);
+  const activeBan = bans?.find((b) => b.active);
 
   return <>
     <Link href="/admin/players" className="back-link"><PixelIcon name="back" />Players</Link>
@@ -91,6 +100,7 @@ export default async function AdminUserPage({ params, searchParams }: {
       <div className={styles.badges}>
         <VerificationBadge kind={detail.verification_kind} />
         <span className={styles.roleBadge}>Role: {target.role}</span>
+        {activeBan && <span className="badge badge-danger"><PixelIcon name="revoked" />Banned</span>}
       </div>
     </section>
 
@@ -150,6 +160,69 @@ export default async function AdminUserPage({ params, searchParams }: {
             )}
           </section>
         )}
+
+        {(target.role === "user" || (bans?.length ?? 0) > 0) && (
+          <section className={`panel ${styles.actionsCard}`} aria-labelledby="ban-title">
+            <h2 id="ban-title" className={styles.sectionTitle}>Ban</h2>
+            {activeBan ? (
+              <div className={styles.actionRow}>
+                <dl className={styles.facts}>
+                  <dt>Reason</dt><dd>{activeBan.reason}</dd>
+                  <dt>Player sees</dt><dd>{activeBan.public_note ?? <span className="hint">No note</span>}</dd>
+                  <dt>Until</dt><dd>{activeBan.expires_at ? when(activeBan.expires_at) : "Permanent"}</dd>
+                  <dt>By</dt><dd>{activeBan.created_by_name ?? "a removed admin"} · {when(activeBan.created_at)}</dd>
+                </dl>
+                <ConfirmAction
+                  action={liftBan}
+                  fields={{ userId: target.id, banId: activeBan.id }}
+                  trigger="Lift ban"
+                  triggerClassName="btn btn-sm"
+                  title={`Lift ${name}'s ban?`}
+                  body={`The Minecraft accounts the ban removed go back on the whitelist, and ${name} gets their Discord roles back.`}
+                  confirmLabel="Lift ban"
+                />
+              </div>
+            ) : target.role === "user" && me?.id !== target.id ? (
+              <details>
+                <summary className="btn btn-sm btn-danger-outline">Ban {name}</summary>
+                <form action={banUser} className="stack gap-10" style={{ marginTop: 12 }}>
+                  <input type="hidden" name="userId" value={target.id} />
+                  <label className="stack gap-6">
+                    <span className="label">Reason (admins only)</span>
+                    <textarea className={styles.textarea} name="reason" rows={2} maxLength={1000} required />
+                  </label>
+                  <label className="stack gap-6">
+                    <span className="label">Note to the player <span className="optional">optional</span></span>
+                    <textarea className={styles.textarea} name="publicNote" rows={2} maxLength={1000} />
+                  </label>
+                  <label className="stack gap-6">
+                    <span className="label">Length</span>
+                    <select className="input" name="duration" defaultValue="7d">
+                      <option value="1d">1 day</option>
+                      <option value="7d">7 days</option>
+                      <option value="30d">30 days</option>
+                      <option value="permanent">Permanent</option>
+                    </select>
+                  </label>
+                  <p className="hint">Every whitelisted account leaves the whitelist, they&apos;re kicked, and they lose their Discord roles until the ban ends.</p>
+                  <SubmitButton className="btn btn-sm btn-danger">Ban player</SubmitButton>
+                </form>
+              </details>
+            ) : null}
+            {bans && bans.some((b) => !b.active) && (
+              <ol className={styles.log}>
+                {bans.filter((b) => !b.active).map((b) => (
+                  <li key={b.id}>
+                    <time dateTime={b.created_at}>{when(b.created_at)}</time>
+                    <span>
+                      {b.reason} <span className="hint">· {b.lifted_by_name ? `lifted by ${b.lifted_by_name}` : b.expires_at ? "expired" : "lifted"}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        )}
       </div>
 
       <div className={styles.mainCol}>
@@ -195,7 +268,10 @@ export default async function AdminUserPage({ params, searchParams }: {
         </section>
 
         <section className="panel" aria-labelledby="log-title">
-          <h2 id="log-title" className={styles.sectionTitle}>Change log</h2>
+          <div className={styles.listHead}>
+            <h2 id="log-title" className={styles.sectionTitle}>Change log</h2>
+            <Link href={`/admin/audit?target=${id}`} className="hint">Admin actions in audit log →</Link>
+          </div>
           {detail.log.length === 0 ? <p className="muted">No changes recorded.</p> : (
             <ol className={styles.log}>
               {detail.log.map((entry) => (

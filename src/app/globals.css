@@ -299,6 +299,38 @@ p {
   flex: none;
 }
 
+/* Busy (SubmitButton): the label keeps its space so the button doesn't
+   resize, and three pixels step in place of it. Under reduced motion the
+   global rule stops the steps and the dots stay as a static "…". */
+.btn[aria-busy="true"] {
+  position: relative;
+  cursor: progress;
+  color: transparent;
+}
+
+.btn[aria-busy="true"] > * {
+  visibility: hidden;
+}
+
+.btn[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 6px;
+  height: 6px;
+  margin: auto;
+  translate: -12px 0;
+  background: var(--text);
+  box-shadow: 12px 0 0 var(--text), 24px 0 0 var(--text);
+  animation: busy-dots 900ms steps(1, end) infinite;
+}
+
+@keyframes busy-dots {
+  0% { opacity: 1; box-shadow: 12px 0 0 var(--text-3), 24px 0 0 var(--text-3); }
+  33% { box-shadow: 12px 0 0 var(--text), 24px 0 0 var(--text-3); }
+  66% { box-shadow: 12px 0 0 var(--text), 24px 0 0 var(--text); }
+}
+
 .btn-primary {
   color: var(--bg);
   background: var(--pink);

@@ -8,8 +8,10 @@ import Link from "next/link";
 import { Fragment } from "react";
 import { AboutYouForm } from "../register/details/about-you-form";
 import { removeFriend, respondFriendRequest, unblockPlayer } from "./actions";
+import { BanCard, type MyBan } from "./ban-card";
 import styles from "./dashboard.module.css";
 import { ServiceUnavailable } from "./service-unavailable";
+import { SubmitButton } from "@/components/submit-button";
 
 type Profile = { first_name: string | null; last_name: string | null; nickname: string | null; study_level: string | null; faculty: string | null; major: string | null };
 
@@ -41,8 +43,8 @@ function PersonAvatar({ src, name, size = 40 }: { src: string | null; name: stri
     : <span className="avatar" aria-hidden="true" style={{ width: size, height: size }}>{name.charAt(0).toUpperCase()}</span>;
 }
 
-export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; edit?: string; saved?: string; done?: string }> }) {
-  const { error: errorCode, edit, saved, done } = await searchParams;
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; edit?: string; saved?: string; done?: string; appeal?: string; appealError?: string }> }) {
+  const { error: errorCode, edit, saved, done, appeal, appealError } = await searchParams;
   const session = await requireVerifiedUser();
   if (!session) return <ServiceUnavailable />;
   const { supabase, user } = session;
@@ -50,17 +52,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   let profile: Profile | null = null;
   let achievements: AchievementGroup[] = [];
   let social: Social = { incoming: [], outgoing: [], friends: [], blocked: [] };
+  let ban: MyBan | null = null;
   let lookupFailed = false;
 
   try {
-    const [profileRow, badges, socialRow] = await Promise.all([
+    const [profileRow, badges, socialRow, banRow] = await Promise.all([
       supabase.from("profiles").select("first_name, last_name, nickname, study_level, faculty, major").eq("user_id", user.id).maybeSingle(),
       // Published achievements only, and an entry names its event only when
       // that event is published too (20261006000001:438-439).
       supabase.rpc("my_achievements"),
       // Keyed on the JWT, and a bonus: a failure falls back to empty.
-      supabase.rpc("my_social")
+      supabase.rpc("my_social"),
+      // Also finishes an expired temp ban, which puts the accounts back.
+      supabase.rpc("my_ban")
     ]);
+    ban = banRow.data as MyBan | null;
     lookupFailed = Boolean(profileRow.error);
     profile = profileRow.data;
     // Badges are a bonus, not the page: a failure here falls back to the
@@ -101,6 +107,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <h1 className="page-title">Your profile</h1>
           <p className="lead">Who you are on ChulaCraft. Minecraft accounts, privacy and sign-in live in <Link href="/settings">Settings</Link>.</p>
         </div>
+
+        {ban && <BanCard ban={ban} appealError={appealError} appealSent={appeal === "sent"} />}
 
         {lookupFailed ? (
           <section className={`panel ${styles.loadError}`} role="alert">
@@ -155,12 +163,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                                   <form action={respondFriendRequest}>
                                     <input type="hidden" name="otherId" value={person.user_id} />
                                     <input type="hidden" name="accept" value="true" />
-                                    <button type="submit" className="btn btn-sm btn-primary"><PixelIcon name="check" />Accept</button>
+                                    <SubmitButton className="btn btn-sm btn-primary"><PixelIcon name="check" />Accept</SubmitButton>
                                   </form>
                                   <form action={respondFriendRequest}>
                                     <input type="hidden" name="otherId" value={person.user_id} />
                                     <input type="hidden" name="accept" value="false" />
-                                    <button type="submit" className="btn btn-sm">Decline</button>
+                                    <SubmitButton className="btn btn-sm">Decline</SubmitButton>
                                   </form>
                                 </span>
                               </li>
@@ -181,7 +189,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                                 </Link>
                                 <form action={removeFriend}>
                                   <input type="hidden" name="otherId" value={person.user_id} />
-                                  <button type="submit" className="btn btn-sm">Cancel</button>
+                                  <SubmitButton className="btn btn-sm">Cancel</SubmitButton>
                                 </form>
                               </li>
                             ))}
@@ -201,7 +209,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                                 </Link>
                                 <form action={removeFriend}>
                                   <input type="hidden" name="otherId" value={person.user_id} />
-                                  <button type="submit" className="btn btn-sm">Unfriend</button>
+                                  <SubmitButton className="btn btn-sm">Unfriend</SubmitButton>
                                 </form>
                               </li>
                             ))}
@@ -221,7 +229,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                                 </span>
                                 <form action={unblockPlayer}>
                                   <input type="hidden" name="otherId" value={person.user_id} />
-                                  <button type="submit" className="btn btn-sm">Unblock</button>
+                                  <SubmitButton className="btn btn-sm">Unblock</SubmitButton>
                                 </form>
                               </li>
                             ))}

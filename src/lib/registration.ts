@@ -71,6 +71,7 @@ export function registrationError(message: string, code?: string): { status: num
   if (raised === "CU_SSO_REQUIRED") return { status: 403, error: "Verify your Chula Google account before adding a Minecraft account." };
   if (raised === "DISCORD_IDENTITY_REQUIRED") return { status: 403, error: "Sign in with Discord before adding a Minecraft account." };
   if (raised === "REGISTRATION_BLOCKED") return { status: 403, error: "An admin removed this Minecraft account. Contact an admin to restore it." };
+  if (raised === "BANNED") return { status: 403, error: "Your account is banned, so you can't add Minecraft accounts. See your profile for details." };
   if (raised === "NOT_FOUND") return { status: 404, error: "That Minecraft account is no longer on your list. Refresh and try again." };
   return { status: 503, error: "We couldn’t save the registration. Please try again." };
 }

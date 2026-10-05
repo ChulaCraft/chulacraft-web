@@ -7,6 +7,7 @@ import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../../admin.module.css";
 import { deleteAnnouncement, saveAnnouncement } from "./actions";
+import { SubmitButton } from "@/components/submit-button";
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to change announcements.",
@@ -113,7 +114,7 @@ export default async function AdminAnnouncementPage({ params, searchParams }: {
       </label>
 
       <div className={styles.formButtons}>
-        <button type="submit" className="btn btn-primary">{row ? "Save announcement" : "Create announcement"}</button>
+        <SubmitButton className="btn btn-primary">{row ? "Save announcement" : "Create announcement"}</SubmitButton>
         {!row && <Link href="/admin/announcements" className="btn">Cancel</Link>}
       </div>
     </form>

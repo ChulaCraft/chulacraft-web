@@ -5,8 +5,9 @@ import { AchievementGrid, type AchievementGroup } from "@/components/achievement
 import { PixelIcon } from "@/components/icons";
 import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
-import { blockPlayer, removeFriend, respondFriendRequest, sendFriendRequest } from "./actions";
+import { blockPlayer, removeFriend, reportPlayer, respondFriendRequest, sendFriendRequest } from "./actions";
 import styles from "./player.module.css";
+import { SubmitButton } from "@/components/submit-button";
 
 /** player_card() in supabase/migrations/20261007000001_social.sql builds this
  *  jsonb, so the generated types cannot describe it. Every section is optional:
@@ -66,6 +67,9 @@ const ERRORS: Record<string, string> = {
   ALREADY_FRIENDS: "You are already friends with this player.",
   TOO_MANY_REQUESTS: "You have 50 friend requests waiting for an answer. Answer one first.",
   INVALID_TARGET: "You can't do that to yourself.",
+  INVALID: "Pick what happened and describe it in at least 10 characters. Links must start with https://.",
+  ALREADY_REPORTED: "You already reported this player. An admin will look at it.",
+  RATE_LIMITED: "You've sent 5 reports today. Try again tomorrow, or message an admin on Discord.",
   FAILED: "That didn't save. Please try again in a moment."
 };
 
@@ -116,6 +120,7 @@ export default async function PlayerPage({ params, searchParams }: {
             {done === "accepted" && <p className="alert alert-success" role="status"><PixelIcon name="check" />You are now friends.</p>}
             {done === "declined" && <p className="alert alert-success" role="status"><PixelIcon name="check" />Request declined.</p>}
             {done === "removed" && <p className="alert alert-success" role="status"><PixelIcon name="check" />Removed.</p>}
+            {done === "reported" && <p className="alert alert-success" role="status"><PixelIcon name="check" />Report sent. Thanks, an admin will look at it.</p>}
           </div>
 
           <header className={styles.header}>
@@ -142,19 +147,19 @@ export default async function PlayerPage({ params, searchParams }: {
                 {!isSelf && relationship !== "outgoing" && (
                   <form action={sendFriendRequest}>
                     <input type="hidden" name="playerId" value={id} />
-                    <button type="submit" className="btn btn-primary"><PixelIcon name="plus" />Add friend</button>
+                    <SubmitButton className="btn btn-primary"><PixelIcon name="plus" />Add friend</SubmitButton>
                   </form>
                 )}
                 {relationship === "outgoing" && (
                   <form action={removeFriend}>
                     <input type="hidden" name="playerId" value={id} />
-                    <button type="submit" className="btn">Cancel request</button>
+                    <SubmitButton className="btn">Cancel request</SubmitButton>
                   </form>
                 )}
                 {relationship !== "blocked_by_me" && (
                   <form action={blockPlayer}>
                     <input type="hidden" name="playerId" value={id} />
-                    <button type="submit" className="btn btn-danger-outline">Block</button>
+                    <SubmitButton className="btn btn-danger-outline">Block</SubmitButton>
                   </form>
                 )}
               </div>
@@ -196,13 +201,13 @@ export default async function PlayerPage({ params, searchParams }: {
                     {relationship === "none" && (
                       <form action={sendFriendRequest}>
                         <input type="hidden" name="playerId" value={id} />
-                        <button type="submit" className="btn btn-primary"><PixelIcon name="plus" />Add friend</button>
+                        <SubmitButton className="btn btn-primary"><PixelIcon name="plus" />Add friend</SubmitButton>
                       </form>
                     )}
                     {relationship === "outgoing" && (
                       <form action={removeFriend}>
                         <input type="hidden" name="playerId" value={id} />
-                        <button type="submit" className="btn">Cancel request</button>
+                        <SubmitButton className="btn">Cancel request</SubmitButton>
                       </form>
                     )}
                     {relationship === "incoming" && (
@@ -210,24 +215,24 @@ export default async function PlayerPage({ params, searchParams }: {
                         <form action={respondFriendRequest}>
                           <input type="hidden" name="requesterId" value={id} />
                           <input type="hidden" name="accept" value="true" />
-                          <button type="submit" className="btn btn-primary"><PixelIcon name="check" />Accept</button>
+                          <SubmitButton className="btn btn-primary"><PixelIcon name="check" />Accept</SubmitButton>
                         </form>
                         <form action={respondFriendRequest}>
                           <input type="hidden" name="requesterId" value={id} />
                           <input type="hidden" name="accept" value="false" />
-                          <button type="submit" className="btn">Decline</button>
+                          <SubmitButton className="btn">Decline</SubmitButton>
                         </form>
                       </>
                     )}
                     {relationship === "friend" && (
                       <form action={removeFriend}>
                         <input type="hidden" name="playerId" value={id} />
-                        <button type="submit" className="btn">Unfriend</button>
+                        <SubmitButton className="btn">Unfriend</SubmitButton>
                       </form>
                     )}
                     <form action={blockPlayer}>
                       <input type="hidden" name="playerId" value={id} />
-                      <button type="submit" className="btn btn-danger-outline">Block</button>
+                      <SubmitButton className="btn btn-danger-outline">Block</SubmitButton>
                     </form>
                   </div>
                   <p className="hint">Blocking removes any friendship and hides this profile from them, both ways.</p>
@@ -240,7 +245,7 @@ export default async function PlayerPage({ params, searchParams }: {
                   <p className="muted">They can&apos;t find you and can&apos;t see this profile. Unblocking restores both.</p>
                   <form action={removeFriend} className={styles.actions}>
                     <input type="hidden" name="playerId" value={id} />
-                    <button type="submit" className="btn">Unfriend</button>
+                    <SubmitButton className="btn">Unfriend</SubmitButton>
                   </form>
                 </section>
               )}
@@ -256,6 +261,35 @@ export default async function PlayerPage({ params, searchParams }: {
                   : "You blocked this player, so their profile is not available to you."}
               </p>
             </section>
+          )}
+
+          {/* Reporting stays available when blocked: harassment is often why. */}
+          {!isSelf && (
+            <details className={`panel ${styles.card}`}>
+              <summary className="link-button">Report this player</summary>
+              <form action={reportPlayer} className="stack gap-10" style={{ marginTop: 12 }}>
+                <input type="hidden" name="playerId" value={id} />
+                <label className="stack gap-6">
+                  <span className="label">What happened?</span>
+                  <select className="input" name="category" defaultValue="grief">
+                    <option value="grief">Griefing</option>
+                    <option value="cheat">Cheating or hacked client</option>
+                    <option value="harassment">Harassment</option>
+                    <option value="other">Something else</option>
+                  </select>
+                </label>
+                <label className="stack gap-6">
+                  <span className="label">Details</span>
+                  <textarea className="input" name="details" rows={3} minLength={10} maxLength={2000} required placeholder="Where, when, and what they did" />
+                </label>
+                <label className="stack gap-6">
+                  <span className="label">Screenshot or video link <span className="optional">optional</span></span>
+                  <input className="input" type="url" name="evidenceUrl" pattern="https://.*" maxLength={500} placeholder="https://" />
+                </label>
+                <p className="hint">Only admins see reports. The player isn&apos;t told who reported them.</p>
+                <SubmitButton className="btn btn-sm btn-danger-outline">Send report</SubmitButton>
+              </form>
+            </details>
           )}
         </div>
       </main>

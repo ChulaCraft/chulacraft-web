@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn((to: string) => { throw new Error(`NEXT_REDIRECT:${to}`); })
 }));
 
-import { blockPlayer, removeFriend, respondFriendRequest, sendFriendRequest } from "./actions";
+import { blockPlayer, removeFriend, reportPlayer, respondFriendRequest, sendFriendRequest } from "./actions";
 
 const PLAYER_ID = "00000000-0000-0000-0000-0000000000c1";
 // The mock's redirect throws `NEXT_REDIRECT:<to>`, so the expected string
@@ -98,5 +98,12 @@ describe("player profile actions", () => {
     m.rpc.mockClear();
     expect(await redirected(removeFriend, form({ otherId: PLAYER_ID }))).toBe("NEXT_REDIRECT:/players");
     expect(m.rpc).not.toHaveBeenCalled();
+  });
+
+  it("forwards a report, dropping an empty evidence link", async () => {
+    expect(await redirected(reportPlayer, form({ playerId: PLAYER_ID, category: "grief", details: "Broke my house.", evidenceUrl: "  " }))).toBe(`${TARGET}?done=reported`);
+    expect(m.rpc).toHaveBeenLastCalledWith("report_player", { p_target: PLAYER_ID, p_category: "grief", p_details: "Broke my house.", p_evidence_url: undefined });
+    await redirected(reportPlayer, form({ playerId: PLAYER_ID, category: "cheat", details: "Flying.", evidenceUrl: "https://x.test/a" }));
+    expect(m.rpc.mock.lastCall![1].p_evidence_url).toBe("https://x.test/a");
   });
 });

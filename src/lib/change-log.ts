@@ -19,6 +19,28 @@ export function describeChange(field: string, oldValue: string | null, newValue:
       return newValue === "true" ? "marked as verified (guest)" : "removed guest status";
     case "google":
       return newValue ? `linked personal Google ${newValue}` : "unlinked personal Google";
+    case "awarded_on":
+      return newValue ? "gave an achievement" : "took back an achievement";
+    case "banned":
+      return newValue ? "issued a temporary ban" : "issued a permanent ban";
+    case "ban_lifted":
+      return "lifted a ban";
+    case "ban_expired":
+      return "came back after a ban expired";
+    case "appeal":
+      return `${newValue} an appeal`;
+    case "report":
+      return `${newValue} a report`;
+    case "created":
+      return `created ${newValue}`;
+    case "deleted":
+      return `deleted ${oldValue}`;
+    case "console_write":
+      return `opened the console on ${newValue}`;
+    case "start":
+    case "stop":
+    case "restart":
+      return `${field === "stop" ? "stopped" : `${field}ed`} ${newValue}`;
     default:
       if (field in PROFILE_FIELDS) return `updated ${PROFILE_FIELDS[field]}`;
       return `changed ${field.replaceAll("_", " ")}`;

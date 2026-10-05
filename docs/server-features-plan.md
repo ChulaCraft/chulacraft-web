@@ -134,6 +134,15 @@ heartbeat table.
 
 ## Phase 3 — Bans & appeals (#8)
 
+**Done (uncommitted).** `20261012000001_bans.sql`. Differences from below:
+only role `user` can be banned (demote staff first, or a banned admin keeps
+`/admin`); a ban stores the registration ids it turned off and lifting restores
+exactly those; tables are RPC-only (no column grant), so the reason never
+reaches players; an expired ban is finished by `my_ban()` when the player opens
+`/dashboard`; appeals are capped at 3 per ban. Ban/lift touches `profiles` so
+the bot's `verified-role-sync` re-syncs roles. The worker already kicks on
+removal (Phase 0 done in `chulacraft-whitelist-worker`).
+
 - Migration `bans(id, user_id, reason, public_note, created_by, created_at,
   expires_at null = permanent, lifted_at, lifted_by)`.
 - RPC `admin_ban_user(user_id, reason, public_note, expires_at)`: same role
@@ -160,6 +169,12 @@ heartbeat table.
 
 ## Phase 4 — Report a player (#9)
 
+**Done (uncommitted).** `20261013000001_reports.sql`. RPC-only like bans; no
+"my reports" view for the reporter (add when asked). The limit is 5 reports per
+reporter per day, counted on the table; one open report per reporter and target;
+evidence must be an `https://` link. Reporting stays available when blocked.
+"Ban this player" links to the ban panel on `/admin/users/[id]`.
+
 - Migration `reports(id, reporter_id, target_user_id, category grief|cheat|
   harassment|other, details, evidence_url, status open|actioned|dismissed,
   handled_by, admin_note, created_at)`. Reporter can insert and read own rows;
@@ -170,6 +185,10 @@ heartbeat table.
   into Phase 3.
 
 ## Phase 5 — Admin audit log (#10)
+
+**Done (uncommitted).** `20261011000001_audit_log.sql`; only `source = 'admin'`
+rows are shown. Actor/target filters are set by clicking names in the log,
+not typed. Cursor is `?before=<created_at>_<id>`.
 
 - Reuse `account_change_log`: widen the `entity` check to include `bans`,
   `appeals`, `reports`, `announcements`, `achievement_awards`, and log from the

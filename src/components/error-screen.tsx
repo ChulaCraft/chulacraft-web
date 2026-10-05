@@ -2,10 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./error-screen.module.css";
 
-type Action = { label: string; href: string };
+/** A link, or a button when the screen is an error boundary offering a retry. */
+type Href = { label: string; href: string };
+type Action = Href | { label: string; onClick: () => void };
 
 export function ErrorScreen({ code, title, body, primary, secondary, help }: {
-  code: string; title: string; body: string; primary: Action; secondary: Action; help: string;
+  code: string; title: string; body: string; primary: Action; secondary: Href; help: string;
 }) {
   return (
     <>
@@ -17,7 +19,9 @@ export function ErrorScreen({ code, title, body, primary, secondary, help }: {
           <h1 className={styles.title}>{title}</h1>
           <p className={styles.body}>{body}</p>
           <div className={styles.actions}>
-            <Link className="btn btn-primary btn-lg" href={primary.href}>{primary.label}</Link>
+            {"href" in primary
+              ? <Link className="btn btn-primary btn-lg" href={primary.href}>{primary.label}</Link>
+              : <button type="button" className="btn btn-primary btn-lg" onClick={primary.onClick} autoFocus>{primary.label}</button>}
             <Link className="btn btn-lg" href={secondary.href}>{secondary.label}</Link>
           </div>
           <p className="hint">{help}</p>

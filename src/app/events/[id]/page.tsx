@@ -8,6 +8,7 @@ import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import { toggleInterest } from "./actions";
 import styles from "./event.module.css";
+import { SubmitButton } from "@/components/submit-button";
 
 /** get_event() in supabase/migrations/20261006000002_event_interest.sql:76 builds
  *  this jsonb, so the generated types cannot describe it. me_interested is the
@@ -131,9 +132,9 @@ export default async function EventPage({ params, searchParams }: {
                 <form action={toggleInterest}>
                   <input type="hidden" name="eventId" value={event.id} />
                   <input type="hidden" name="interested" value={event.me_interested ? "false" : "true"} />
-                  <button type="submit" className={`btn ${event.me_interested ? "" : "btn-primary"}`}>
+                  <SubmitButton className={`btn ${event.me_interested ? "" : "btn-primary"}`}>
                     {event.me_interested ? <><PixelIcon name="check" />Interested ✓ (undo)</> : "Mark as interested"}
-                  </button>
+                  </SubmitButton>
                 </form>
                 <p className={`muted ${styles.interestNote}`}>
                   {event.me_interested

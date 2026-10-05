@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { SubmitButton } from "@/components/submit-button";
 
 type Props = {
   /** Server action the confirm button submits. */
@@ -40,7 +41,7 @@ export function ConfirmAction({ action, fields, trigger, triggerClassName, trigg
         )}
         <div className="dialog-actions">
           <button type="button" className="btn" onClick={() => ref.current?.close()} autoFocus>Cancel</button>
-          <button type="submit" className={confirmClassName} disabled={blocked}>{confirmLabel}</button>
+          <SubmitButton className={confirmClassName} disabled={blocked}>{confirmLabel}</SubmitButton>
         </div>
       </form>
     </dialog>

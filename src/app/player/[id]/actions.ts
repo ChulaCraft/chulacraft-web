@@ -59,3 +59,16 @@ export async function blockPlayer(formData: FormData) {
   const { error } = await supabase.rpc("block_player", { p_other: id });
   finish(id, error, "blocked");
 }
+export async function reportPlayer(formData: FormData) {
+  const id = playerId(formData);
+  if (!id) redirect("/players");
+  const evidence = String(formData.get("evidenceUrl") ?? "").trim();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("report_player", {
+    p_target: id,
+    p_category: String(formData.get("category") ?? ""),
+    p_details: String(formData.get("details") ?? ""),
+    p_evidence_url: evidence || undefined
+  });
+  finish(id, error, "reported");
+}

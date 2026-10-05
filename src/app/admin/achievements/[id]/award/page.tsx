@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import styles from "../../../admin.module.css";
 import { addPlayers, confirmAward, prefillInterested, previewAward } from "./actions";
 import { selectionParam, selectionIds } from "../../selection";
+import { SubmitButton } from "@/components/submit-button";
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to award this.",
@@ -112,7 +113,7 @@ export default async function AdminAwardPage({ params, searchParams }: {
                 ))}
               </ul>
               <div className={styles.formButtons}>
-                <button type="submit" className="btn">Add ticked to award</button>
+                <SubmitButton className="btn">Add ticked to award</SubmitButton>
               </div>
             </>
           )}
@@ -146,7 +147,7 @@ export default async function AdminAwardPage({ params, searchParams }: {
           </p>
         </div>
         <div className={styles.formButtons}>
-          <button type="submit" className="btn btn-primary">Preview matches</button>
+          <SubmitButton className="btn btn-primary">Preview matches</SubmitButton>
         </div>
       </form>
     </section>
@@ -173,7 +174,7 @@ export default async function AdminAwardPage({ params, searchParams }: {
           </select>
         </div>
         <div className={styles.formButtons}>
-          <button type="submit" className="btn" disabled={!eventId}>Tick interested players</button>
+          <SubmitButton className="btn" disabled={!eventId}>Tick interested players</SubmitButton>
         </div>
       </form>
     </section>
@@ -214,9 +215,9 @@ export default async function AdminAwardPage({ params, searchParams }: {
           </div>
 
           <div className={styles.formButtons}>
-            <button type="submit" className="btn btn-primary" disabled={recipients === 0}>
+            <SubmitButton className="btn btn-primary" disabled={recipients === 0}>
               Award {recipients} {recipients === 1 ? "player" : "players"}
-            </button>
+            </SubmitButton>
             <Link href={link({})} className="btn">Start over</Link>
           </div>
         </form>

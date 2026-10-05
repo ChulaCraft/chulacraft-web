@@ -97,3 +97,10 @@ export async function updatePrivacy(formData: FormData) {
   });
   finish(error, "privacy", "/settings");
 }
+
+export async function submitAppeal(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("submit_appeal", { p_message: String(formData.get("message") ?? "") });
+  revalidatePath("/dashboard");
+  redirect(`/dashboard?${error ? `appealError=${dbErrorCode(error) ?? "FAILED"}` : "appeal=sent"}`);
+}

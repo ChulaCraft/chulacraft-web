@@ -75,13 +75,13 @@ export default async function AdminPage() {
       { title: "Players", desc: "Manage players, verify guests, change roles, restore removed accounts.", icon: "user", href: "/admin/players", cta: "Open players", count: s ? String(s.players) : undefined },
       { title: "Minecraft server", desc: "Server status, whitelist sync, and the sync queue.", icon: "retry" },
       { title: "Community", desc: "Achievements, events, and announcements on the site and Discord.", icon: "info", href: "/admin/achievements", cta: "Open achievements" },
-      { title: "Audit log", desc: "Every admin action across all players.", icon: "lock" },
+      { title: "Audit log", desc: "Every admin action across all players.", icon: "lock", href: "/admin/audit", cta: "Open audit log" },
     ]} />
 
     <section aria-labelledby="act-title" className="panel">
       <div className={styles.listHead}>
         <h2 id="act-title">Recent admin activity</h2>
-        <span className="hint">Last 5 actions</span>
+        <Link href="/admin/audit" className="hint">Last 5 actions · see all</Link>
       </div>
       {activity.error ? <p className="muted">Couldn&apos;t load recent activity.</p>
         : log.length === 0 ? <p className="muted">No admin actions yet.</p>

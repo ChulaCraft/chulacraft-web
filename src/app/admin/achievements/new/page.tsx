@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import styles from "../../admin.module.css";
 import { saveAchievement } from "../[id]/actions";
+import { SubmitButton } from "@/components/submit-button";
 
 /** Creating is the edit form with nothing filled in; saveAchievement mints the
  *  id when none is posted. */
@@ -32,7 +33,7 @@ export default function NewAchievementPage() {
         </select>
       </div>
       <div className={styles.formButtons}>
-        <button type="submit" className="btn btn-primary">Create achievement</button>
+        <SubmitButton className="btn btn-primary">Create achievement</SubmitButton>
         <Link href="/admin/achievements" className="btn">Cancel</Link>
       </div>
     </form>

@@ -8,6 +8,7 @@ import styles from "../../admin.module.css";
 import { when } from "../../overview";
 import { publicImageUrl } from "../images";
 import { deleteAchievement, revokeAward, saveAchievement } from "./actions";
+import { SubmitButton } from "@/components/submit-button";
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to change achievements.",
@@ -86,7 +87,7 @@ export default async function AdminAchievementPage({ params, searchParams }: {
           </div>
 
           <div className={styles.formButtons}>
-            <button type="submit" className="btn btn-primary">Save achievement</button>
+            <SubmitButton className="btn btn-primary">Save achievement</SubmitButton>
             <Link href={`/admin/achievements/${achievement.id}/award`} className="btn">Award to players</Link>
           </div>
         </form>

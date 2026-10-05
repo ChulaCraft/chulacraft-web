@@ -74,6 +74,51 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"announcements": {
+                  Row: {
+                    "body": string,"created_at": string,"created_by": string | null,"deleted_at": string | null,"discord_message_id": string | null,"discord_revision": number | null,"expires_at": string | null,"id": string,"pinned": boolean,"post_to_discord": boolean,"published_at": string | null,"revision": number,"severity": string,"title": string,"updated_at": string
+                  }
+                  Insert: {
+                    "body": string,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"discord_message_id"?: string | null,"discord_revision"?: number | null,"expires_at"?: string | null,"id"?: string,"pinned"?: boolean,"post_to_discord"?: boolean,"published_at"?: string | null,"revision"?: number,"severity"?: string,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"discord_message_id"?: string | null,"discord_revision"?: number | null,"expires_at"?: string | null,"id"?: string,"pinned"?: boolean,"post_to_discord"?: boolean,"published_at"?: string | null,"revision"?: number,"severity"?: string,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"appeals": {
+                  Row: {
+                    "admin_response": string | null,"ban_id": string,"created_at": string,"decided_at": string | null,"decided_by": string | null,"id": string,"message": string,"status": string,"user_id": string
+                  }
+                  Insert: {
+                    "admin_response"?: string | null,"ban_id": string,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"id"?: string,"message": string,"status"?: string,"user_id": string
+                  }
+                  Update: {
+                    "admin_response"?: string | null,"ban_id"?: string,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"id"?: string,"message"?: string,"status"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "appeals_ban_id_fkey"
+      columns: ["ban_id"]
+isOneToOne: false
+      referencedRelation: "bans"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"bans": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"expires_at": string | null,"id": string,"lifted_at": string | null,"lifted_by": string | null,"public_note": string | null,"reason": string,"revoked_registrations": (string)[],"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"expires_at"?: string | null,"id"?: string,"lifted_at"?: string | null,"lifted_by"?: string | null,"public_note"?: string | null,"reason": string,"revoked_registrations"?: (string)[],"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"expires_at"?: string | null,"id"?: string,"lifted_at"?: string | null,"lifted_by"?: string | null,"public_note"?: string | null,"reason"?: string,"revoked_registrations"?: (string)[],"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"blocks": {
                   Row: {
                     "blocked_id": string,"blocker_id": string,"created_at": string
@@ -210,6 +255,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"reports": {
+                  Row: {
+                    "admin_note": string | null,"category": string,"created_at": string,"details": string,"evidence_url": string | null,"handled_at": string | null,"handled_by": string | null,"id": string,"reporter_id": string | null,"status": string,"target_user_id": string
+                  }
+                  Insert: {
+                    "admin_note"?: string | null,"category": string,"created_at"?: string,"details": string,"evidence_url"?: string | null,"handled_at"?: string | null,"handled_by"?: string | null,"id"?: string,"reporter_id"?: string | null,"status"?: string,"target_user_id": string
+                  }
+                  Update: {
+                    "admin_note"?: string | null,"category"?: string,"created_at"?: string,"details"?: string,"evidence_url"?: string | null,"handled_at"?: string | null,"handled_by"?: string | null,"id"?: string,"reporter_id"?: string | null,"status"?: string,"target_user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -224,8 +282,19 @@ isOneToOne: false
               "created": boolean,"desired_whitelisted": boolean,"id": string,"minecraft_username": string,"sync_status": string,"updated_at": string
             }[]
                            },
+"admin_audit_log":
+{ Args: { "p_actor"?: string,"p_before_at"?: string,"p_before_id"?: string,"p_entity"?: string,"p_from"?: string,"p_limit"?: number,"p_target"?: string,"p_to"?: string }; Returns: {
+              "actor_name": string,"actor_user_id": string,"created_at": string,"entity": string,"entity_id": string,"field": string,"id": string,"new_value": string,"old_value": string,"target_name": string,"target_user_id": string
+            }[]
+                           },
 "admin_award":
 { Args: { "p_achievement_id": string,"p_awarded_on": string,"p_event_id": string,"p_user_ids": (string)[] }; Returns: number
+                           },
+"admin_ban_user":
+{ Args: { "p_expires_at"?: string,"p_public_note"?: string,"p_reason": string,"p_user_id": string }; Returns: string
+                           },
+"admin_decide_appeal":
+{ Args: { "p_accept": boolean,"p_appeal_id": string,"p_response": string }; Returns: undefined
                            },
 "admin_delete_achievement":
 { Args: { "p_id": string }; Returns: {
@@ -234,9 +303,6 @@ isOneToOne: false
                            },
 "admin_delete_announcement":
 { Args: { "p_id": string }; Returns: undefined
-                           },
-"admin_server_console_access":
-{ Args: { "p_action": string,"p_jti": string,"p_server": string }; Returns: string
                            },
 "admin_delete_event":
 { Args: { "p_id": string }; Returns: {
@@ -249,6 +315,12 @@ isOneToOne: false
 "admin_get_user":
 { Args: { "p_user_id": string }; Returns: Json
                            },
+"admin_handle_report":
+{ Args: { "p_note"?: string,"p_report_id": string,"p_status": string }; Returns: undefined
+                           },
+"admin_lift_ban":
+{ Args: { "p_ban_id": string }; Returns: undefined
+                           },
 "admin_list_achievements":
 { Args: Record<PropertyKey, never>; Returns: {
               "award_count": number,"created_at": string,"description": string,"id": string,"image_path": string,"name": string,"status": string,"updated_at": string
@@ -257,6 +329,11 @@ isOneToOne: false
 "admin_list_announcements":
 { Args: Record<PropertyKey, never>; Returns: {
               "body": string,"discord_message_id": string,"expires_at": string,"id": string,"pinned": boolean,"post_to_discord": boolean,"published_at": string,"severity": string,"title": string,"updated_at": string
+            }[]
+                           },
+"admin_list_appeals":
+{ Args: { "p_status"?: string }; Returns: {
+              "admin_response": string,"ban_id": string,"banned_at": string,"banned_by_name": string,"created_at": string,"decided_at": string,"decided_by_name": string,"expires_at": string,"id": string,"message": string,"public_note": string,"reason": string,"status": string,"user_id": string,"user_name": string
             }[]
                            },
 "admin_list_awards":
@@ -272,6 +349,11 @@ isOneToOne: false
 "admin_list_events":
 { Args: Record<PropertyKey, never>; Returns: {
               "award_count": number,"created_at": string,"description": string,"ends_at": string,"id": string,"image_path": string,"location": string,"name": string,"starts_at": string,"status": string,"updated_at": string
+            }[]
+                           },
+"admin_list_reports":
+{ Args: { "p_status"?: string }; Returns: {
+              "admin_note": string,"category": string,"created_at": string,"details": string,"evidence_url": string,"handled_at": string,"handled_by_name": string,"id": string,"reporter_id": string,"reporter_name": string,"status": string,"target_banned": boolean,"target_name": string,"target_open_reports": number,"target_user_id": string
             }[]
                            },
 "admin_mark_guest":
@@ -313,6 +395,9 @@ isOneToOne: false
               "chula_email": string,"created_at": string,"discord_username": string,"email": string,"minecraft_usernames": string,"role": string,"user_id": string,"verification_kind": string
             }[]
                            },
+"admin_server_console_access":
+{ Args: { "p_action": string,"p_jti": string,"p_server": string }; Returns: string
+                           },
 "admin_set_role":
 { Args: { "p_role": string,"p_user_id": string }; Returns: undefined
                            },
@@ -327,6 +412,11 @@ isOneToOne: false
                            },
 "admin_upsert_event":
 { Args: { "p_description": string,"p_ends_at": string,"p_id": string,"p_image_path": string,"p_location": string,"p_name": string,"p_starts_at": string,"p_status": string }; Returns: string
+                           },
+"admin_user_bans":
+{ Args: { "p_user_id": string }; Returns: {
+              "active": boolean,"created_at": string,"created_by_name": string,"expires_at": string,"id": string,"lifted_at": string,"lifted_by_name": string,"public_note": string,"reason": string
+            }[]
                            },
 "am_i_player_verified":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -371,6 +461,9 @@ isOneToOne: false
 "hook_only_discord_signups":
 { Args: { "event": Json }; Returns: Json
                            },
+"is_banned":
+{ Args: { "p_user_id": string }; Returns: boolean
+                           },
 "is_blocked_either":
 { Args: { "p_a": string,"p_b": string }; Returns: boolean
                            },
@@ -382,6 +475,9 @@ isOneToOne: false
                            },
 "is_player_verified":
 { Args: { "p_user_id": string }; Returns: boolean
+                           },
+"lift_ban":
+{ Args: { "p_actor": string,"p_ban_id": string,"p_source": string }; Returns: undefined
                            },
 "list_announcements":
 { Args: { "p_limit"?: number }; Returns: {
@@ -405,6 +501,9 @@ isOneToOne: false
 { Args: { "p_field": string,"p_identity_id": string,"p_new": string,"p_old": string,"p_user_id": string }; Returns: undefined
                            },
 "my_achievements":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"my_ban":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "my_chula_claim":
@@ -436,6 +535,9 @@ isOneToOne: false
 "remove_minecraft_account":
 { Args: { "p_registration_id": string,"p_user_id": string }; Returns: undefined
                            },
+"report_player":
+{ Args: { "p_category": string,"p_details": string,"p_evidence_url"?: string,"p_target": string }; Returns: undefined
+                           },
 "respond_friend_request":
 { Args: { "p_accept": boolean,"p_requester": string }; Returns: number
                            },
@@ -450,6 +552,9 @@ isOneToOne: false
                            },
 "set_event_interest":
 { Args: { "p_event_id": string,"p_interested": boolean }; Returns: boolean
+                           },
+"submit_appeal":
+{ Args: { "p_message": string }; Returns: undefined
                            },
 "unblock_player":
 { Args: { "p_other": string }; Returns: number

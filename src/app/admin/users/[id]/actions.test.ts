@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn((to: string) => { throw new Error(`NEXT_REDIRECT:${to}`); })
 }));
 
-import { markGuest, resetChula, setRole, setWhitelisted } from "./actions";
+import { banUser, liftBan, markGuest, resetChula, setRole, setWhitelisted } from "./actions";
 
 const USER_ID = "00000000-0000-0000-0000-0000000000a1";
 const REGISTRATION_ID = "00000000-0000-0000-0000-0000000000b2";
@@ -63,5 +63,22 @@ describe("admin user actions", () => {
     expect(m.rpc).toHaveBeenLastCalledWith("admin_reset_chula", { p_user_id: USER_ID });
     await redirected(markGuest, form({ userId: USER_ID }));
     expect(m.rpc).toHaveBeenLastCalledWith("admin_mark_guest", { p_user_id: USER_ID });
+    await redirected(liftBan, form({ userId: USER_ID, banId: REGISTRATION_ID }));
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_lift_ban", { p_ban_id: REGISTRATION_ID });
+  });
+
+  it("turns the ban duration into an expiry, or none for permanent", async () => {
+    const before = Date.now();
+    expect(await redirected(banUser, form({ userId: USER_ID, reason: "grief", publicNote: "", duration: "7d" }))).toBe(`${target()}?done=banned`);
+    const expires = Date.parse(m.rpc.mock.lastCall![1].p_expires_at);
+    expect(expires - before).toBeGreaterThanOrEqual(7 * 86_400_000);
+    expect(expires - Date.now()).toBeLessThanOrEqual(7 * 86_400_000);
+
+    await redirected(banUser, form({ userId: USER_ID, reason: "grief", duration: "permanent" }));
+    expect(m.rpc.mock.lastCall![1].p_expires_at).toBeUndefined();
+
+    m.rpc.mockClear();
+    expect(await redirected(banUser, form({ userId: USER_ID, reason: "grief", duration: "forever-ish" }))).toBe(`${target()}?error=INVALID`);
+    expect(m.rpc).not.toHaveBeenCalled();
   });
 });
