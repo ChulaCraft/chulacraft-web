@@ -17,3 +17,5 @@ mem.html
 sa.html
 memory-prices.csv
 graphify-out/cache/
+.vercel
+.env*
