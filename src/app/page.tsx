@@ -1,17 +1,55 @@
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
 import { CopyButton } from "@/components/copy-button";
 import { serverAddress } from "@/components/server-address-card";
+import { EventCard, UPCOMING_EVENTS_TAG, type UpcomingEvent } from "@/components/event-card";
+import { createBoundedFetch } from "@/lib/bounded-fetch";
+import { getPublicSupabaseEnvironment } from "@/lib/env";
 import { discordCommunityUrl } from "@/lib/site-links";
+import type { Database } from "@/lib/supabase/database.types";
 import styles from "./home.module.css";
 
-const features = [
-  { title: "Safe play with clear rules", copy: "Rules are posted up front and community admins keep the world friendly for everyone.", tone: "var(--pink)", icon: "M2 1h8v1h1v5h-1v2h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-2h-1v-5h1z" },
-  { title: "Active community", copy: "Regular events in-game and a busy Discord where players meet, plan, and team up.", tone: "var(--lavender)", icon: "M1 2h10v6h-5v1h-1v1h-1v1h-1v-3h-2z" },
-  { title: "Survival and creative in one shared world", copy: "Gather, explore, and build in survival, then plan big projects in creative.", tone: "var(--green)", icon: "M5 1h2v1h2v1h2v6h-2v1h-2v1h-2v-1h-2v-1h-2v-6h2v-1h2zM2 4v4h1v1h2v1h1v-5h-1v-1h-2v0z" },
-  { title: "Community-made plugins", copy: "Plugins and quality-of-life improvements built and maintained by players.", tone: "var(--pink-soft)", icon: "M1 3h3v-1h1v-1h2v1h1v1h3v3h-1v1h-1v1h1v1h1v2h-10v-3h1v-1h1v-1h-1v-1h-1z" },
-];
+/** The next published events, cached for a minute.
+ *
+ * unstable_cache rather than `use cache`: the latter is a Cache Components
+ * feature (node_modules/next/dist/docs/01-app/03-api-reference/01-directives/use-cache.md)
+ * and would mean turning on cacheComponents in next.config.ts, which changes how
+ * every other route opts into caching. This is the documented way to cache a
+ * non-fetch read for a bounded time.
+ *
+ * The client is built from the publishable key with no cookies on purpose: a
+ * cache scope may not read cookies (unstable_cache.md, "Good to know"), and an
+ * anonymous read is exactly what this is — the same surface a logged-out visitor
+ * gets, granted to anon in 20261006000002. A cookie-carrying client would also
+ * make the entry per-visitor, which the count does not need to be. */
+const upcomingEvents = unstable_cache(
+  async (): Promise<UpcomingEvent[]> => {
+    const { url, key } = getPublicSupabaseEnvironment();
+    const supabase = createSupabaseClient<Database>(url, key, {
+      global: { fetch: createBoundedFetch() },
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+    const { data, error } = await supabase.rpc("list_upcoming_events", { p_limit: 4 });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as UpcomingEvent[];
+  },
+  ["upcoming-events"],
+  { revalidate: 60, tags: [UPCOMING_EVENTS_TAG] }
+);
+
+/** D9: the empty state is part of the design, and so is a Supabase that is
+ *  unreachable. Both render the section rather than throwing, so a database
+ *  outage cannot take the landing page down with it. */
+async function loadUpcomingEvents() {
+  try {
+    return { events: await upcomingEvents(), failed: false };
+  } catch {
+    return { events: [] as UpcomingEvent[], failed: true };
+  }
+}
 
 const steps = [
   // Images: re-shoot with `node scripts/capture-join-guide.mjs`.
@@ -21,7 +59,9 @@ const steps = [
   { title: "Join", copy: `In Minecraft Java Edition, open Multiplayer → Add Server and enter ${serverAddress ?? "the server address"}.`, img: "4-join.webp", w: 1180, h: 260 },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { events } = await loadUpcomingEvents();
+
   return (
     <>
       <main>
@@ -39,12 +79,17 @@ export default function HomePage() {
           <div className={styles.heroTint} aria-hidden="true" />
           <div className={`container ${styles.heroInner}`}>
             <p className="eyebrow">Minecraft Java survival server for the Chula community</p>
-            <h1 id="hero-title" className={styles.heroTitle}>Build. Explore. <span>Connect.</span></h1>
+            <h1 id="hero-title" className={styles.heroTitle}>
+              <span className={styles.word}>Build.</span>{" "}
+              <span className={styles.word}>Explore.</span>{" "}
+              <span className={`${styles.word} ${styles.accent}`}>Connect.</span>
+            </h1>
             <p className={styles.heroIntro}>A community-run survival world for the Chula community. Sign in with Discord, verify your Chula account, and start building.</p>
             <div className={styles.actions}>
               <Link className="btn btn-primary btn-lg" href="/register">Register <span aria-hidden="true">→</span></Link>
               <a className="btn btn-lg" href={discordCommunityUrl} target="_blank" rel="noreferrer"><DiscordIcon /> Join Discord</a>
             </div>
+            <p className={styles.terms}>By registering you agree to our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
           </div>
         </section>
 
@@ -62,23 +107,24 @@ export default function HomePage() {
           </section>
         </div>
 
-        <section className={`container ${styles.section}`} aria-labelledby="features-title">
-          <p className="eyebrow">What it&apos;s like</p>
-          <h2 id="features-title" className={styles.sectionTitle}>One shared world, built by the Chula community</h2>
-          <ul className={styles.features}>
-            {features.map((f, i) => (
-              <li key={f.title} className="panel">
-                <div className={styles.featureTop}>
-                  <span className={`pixel-4 ${styles.featureIcon}`} style={{ background: f.tone }} aria-hidden="true">
-                    <svg width="22" height="22" viewBox="0 0 12 12" fill="currentColor" shapeRendering="crispEdges"><path d={f.icon} fillRule="evenodd" /></svg>
-                  </span>
-                  <span className={styles.featureNum} aria-hidden="true">0{i + 1}</span>
-                </div>
-                <h3 className={styles.featureTitle}>{f.title}</h3>
-                <p className="muted">{f.copy}</p>
-              </li>
-            ))}
-          </ul>
+        <section className={`container ${styles.section}`} aria-labelledby="events-title">
+          <p className="eyebrow">Upcoming events</p>
+          <div className={styles.sectionHead}>
+            <h2 id="events-title" className={styles.sectionTitle}>Play together at a community event</h2>
+            <Link className="link-button" href="/events">All events <PixelIcon name="arrow" size={14} /></Link>
+          </div>
+          {events.length === 0 ? (
+            <div className={`panel ${styles.eventsEmpty}`}>
+              <p className={styles.eventsEmptyTitle}>No events scheduled yet</p>
+              <p className="muted">
+                Dates get posted here and on <a href={discordCommunityUrl} target="_blank" rel="noreferrer">Discord</a>. Turn on notifications so you hear when the next one is announced.
+              </p>
+            </div>
+          ) : (
+            <ul className={styles.features}>
+              {events.map((event) => <EventCard key={event.id} event={event} />)}
+            </ul>
+          )}
         </section>
 
         <section className={`container ${styles.section}`} aria-labelledby="join-title">
@@ -103,6 +149,7 @@ export default function HomePage() {
             <div className={styles.ctaText}>
               <h2 id="cta-title" className="display">Ready to build?</h2>
               <p>Registering takes a few minutes. Questions first? Ask in our Discord.</p>
+              <p className={styles.terms}>By registering you agree to our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
             </div>
             <div className={styles.actions}>
               <Link className={`btn btn-lg ${styles.ctaPrimary}`} href="/register">Register <span aria-hidden="true">→</span></Link>

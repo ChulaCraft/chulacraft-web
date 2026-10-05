@@ -38,8 +38,12 @@ export async function SiteHeader() {
   const name = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Player";
   const avatar = typeof meta.avatar_url === "string" ? meta.avatar_url : null;
 
-  const links = [{ label: "Home", href: "/" }, { label: "About", href: "/about" }];
-  if (user) links.push({ label: "Profile", href: "/dashboard" });
+  const links = [{ label: "Home", href: "/" }, { label: "Events", href: "/events" }];
+  // D1: search and profiles are signed-in only, so the entry point is hidden
+  // rather than linked-and-redirected for a logged-out visitor. Profile and
+  // Settings live in the account menu, not here.
+  if (user) links.push({ label: "Players", href: "/players" });
+  links.push({ label: "About", href: "/about" });
   if (isAdmin) links.push({ label: "Admin", href: "/admin" });
   const navLinks = <NavLinks links={links} />;
 
@@ -57,6 +61,7 @@ export async function SiteHeader() {
           <div className="menu-panel">
             <p>Signed in as <strong>{name}</strong></p>
             <Link href="/dashboard"><PixelIcon name="user" />Profile</Link>
+            <Link href="/settings"><PixelIcon name="lock" />Settings</Link>
             {isAdmin && <Link href="/admin"><PixelIcon name="shield" />Admin</Link>}
             <SignOutButton />
           </div>
@@ -76,6 +81,7 @@ export async function SiteHeader() {
       <nav id="mobile-menu" aria-label="Main">
         {user && <div className="mobile-user"><Avatar src={avatar} name={name} size={40} /><span>{name}</span></div>}
         {navLinks}
+        {user && <NavLinks links={[{ label: "Profile", href: "/dashboard" }, { label: "Settings", href: "/settings" }]} />}
         {user
           ? <SignOutButton className="mobile-signout" />
           : <div className="mobile-cta">

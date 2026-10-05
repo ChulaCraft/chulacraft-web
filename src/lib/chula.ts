@@ -35,7 +35,7 @@ export function classifyIdentities(identities: UserIdentity[], claimedGoogleSub?
   };
 }
 
-// Error codes the callback and dashboard pass to /verify and /dashboard.
+// Error codes the callback and dashboard pass to /verify and /settings.
 export const LINK_ERRORS = {
   cu_wrong_domain: "Use your @chula.ac.th or @student.chula.ac.th Google account to verify.",
   cu_already_linked: "This Chula account is already linked to another ChulaCraft account.",

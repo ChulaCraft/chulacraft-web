@@ -1,55 +1,78 @@
-import { LinkGoogleButton } from "@/components/google-auth";
+import { AchievementGrid, type AchievementGroup } from "@/components/achievement-grid";
+import { CopyButton } from "@/components/copy-button";
 import { PixelIcon } from "@/components/icons";
-import { RegistrationPanel } from "@/components/registration-panel";
-import { classifyIdentities, identityEmail, linkErrorMessage } from "@/lib/chula";
+import { getSiteUrl } from "@/lib/env";
 import { toStudyLevel } from "@/lib/faculties";
-import { REGISTRATION_COLUMNS, toRegistrationView, type RegistrationView } from "@/lib/registration";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import Link from "next/link";
 import { Fragment } from "react";
 import { AboutYouForm } from "../register/details/about-you-form";
-import { unlinkPersonalGoogle } from "./actions";
+import { removeFriend, respondFriendRequest, unblockPlayer } from "./actions";
 import styles from "./dashboard.module.css";
 import { ServiceUnavailable } from "./service-unavailable";
 
 type Profile = { first_name: string | null; last_name: string | null; nickname: string | null; study_level: string | null; faculty: string | null; major: string | null };
 
-export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; unlinked?: string; edit?: string; saved?: string }> }) {
-  const { error: errorCode, unlinked, edit, saved } = await searchParams;
+/** my_social() in supabase/migrations/20261007000001_social.sql builds this
+ *  jsonb, so the generated types cannot describe it. Names come from the
+ *  Discord identity (fallback 'Player') and never from a profile field. */
+type SocialPerson = { user_id: string; display_name: string; avatar_url: string | null; created_at?: string };
+type Social = { incoming: SocialPerson[]; outgoing: SocialPerson[]; friends: SocialPerson[]; blocked: SocialPerson[] };
+
+const SOCIAL_ERRORS: Record<string, string> = {
+  NOT_FOUND: "That player is no longer available.",
+  TOO_MANY_REQUESTS: "You have 50 friend requests waiting for an answer. Answer one first.",
+  INVALID_TARGET: "You can't do that to yourself.",
+  FAILED: "That didn't save. Please try again in a moment."
+};
+
+
+const SOCIAL_DONE: Record<string, string> = {
+  accepted: "Friend added.",
+  declined: "Request declined.",
+  removed: "Removed.",
+  unblocked: "Unblocked."
+};
+
+function PersonAvatar({ src, name, size = 40 }: { src: string | null; name: string; size?: number }) {
+  return src
+    // eslint-disable-next-line @next/next/no-img-element -- Discord CDN avatar; next/image adds nothing at this size
+    ? <img className="avatar" src={src} alt="" width={size} height={size} style={{ width: size, height: size }} referrerPolicy="no-referrer" />
+    : <span className="avatar" aria-hidden="true" style={{ width: size, height: size }}>{name.charAt(0).toUpperCase()}</span>;
+}
+
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; edit?: string; saved?: string; done?: string }> }) {
+  const { error: errorCode, edit, saved, done } = await searchParams;
   const session = await requireVerifiedUser();
   if (!session) return <ServiceUnavailable />;
   const { supabase, user } = session;
 
-  let registrations: RegistrationView[] = [];
   let profile: Profile | null = null;
-  let chulaEmail: string | null = null;
-  let chulaGoogleSub: string | null = null;
+  let achievements: AchievementGroup[] = [];
+  let social: Social = { incoming: [], outgoing: [], friends: [], blocked: [] };
   let lookupFailed = false;
 
   try {
-    const [accounts, profileRow, claim] = await Promise.all([
-      supabase
-        .from("minecraft_registrations")
-        .select(REGISTRATION_COLUMNS)
-        .eq("user_id", user.id)
-        .eq("is_active", true)
-        .order("created_at"),
+    const [profileRow, badges, socialRow] = await Promise.all([
       supabase.from("profiles").select("first_name, last_name, nickname, study_level, faculty, major").eq("user_id", user.id).maybeSingle(),
-      // my_chula_claim() returns the caller's own row, so this page never needs
-      // the service-role client just to show which account is claimed.
-      supabase.rpc("my_chula_claim").maybeSingle(),
+      // Published achievements only, and an entry names its event only when
+      // that event is published too (20261006000001:438-439).
+      supabase.rpc("my_achievements"),
+      // Keyed on the JWT, and a bonus: a failure falls back to empty.
+      supabase.rpc("my_social")
     ]);
-    lookupFailed = Boolean(accounts.error || profileRow.error || claim.error);
-    chulaEmail = claim.data?.email ?? null;
-    chulaGoogleSub = claim.data?.google_sub ?? null;
-    registrations = (accounts.data ?? []).map(toRegistrationView);
+    lookupFailed = Boolean(profileRow.error);
     profile = profileRow.data;
+    // Badges are a bonus, not the page: a failure here falls back to the
+    // empty state rather than blanking the profile.
+    achievements = Array.isArray(badges.data) ? badges.data as AchievementGroup[] : [];
+    social = (socialRow.data as Social | null) ?? social;
   } catch {
     lookupFailed = true;
   }
 
-  const personalIdentity = classifyIdentities(user.identities ?? [], chulaGoogleSub).personal.find((i) => identityEmail(i) !== chulaEmail) ?? null;
-  const errorMessage = linkErrorMessage(errorCode);
+  const socialError = SOCIAL_ERRORS[errorCode ?? ""] ?? null;
+  const socialDone = done ? SOCIAL_DONE[done] ?? null : null;
 
   const meta = user.user_metadata;
   const displayName = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Discord player";
@@ -61,8 +84,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     ["Last name", profile?.last_name],
     ["Nickname", profile?.nickname],
     ["Faculty", profile?.faculty],
-    ["Major", profile?.major],
+    ["Major", profile?.major]
   ] as const;
+
+  // AC 17: the canonical profile URL is the site account's uuid, so it survives
+  // a Minecraft rename. Copied absolute, because a clipboard gets pasted into a
+  // chat window, not into this site's address bar.
+  const profilePath = `/player/${user.id}`;
+  const profileUrl = `${getSiteUrl().replace(/\/+$/, "")}${profilePath}`;
 
   return (
     <>
@@ -70,7 +99,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <div className="stack gap-10">
           <span className="kicker" aria-hidden="true" />
           <h1 className="page-title">Your profile</h1>
-          <p className="lead">Manage how you sign in and which Minecraft accounts are on the whitelist.</p>
+          <p className="lead">Who you are on ChulaCraft. Minecraft accounts, privacy and sign-in live in <Link href="/settings">Settings</Link>.</p>
         </div>
 
         {lookupFailed ? (
@@ -91,9 +120,122 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                   <p className={styles.displayName}>{displayName}</p>
                   {handle && <p className="muted">@{handle}</p>}
                 </div>
+                {/* AC 17: view the public page, or copy its address to share. */}
+                <div className={styles.profileLinks}>
+                  <Link className="link-button" href={profilePath}>View public profile</Link>
+                  <CopyButton text={profileUrl} className="btn btn-sm btn-outline" />
+                </div>
               </section>
 
-              <section className={`panel ${styles.card}`} aria-labelledby="info-title">
+              <section className={`panel ${styles.card}`} aria-labelledby="friends-title">
+                <div className={styles.cardHead}>
+                  <h2 id="friends-title" className={styles.cardTitle}>Friends</h2>
+                  <Link className="link-button" href="/players">Find players</Link>
+                </div>
+                <div role="status" aria-live="polite">
+                  {socialError && <p className={`alert alert-error ${styles.smallAlert}`} role="alert"><PixelIcon name="warning" /><p>{socialError}</p></p>}
+                  {socialDone && <p className={`alert alert-success ${styles.smallAlert}`}><PixelIcon name="check" />{socialDone}</p>}
+                </div>
+
+                {social.incoming.length === 0 && social.outgoing.length === 0 && social.friends.length === 0 && social.blocked.length === 0
+                  ? <p className="muted">No friends yet. <Link href="/players">Find players</Link> to send a request.</p>
+                  : (
+                    <div className={styles.socialGroups}>
+                      {social.incoming.length > 0 && (
+                        <div className={styles.socialGroup}>
+                          <h3 className={styles.socialTitle}>Requests ({social.incoming.length})</h3>
+                          <ul className={styles.socialList}>
+                            {social.incoming.map((person) => (
+                              <li key={person.user_id} className={styles.socialRow}>
+                                <Link href={`/player/${person.user_id}`} className={styles.socialPerson}>
+                                  <PersonAvatar src={person.avatar_url} name={person.display_name} />
+                                  <span>{person.display_name}</span>
+                                </Link>
+                                <span className={styles.socialButtons}>
+                                  <form action={respondFriendRequest}>
+                                    <input type="hidden" name="otherId" value={person.user_id} />
+                                    <input type="hidden" name="accept" value="true" />
+                                    <button type="submit" className="btn btn-sm btn-primary"><PixelIcon name="check" />Accept</button>
+                                  </form>
+                                  <form action={respondFriendRequest}>
+                                    <input type="hidden" name="otherId" value={person.user_id} />
+                                    <input type="hidden" name="accept" value="false" />
+                                    <button type="submit" className="btn btn-sm">Decline</button>
+                                  </form>
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {social.outgoing.length > 0 && (
+                        <div className={styles.socialGroup}>
+                          <h3 className={styles.socialTitle}>Sent ({social.outgoing.length})</h3>
+                          <ul className={styles.socialList}>
+                            {social.outgoing.map((person) => (
+                              <li key={person.user_id} className={styles.socialRow}>
+                                <Link href={`/player/${person.user_id}`} className={styles.socialPerson}>
+                                  <PersonAvatar src={person.avatar_url} name={person.display_name} />
+                                  <span>{person.display_name}</span>
+                                </Link>
+                                <form action={removeFriend}>
+                                  <input type="hidden" name="otherId" value={person.user_id} />
+                                  <button type="submit" className="btn btn-sm">Cancel</button>
+                                </form>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {social.friends.length > 0 && (
+                        <div className={styles.socialGroup}>
+                          <h3 className={styles.socialTitle}>Friends ({social.friends.length})</h3>
+                          <ul className={styles.socialList}>
+                            {social.friends.map((person) => (
+                              <li key={person.user_id} className={styles.socialRow}>
+                                <Link href={`/player/${person.user_id}`} className={styles.socialPerson}>
+                                  <PersonAvatar src={person.avatar_url} name={person.display_name} />
+                                  <span>{person.display_name}</span>
+                                </Link>
+                                <form action={removeFriend}>
+                                  <input type="hidden" name="otherId" value={person.user_id} />
+                                  <button type="submit" className="btn btn-sm">Unfriend</button>
+                                </form>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {social.blocked.length > 0 && (
+                        <div className={styles.socialGroup}>
+                          <h3 className={styles.socialTitle}>Blocked ({social.blocked.length})</h3>
+                          <ul className={styles.socialList}>
+                            {social.blocked.map((person) => (
+                              <li key={person.user_id} className={styles.socialRow}>
+                                <span className={styles.socialPerson}>
+                                  <PersonAvatar src={person.avatar_url} name={person.display_name} />
+                                  <span>{person.display_name}</span>
+                                </span>
+                                <form action={unblockPlayer}>
+                                  <input type="hidden" name="otherId" value={person.user_id} />
+                                  <button type="submit" className="btn btn-sm">Unblock</button>
+                                </form>
+                              </li>
+                            ))}
+                          </ul>
+                          <p className="hint">A blocked player can&apos;t find you, see your profile or send requests.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+              </section>
+            </div>
+
+            <div className={styles.wide}>
+              <section className={`panel ${styles.card} ${styles.infoCard}`} aria-labelledby="info-title">
                 <div className={styles.cardHead}>
                   <h2 id="info-title" className={styles.cardTitle}>Personal information</h2>
                   {!editing && <Link className="link-button" href="/dashboard?edit=info">Edit</Link>}
@@ -120,45 +262,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 )}
               </section>
 
-              <section className={`panel ${styles.card}`} aria-labelledby="methods-title">
-                <h2 id="methods-title" className={styles.cardTitle}>Sign-in methods</h2>
-                {errorMessage && <div className={`alert alert-error ${styles.smallAlert}`} role="alert"><PixelIcon name="warning" /><p>{errorMessage}</p></div>}
-                {unlinked && <p className={`alert alert-success ${styles.smallAlert}`} role="status"><PixelIcon name="check" />Personal Google account unlinked.</p>}
-                {/* No claim past requireVerifiedUser means a guest: there's no Chula account to show. */}
-                {chulaEmail && (
-                  <div className={styles.method}>
-                    <div className={styles.cardHead}>
-                      <h3>Chula Google</h3>
-                      <span className="badge badge-green pixel-4"><PixelIcon name="check" />Verified</span>
-                    </div>
-                    <p className="mono">{chulaEmail}</p>
-                    <p className="hint">Can&apos;t be changed without an admin.</p>
-                  </div>
-                )}
-                <div className={styles.method}>
-                  <div className={styles.cardHead}>
-                    <h3>Personal Google <span className="optional">(optional)</span></h3>
-                    {personalIdentity
-                      ? <span className="badge badge-green pixel-4"><PixelIcon name="check" />Linked</span>
-                      : <span className="badge badge-muted pixel-4">Not linked</span>}
-                  </div>
-                  {personalIdentity ? (
-                    <form action={unlinkPersonalGoogle} className={styles.methodRow}>
-                      <p className="mono">{identityEmail(personalIdentity)}</p>
-                      <input type="hidden" name="identityId" value={personalIdentity.identity_id} />
-                      <button type="submit" className="btn btn-sm btn-outline">Unlink</button>
-                    </form>
-                  ) : (
-                    <div className={styles.methodRow}>
-                      <p className="muted">Lets you sign in with Google as well as Discord.</p>
-                      <LinkGoogleButton className="btn btn-sm" />
-                    </div>
-                  )}
-                </div>
+              <section className={`panel ${styles.card}`} aria-labelledby="badges-title">
+                <h2 id="badges-title" className={styles.cardTitle}>Achievements</h2>
+                <AchievementGrid groups={achievements} />
               </section>
             </div>
-
-            <RegistrationPanel initialRegistrations={registrations} />
           </div>
         )}
       </main>

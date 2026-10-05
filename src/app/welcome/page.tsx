@@ -60,7 +60,7 @@ export default async function WelcomePage() {
       : { title: "Add personal Google", optional: true, kind: "upcoming", label: "Not linked. Lets you sign in with Google too.", action: <LinkGoogleButton className="link-button" /> },
     first
       ? { title: "Add Minecraft account", kind: "done", label: `${first.minecraft_username}${synced ? " · Synced" : " added · Pending"}${accounts.length > 1 ? ` (+${accounts.length - 1} more)` : ""}` }
-      : { title: "Add Minecraft account", kind: "current", label: "Current step", action: <Link className="link-button" href="/dashboard#add-account">Add your Java username →</Link> },
+      : { title: "Add Minecraft account", kind: "current", label: "Current step", action: <Link className="link-button" href="/settings#add-account">Add your Java username →</Link> },
     state === "allset"
       ? { title: "Join the server", kind: "current", label: "Ready. Open Minecraft Java and connect.", address: true }
       : state === "almost"

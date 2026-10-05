@@ -6,6 +6,26 @@
   gap: 20px;
 }
 
+.subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.subnav a {
+  padding: 6px 12px;
+  color: var(--text-2);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: inset 0 0 0 2px var(--surface-2);
+}
+
+.subnav a:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
 .title {
   font: 700 clamp(28px, 4vw, 36px)/1.1 var(--font-display), monospace;
   overflow-wrap: anywhere;
@@ -656,4 +676,164 @@ a.tool:hover {
   color: var(--text-3);
   font: 500 13px/1.6 var(--font-mono), monospace;
   text-align: right;
+}
+
+/* Achievements + events */
+
+.catalog {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  background: var(--surface);
+}
+
+.catalog > li {
+  border-top: 2px solid var(--surface-2);
+}
+
+.catalog > li:first-child {
+  border-top: 0;
+}
+
+.catalog a {
+  padding: 14px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.catalog a:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.catalog a > svg:last-child {
+  flex: none;
+  color: var(--text-3);
+}
+
+.catalogThumb {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  background: var(--surface-2);
+}
+
+.catalogText {
+  flex: 1 1 200px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.catalogText strong {
+  overflow-wrap: anywhere;
+}
+
+.catalogImage {
+  align-self: flex-start;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  background: var(--surface-2);
+}
+
+.catalogForm {
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  resize: vertical;
+  color: var(--text);
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 2px var(--edge-strong);
+  font: inherit;
+  font-size: 16px;
+}
+
+.textarea:focus {
+  box-shadow: inset 0 0 0 3px var(--pink);
+}
+
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.formRow > .field {
+  flex: 1 1 220px;
+}
+
+.formButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Award picker */
+
+.ticks {
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tick {
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.tick:hover {
+  background: var(--surface-2);
+}
+
+.tick > span {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+}
+
+.selection {
+  margin-top: 12px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.confirmForm {
+  margin-top: 16px;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: 2px solid var(--surface-2);
+}
+
+/* The live card on the event editor, at the width it has on the homepage. */
+.previewCard {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 340px;
 }

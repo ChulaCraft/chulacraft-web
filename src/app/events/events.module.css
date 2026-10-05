@@ -1,0 +1,24 @@
+.main {
+  padding-block: clamp(28px, 5vw, 56px) 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.title {
+  font: 600 24px/1.2 var(--font-display), monospace;
+}
+
+.grid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+}
+
+/* Finished events stay readable but step back from what's coming up. */
+.past {
+  opacity: 0.75;
+}

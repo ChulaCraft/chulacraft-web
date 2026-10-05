@@ -6,19 +6,28 @@
   gap: 24px;
 }
 
+/* Shared by /dashboard and /settings: a narrow column of smaller cards on
+   the left, the page's main card wide on the right. Grid, not flex, so the
+   registration panel's own flex-basis can't stretch it tall. */
 .layout {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  align-items: start;
   gap: 20px;
 }
 
-.side {
-  flex: 1 1 300px;
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
+.side,
+.wide {
+  min-width: 0;
+  display: grid;
+  align-content: start;
   gap: 20px;
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .loadError {
@@ -36,6 +45,7 @@
 
 .profile {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 16px;
 }
@@ -134,4 +144,100 @@
 .methodRow > p {
   flex: 1 1 180px;
   font-size: 14px;
+}
+
+/* The share row sits under the name, divided like the sign-in methods. */
+.profileLinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  flex-basis: 100%;
+  padding-top: 14px;
+  border-top: 2px solid var(--surface-2);
+}
+
+.privacyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.privacyActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.privacyActions > .hint {
+  flex: 1 1 180px;
+  margin: 0;
+}
+
+.socialGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.socialGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.socialTitle {
+  font: 600 16px/1.2 var(--font-display), monospace;
+  color: var(--text-2);
+}
+
+.socialList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.socialRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 8px 10px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 2px var(--edge);
+}
+
+.socialPerson {
+  flex: 1 1 180px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.socialButtons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The main card on /dashboard: more room, larger type. */
+.infoCard {
+  --pad: clamp(24px, 3vw, 36px);
+  gap: 20px;
+}
+
+.infoCard .info {
+  grid-template-columns: minmax(120px, auto) minmax(0, 1fr);
+  gap: 14px 24px;
+  font-size: 17px;
 }

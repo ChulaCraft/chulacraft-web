@@ -74,7 +74,7 @@ export default async function AdminPage() {
     <ToolCards title="Categories" tools={[
       { title: "Players", desc: "Manage players, verify guests, change roles, restore removed accounts.", icon: "user", href: "/admin/players", cta: "Open players", count: s ? String(s.players) : undefined },
       { title: "Minecraft server", desc: "Server status, whitelist sync, and the sync queue.", icon: "retry" },
-      { title: "Community", desc: "Announcements and events on the site and Discord.", icon: "info" },
+      { title: "Community", desc: "Achievements, events, and announcements on the site and Discord.", icon: "info", href: "/admin/achievements", cta: "Open achievements" },
       { title: "Audit log", desc: "Every admin action across all players.", icon: "lock" },
     ]} />
 

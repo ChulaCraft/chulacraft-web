@@ -1,0 +1,76 @@
+.badge-grid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 14px;
+}
+
+.badge-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg);
+}
+
+.badge-image {
+  align-self: center;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+.badge-name {
+  font: 600 17px/1.25 var(--font-display), monospace;
+  overflow-wrap: anywhere;
+}
+
+.badge-count {
+  color: var(--pink-soft);
+  font: 600 15px/1.4 var(--font-mono), monospace;
+}
+
+.badge-span {
+  color: var(--text-2);
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.badge-note {
+  color: var(--text-2);
+  font-size: 14px;
+  text-wrap: pretty;
+}
+
+.badge-entries summary {
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.badge-entries summary:hover {
+  color: var(--text);
+}
+
+.badge-entries ol {
+  margin: 6px 0 0;
+  padding: 0 0 0 4px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.badge-entries li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  color: var(--text-2);
+}
+
+.badge-entries time {
+  font: 500 13px/1.6 var(--font-mono), monospace;
+}

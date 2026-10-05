@@ -74,7 +74,7 @@ export default function PrivacyPage() {
       <h2 id="s6"><span>6</span> Your rights</h2>
       <p>
         Under the PDPA you can ask to access, correct, export or delete your data, or withdraw your consent. You can
-        unlink your personal Google account from the dashboard at any time. For anything else, contact an admin (see
+        unlink your personal Google account from Settings at any time. For anything else, contact an admin (see
         below). Deleting your account also removes you from the whitelist.
       </p>
 

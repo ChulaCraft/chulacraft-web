@@ -6,7 +6,7 @@
 
 begin;
 
-select plan(66);
+select plan(69);
 
 -- Counts below assume no other rows; clear any dev seed (rolled back at the end).
 delete from public.account_change_log;
@@ -34,7 +34,7 @@ insert into auth.identities (provider_id, user_id, identity_data, provider, crea
   ('d-1', '00000000-0000-0000-0000-000000000001', '{"full_name":"Owner"}', 'discord', now(), now()),
   ('d-2', '00000000-0000-0000-0000-000000000002', '{"full_name":"Admin"}', 'discord', now(), now()),
   ('d-3', '00000000-0000-0000-0000-000000000003', '{"full_name":"Admin Two"}', 'discord', now(), now()),
-  ('d-4', '00000000-0000-0000-0000-000000000004', '{"full_name":"Player"}', 'discord', now(), now()),
+  ('864372561897848852', '00000000-0000-0000-0000-000000000004', '{"full_name":"Player","name":"blockfan"}', 'discord', now(), now()),
   ('d-5', '00000000-0000-0000-0000-000000000005', '{"full_name":"CU Player"}', 'discord', now(), now()),
   ('d-6', '00000000-0000-0000-0000-000000000006', '{"full_name":"Guest Player"}', 'discord', now(), now()),
   ('d-7', '00000000-0000-0000-0000-000000000007', '{"full_name":"Fail Player"}', 'discord', now(), now()),
@@ -218,6 +218,15 @@ select is(public.is_player_verified('00000000-0000-0000-0000-000000000006'), fal
 select is((select count(*)::int from public.account_change_log
   where field = 'guest_verified' and new_value is null and target_user_id = '00000000-0000-0000-0000-000000000006'), 1,
   'the guest removal is logged');
+
+-- --------------------------------------------- search by Discord (20261008000001)
+select pg_temp.login('00000000-0000-0000-0000-000000000002');
+select is((select user_id from public.admin_search_users('864372561897848852')), '00000000-0000-0000-0000-000000000004'::uuid,
+  'search finds a player by exact Discord user id');
+select is((select user_id from public.admin_search_users('blockfan')), '00000000-0000-0000-0000-000000000004'::uuid,
+  'search finds a player by Discord username even when a display name is set');
+select is((select count(*)::int from public.admin_search_users('86437256189784885')), 0,
+  'a partial Discord id does not match');
 
 select * from finish();
 
