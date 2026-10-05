@@ -40,6 +40,8 @@ export async function auditPage(page: Page, testInfo: TestInfo, options: AuditOp
   );
 
   const navigationResponse = await page.goto(options.path, { waitUntil: "domcontentloaded" });
+  // The root loading.tsx streams pages, so a server redirect() lands client-side after the 200 shell.
+  await page.waitForURL((url) => url.pathname === options.expectedPath, { timeout: 5_000 }).catch(() => {});
   expect(new URL(page.url()).pathname, `unexpected redirect from ${options.path}`).toBe(
     options.expectedPath,
   );
