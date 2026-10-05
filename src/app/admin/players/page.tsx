@@ -45,7 +45,7 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
       <div className={styles.searchRow}>
         <div className={styles.searchInput}>
           <PixelIcon name="search" />
-          <input id="admin-q" className="input" name="q" defaultValue={q} placeholder="Discord, Chula email, or Minecraft name" aria-describedby="q-help" />
+          <input id="admin-q" className="input" name="q" defaultValue={q} placeholder="Discord name or ID, Chula email, or Minecraft name" aria-describedby="q-help" />
         </div>
         <button className="btn btn-primary" type="submit">Search</button>
       </div>

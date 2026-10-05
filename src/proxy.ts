@@ -25,7 +25,9 @@ function buildCsp(nonce: string): string {
     // React `style={{...}}` attributes cannot carry a nonce and several components use them,
     // and styles are not an execution vector, so 'unsafe-inline' here keeps layout working.
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' blob: data: https://cdn.discordapp.com https://media.discordapp.net",
+    // Discord avatars, mc-heads.net player heads (admin player search) and
+    // the Supabase origin, which serves the public achievement/event images.
+    `img-src 'self' blob: data: https://cdn.discordapp.com https://media.discordapp.net https://mc-heads.net${supabase ? ` ${supabase}` : ""}`,
     "font-src 'self' data:",
     `connect-src 'self'${supabase ? ` ${supabase}` : ""} https://va.vercel-scripts.com`,
     "object-src 'none'",

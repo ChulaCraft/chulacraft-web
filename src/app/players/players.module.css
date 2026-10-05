@@ -1,0 +1,104 @@
+.main {
+  gap: 20px;
+  padding-bottom: 72px;
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.form > :global(.field) {
+  flex: 1 1 260px;
+}
+
+/* Same height as the input beside it. */
+.form > :global(.btn) {
+  min-height: 48px;
+}
+
+.formHelp {
+  flex-basis: 100%;
+  margin: -4px 0 0;
+}
+
+.results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 10px;
+}
+
+.hit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  color: var(--text);
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 2px var(--edge);
+  text-decoration: none;
+}
+
+.hit:hover {
+  box-shadow: inset 0 0 0 2px var(--edge-strong);
+}
+
+.hitText {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hitText :global(.badge) {
+  align-self: flex-start;
+  font-size: 12px;
+}
+
+.hitName {
+  font: 600 16px/1.25 var(--font-display), monospace;
+  overflow-wrap: anywhere;
+}
+
+.hitArrow {
+  flex: none;
+  color: var(--text-3);
+  transform: rotate(-90deg);
+}
+/* Lit search panel: a soft pink-to-lavender wash over the surface so the one
+   thing to do on this page stands out from the results below. */
+.searchPanel {
+  --pad: clamp(24px, 4vw, 36px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--pink) 18%, transparent), transparent 60%),
+    radial-gradient(120% 140% at 100% 100%, color-mix(in srgb, var(--lavender) 14%, transparent), transparent 60%),
+    var(--surface);
+}
+
+.searchPanel :global(.lead) {
+  margin: 0;
+}
+
+.resultsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.resultsTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--surface-2);
+  font: 600 20px/1.2 var(--font-display), monospace;
+}

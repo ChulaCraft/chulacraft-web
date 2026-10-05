@@ -4,6 +4,11 @@ import { fileURLToPath } from "node:url";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   turbopack: { root: fileURLToPath(new URL(".", import.meta.url)) },
+  experimental: {
+    // Achievement and event images arrive as multipart form data on a server
+    // action, so the 1MB default would reject a valid 2MB upload (AC 4).
+    serverActions: { bodySizeLimit: "3mb" }
+  },
   images: {
     // AVIF is ~20-30% smaller than WebP; browsers without it still get WebP.
     formats: ["image/avif", "image/webp"],

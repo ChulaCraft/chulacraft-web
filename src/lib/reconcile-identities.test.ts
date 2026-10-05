@@ -78,7 +78,7 @@ describe("reconcileIdentities", () => {
     const other = identity("google", "cu2", { email: "t@chula.ac.th", email_verified: true }, "2026-05-01");
     m.rpc.mockImplementation(async (name: string, args: { p_google_sub?: string }) =>
       name === "claim_chula" && args.p_google_sub === "cu2" ? { error: { message: "CU_SWAP_FORBIDDEN" } } : { error: null });
-    expect(await run([discord, cu, other])).toEqual({ signOut: false, path: "/dashboard?error=cu_swap" });
+    expect(await run([discord, cu, other])).toEqual({ signOut: false, path: "/settings?error=cu_swap" });
     expect(unlinkedIds()).toEqual(["cu2"]);
   });
 
@@ -108,7 +108,7 @@ describe("reconcileIdentities", () => {
 
   it("unlinks extra personal Google accounts, keeping the oldest", async () => {
     const newer = identity("google", "gm2", { email: "two@gmail.com" }, "2026-06-01");
-    expect(await run([discord, cu, gmail, newer])).toEqual({ signOut: false, path: "/dashboard?error=personal_limit" });
+    expect(await run([discord, cu, gmail, newer])).toEqual({ signOut: false, path: "/settings?error=personal_limit" });
     expect(unlinkedIds()).toEqual(["gm2"]);
   });
 

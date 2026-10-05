@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import styles from "./admin.module.css";
@@ -12,6 +13,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (role !== "owner" && role !== "admin") notFound();
 
   return (
-    <main className={`container ${styles.main}`}>{children}</main>
+    <main className={`container ${styles.main}`}>
+      <nav className={styles.subnav} aria-label="Admin sections">
+        <Link href="/admin">Overview</Link>
+        <Link href="/admin/players">Players</Link>
+        <Link href="/admin/achievements">Achievements</Link>
+        <Link href="/admin/restore">Removed accounts</Link>
+      </nav>
+      {children}
+    </main>
   );
 }

@@ -44,8 +44,50 @@
   text-wrap: balance;
 }
 
-.heroTitle span {
+/* Each word drops in like a placed block, in stepped (pixel) motion, one after
+   another; then "Connect." keeps a slow glow. */
+.word {
+  display: inline-block;
+  animation: word-drop 520ms steps(6, end) both;
+}
+
+.word:nth-child(2) {
+  animation-delay: 180ms;
+}
+
+.accent {
   color: var(--pink);
+  animation:
+    word-drop 520ms steps(6, end) 360ms both,
+    word-glow 2.8s ease-in-out 1.2s infinite;
+}
+
+@keyframes word-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-0.6em);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0.06em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes word-glow {
+  50% {
+    text-shadow: 0 0 18px color-mix(in srgb, var(--pink) 55%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word,
+  .accent {
+    animation: none;
+  }
 }
 
 .heroIntro {
@@ -124,33 +166,26 @@
   text-wrap: balance;
 }
 
+/* The events grid reuses the old features layout: 4-up, responsive like today. */
 .features {
   margin: 0;
   padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: 16px;
 }
 
-.features > li {
+.eventsEmpty {
+  --pad: clamp(22px, 3vw, 30px);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: translate 0.2s ease-out, box-shadow 0.2s ease-out;
+  gap: 8px;
+  max-width: 56ch;
 }
 
-.features > li:hover {
-  translate: 0 -4px;
-  box-shadow: var(--bevel-panel), inset 0 0 0 2px var(--edge-strong);
-}
-
-.features > li:hover .featureIcon {
-  animation: bob 0.6s ease-in-out;
-}
-
-@keyframes bob {
-  50% { translate: 0 -4px; }
+.eventsEmptyTitle {
+  font: 600 22px/1.25 var(--font-display), monospace;
 }
 
 /* Cards ease in as they scroll into view (browsers without scroll timelines just show them). */
@@ -167,34 +202,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .features > li,
-  .features > li:hover .featureIcon {
+  .features > li {
     animation: none;
     transition: none;
   }
-}
-
-.featureTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.featureIcon {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  color: var(--bg);
-}
-
-.featureNum {
-  color: #b192d6;
-  font: 15px var(--font-display), monospace;
-}
-
-.featureTitle {
-  font: 600 22px/1.2 var(--font-display), monospace;
 }
 
 .steps {
@@ -312,4 +323,28 @@
   .heroTint {
     background: linear-gradient(180deg, rgba(32, 26, 43, 0.1) 0%, rgba(32, 26, 43, 0.75) 42%, var(--bg) 78%);
   }
+}
+
+/* Title on the left, "All events" on the right, wrapping under on mobile. */
+.sectionHead {
+  margin-bottom: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.sectionHead .sectionTitle {
+  margin-bottom: 0;
+}
+
+.terms {
+  margin-top: 14px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.terms a {
+  color: inherit;
 }

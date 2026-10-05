@@ -74,7 +74,7 @@ export async function reconcileIdentities(session: SupabaseClient<Database>, adm
 
   const query = error ? `?error=${error}` : "";
   if (!verified) return { signOut: false, path: `/verify${query}` };
-  return { signOut: false, path: error ? `/dashboard${query}` : "/welcome" };
+  return { signOut: false, path: error ? `/settings${query}` : "/welcome" };
 }
 
 // Audit a personal Google link once, the first time it is seen.
