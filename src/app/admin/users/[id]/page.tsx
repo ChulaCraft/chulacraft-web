@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfirmAction } from "@/components/confirm-action";
@@ -11,6 +12,8 @@ import { when } from "../../overview";
 import { banUser, liftBan, markGuest, resetChula, setWhitelisted } from "./actions";
 import { RoleControl } from "./role-control";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = { title: "Player" };
 
 /** admin_get_user returns a jsonb document, so it can't be derived from the
  * generated table types; this mirrors the keys built in 20261004000001. */

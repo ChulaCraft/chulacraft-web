@@ -90,9 +90,9 @@
     "semantic_hash": ""
   },
   "src/app/dashboard/page.tsx": {
-    "mtime": 1791255269.9153736,
-    "seen": 1791255322.872809,
-    "ast_hash": "3a4ba6cf9b406041b1ceb01aee836e48",
+    "mtime": 1791223222.0322013,
+    "seen": 1791224486.7334785,
+    "ast_hash": "b1d29a70bf95e64c1475bcbe42090378",
     "semantic_hash": ""
   },
   "src/app/layout.tsx": {
@@ -174,9 +174,9 @@
     "semantic_hash": ""
   },
   "src/components/site-header.tsx": {
-    "mtime": 1791255240.2835002,
-    "seen": 1791255322.874321,
-    "ast_hash": "2919ffc5dc1b5d17c238d2e9bda877fc",
+    "mtime": 1791223363.3092082,
+    "seen": 1791224486.734179,
+    "ast_hash": "1d86385d103ece73be56e8d4bc7cfbed",
     "semantic_hash": ""
   },
   "src/lib/auth-error.test.ts": {
@@ -366,15 +366,15 @@
     "semantic_hash": ""
   },
   "src/lib/chula.test.ts": {
-    "mtime": 1791255240.2842634,
-    "seen": 1791255322.8747737,
-    "ast_hash": "6287e28f96fc4a79de5caa07fca64f0f",
+    "mtime": 1791053781.9133365,
+    "seen": 1791055561.190641,
+    "ast_hash": "a7c1ec4b8658f9df0510e7c8783d0c1e",
     "semantic_hash": ""
   },
   "src/lib/chula.ts": {
-    "mtime": 1791255240.2831771,
-    "seen": 1791255322.8747754,
-    "ast_hash": "40339e27616bea07d92fad8e5d514954",
+    "mtime": 1791182432.7359066,
+    "seen": 1791189123.3554518,
+    "ast_hash": "e84afae0a696cea6f8c6c46528c96474",
     "semantic_hash": ""
   },
   "src/lib/reconcile-identities.test.ts": {

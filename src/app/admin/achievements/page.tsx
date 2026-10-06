@@ -1,9 +1,13 @@
+import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../admin.module.css";
 import { when } from "../overview";
 import { publicImageUrl } from "./images";
+
+export const metadata: Metadata = { title: "Achievements" };
 
 export default async function AdminAchievementsPage({ searchParams }: { searchParams: Promise<{ error?: string; done?: string }> }) {
   const { error: errorCode, done } = await searchParams;
@@ -54,8 +58,7 @@ export default async function AdminAchievementsPage({ searchParams }: { searchPa
             {rows.map((row) => (
               <li key={row.id}>
                 <Link href={`/admin/achievements/${row.id}`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- public Storage object; next/image would need a remote pattern for no gain */}
-                  <img className={`pixel-4 ${styles.catalogThumb}`} src={publicImageUrl(row.image_path)} alt="" width={56} height={56} />
+                  <Image className={`pixel-4 ${styles.catalogThumb}`} src={publicImageUrl(row.image_path)} alt="" width={56} height={56} />
                   <span className={styles.catalogText}>
                     <strong>{row.name}</strong>
                     <span className={styles.small}>{row.award_count} {row.award_count === 1 ? "award" : "awards"} · updated {when(row.updated_at)}</span>

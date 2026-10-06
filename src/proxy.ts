@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { managerSocketOrigin } from "@/lib/mcsv-token";
 import { updateSession } from "@/lib/supabase/middleware";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -17,6 +18,7 @@ function supabaseOrigin(): string | null {
 /** Per-request policy, per node_modules/next/dist/docs/01-app/02-guides/content-security-policy.md. */
 function buildCsp(nonce: string): string {
   const supabase = supabaseOrigin();
+  const manager = managerSocketOrigin();
   return [
     "default-src 'self'",
     // 'strict-dynamic' lets the nonce-carrying Next.js/Vercel scripts load their own children
@@ -29,7 +31,7 @@ function buildCsp(nonce: string): string {
     // the Supabase origin, which serves the public achievement/event images.
     `img-src 'self' blob: data: https://cdn.discordapp.com https://media.discordapp.net https://mc-heads.net${supabase ? ` ${supabase}` : ""}`,
     "font-src 'self' data:",
-    `connect-src 'self'${supabase ? ` ${supabase}` : ""} https://va.vercel-scripts.com`,
+    `connect-src 'self'${supabase ? ` ${supabase}` : ""}${manager ? ` ${manager}` : ""} https://va.vercel-scripts.com`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

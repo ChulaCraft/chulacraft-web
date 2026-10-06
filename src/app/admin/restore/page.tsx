@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ConfirmAction } from "@/components/confirm-action";
 import { PixelIcon } from "@/components/icons";
@@ -6,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import styles from "../admin.module.css";
 import { restoreAccount } from "./actions";
+
+export const metadata: Metadata = { title: "Removed accounts" };
 
 type RemovedRow = Database["public"]["Functions"]["admin_removed_accounts"]["Returns"][number];
 

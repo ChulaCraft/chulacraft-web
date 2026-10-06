@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { UserIdentity } from "@supabase/supabase-js";
-import { classifyIdentities, isChulaEmail, linkErrorMessage } from "./chula";
+import { classifyIdentities, discordAvatar, isChulaEmail, linkErrorMessage } from "./chula";
 
 function identity(provider: string, id: string, data: Record<string, unknown> = {}, created_at = "2026-01-01"): UserIdentity {
   return { id, identity_id: `row-${id}`, user_id: "u1", provider, identity_data: data, created_at };
@@ -51,3 +51,20 @@ describe("linkErrorMessage", () => {
     expect(linkErrorMessage(undefined)).toBeNull();
   });
 });
+
+describe("discordAvatar", () => {
+  it("uses the Discord avatar even when Google signed in last", () => {
+    const ids = [
+      identity("discord", "d1", { avatar_url: "https://cdn.discordapp.com/avatars/1/a.png" }),
+      identity("google", "g1", { avatar_url: "https://lh3.googleusercontent.com/a/x" }, "2026-02-01"),
+    ];
+    expect(discordAvatar(ids)).toBe("https://cdn.discordapp.com/avatars/1/a.png");
+  });
+
+  it("is null without a Discord avatar, never falling back to Google", () => {
+    expect(discordAvatar([identity("google", "g1", { avatar_url: "https://lh3.googleusercontent.com/a/x" })])).toBeNull();
+    expect(discordAvatar([identity("discord", "d1", {})])).toBeNull();
+    expect(discordAvatar(undefined)).toBeNull();
+  });
+});
+

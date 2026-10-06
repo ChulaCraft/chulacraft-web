@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -107,8 +108,7 @@ export default async function EventPage({ params, searchParams }: {
         <div className={styles.layout}>
           <div className={`pixel-4 ${styles.cover}`}>
             {event.image_path
-              // eslint-disable-next-line @next/next/no-img-element -- public Storage object; next/image would need a remote pattern for no gain
-              ? <img src={eventImageUrl(event.image_path)} alt="" width={960} height={540} />
+              ? <Image src={eventImageUrl(event.image_path)} alt="" width={960} height={540} sizes="(min-width: 900px) 60vw, 100vw" preload />
               : <span className={styles.placeholder} aria-hidden="true" />}
           </div>
 

@@ -22,7 +22,13 @@ export function ServerConsole({ server, initial, canWrite }: { server: string; i
     openConsole(server, canWrite).then((access) => {
       if (stopped) return;
       if (!access) return setStatus("denied");
-      ws = new WebSocket(access.url, access.protocols);
+      try {
+        ws = new WebSocket(access.url, access.protocols);
+      } catch {
+        // A blocked or malformed URL throws here instead of firing onclose;
+        // show "closed" so Reconnect appears rather than "connecting" forever.
+        return setStatus("closed");
+      }
       socket.current = ws;
       ws.onopen = () => setStatus("live");
       ws.onclose = () => setStatus("closed");

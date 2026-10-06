@@ -5,7 +5,7 @@ import styles from "@/components/legal-page.module.css";
 import { discordCommunityUrl } from "@/lib/site-links";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | ChulaCraft",
+  title: "Privacy Policy",
   description: "What Chulacraft collects, why, and your choices.",
 };
 

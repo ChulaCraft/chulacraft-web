@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfirmAction } from "@/components/confirm-action";
@@ -10,6 +11,8 @@ import { when } from "../../../overview";
 import { publicImageUrl } from "../../images";
 import { EventForm } from "../event-form";
 import { deleteEvent } from "./actions";
+
+export const metadata: Metadata = { title: "Event" };
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to change events.",

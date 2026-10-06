@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { DiscordIcon } from "@/components/icons";
 
 export function DiscordAuthButton({ className = "btn btn-primary btn-lg", children }: { className?: string; children?: React.ReactNode }) {
@@ -12,6 +11,8 @@ export function DiscordAuthButton({ className = "btn btn-primary btn-lg", childr
   async function signIn() {
     setLoading(true);
     try {
+      // Loaded on click, not with the page: the auth client is ~250 KB of JS.
+      const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       const redirectTo = `${window.location.origin}/auth/callback`;
       const { error } = await supabase.auth.signInWithOAuth({

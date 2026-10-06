@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../admin.module.css";
 import { when } from "../overview";
+
+export const metadata: Metadata = { title: "Announcements" };
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to do that.",

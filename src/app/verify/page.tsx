@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LinkGoogleButton } from "@/components/google-auth";
@@ -9,6 +10,8 @@ import { reconcileIdentities } from "@/lib/reconcile-identities";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import styles from "./verify.module.css";
 import { ServiceUnavailable } from "../dashboard/service-unavailable";
+
+export const metadata: Metadata = { title: "Verify your Chula account" };
 
 /** The one step between Discord sign-in and the rest of the site. */
 export default async function VerifyPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {

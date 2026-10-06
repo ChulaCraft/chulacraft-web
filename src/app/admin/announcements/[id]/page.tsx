@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfirmAction } from "@/components/confirm-action";
@@ -8,6 +9,8 @@ import { createClient } from "@/lib/supabase/server";
 import styles from "../../admin.module.css";
 import { deleteAnnouncement, saveAnnouncement } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = { title: "Announcement" };
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to change announcements.",

@@ -12,7 +12,19 @@
   gap: 6px;
 }
 
+/* Phones: one swipeable row instead of four wrapped rows above every page. */
+@media (max-width: 640px) {
+  .subnav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+}
+
 .subnav a {
+  flex: none;
+  white-space: nowrap;
   padding: 6px 12px;
   color: var(--text-2);
   text-decoration: none;
@@ -24,6 +36,12 @@
 .subnav a:hover {
   color: var(--text);
   background: var(--surface-2);
+}
+
+/* The selected tab (e.g. which server /admin/server is showing). */
+.subnav a[aria-current="page"] {
+  color: var(--text);
+  box-shadow: inset 0 0 0 2px var(--pink);
 }
 
 .title {

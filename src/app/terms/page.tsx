@@ -5,7 +5,7 @@ import { MAX_MINECRAFT_ACCOUNTS } from "@/lib/registration";
 import { discordCommunityUrl } from "@/lib/site-links";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | ChulaCraft",
+  title: "Terms of Service",
   description: "The rules for using the Chulacraft website and Minecraft server.",
 };
 

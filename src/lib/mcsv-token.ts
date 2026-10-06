@@ -32,6 +32,15 @@ export function managerUrl() {
   return (process.env.MCSV_MANAGER_URL?.trim() || "https://mc.chulacraft.com/api/mcsv_manager").replace(/\/+$/, "");
 }
 
+/** ws:// or wss:// origin of the manager: the CSP connect-src entry the /admin/server console needs. */
+export function managerSocketOrigin() {
+  try {
+    return new URL(managerUrl()).origin.replace(/^http/, "ws");
+  } catch {
+    return null;
+  }
+}
+
 /** EdDSA JWT; `sub` is a display name for the manager's log, `jti` ties it to the audit row. */
 export function mintToken(sub: string, permission: number, jti: string = randomUUID(), now = Date.now()) {
   const pem = process.env.MCSV_JWT_PRIVATE_KEY?.replace(/\\n/g, "\n");

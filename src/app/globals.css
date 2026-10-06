@@ -185,6 +185,13 @@ p {
   font-size: 14px;
 }
 
+/* Standalone small links (filters, "see all"): pad to a 24px+ tap target. */
+a.hint,
+nav.hint a {
+  display: inline-block;
+  padding-block: 4px;
+}
+
 .mono {
   font-family: var(--font-mono), monospace;
   font-weight: 500;
@@ -645,20 +652,24 @@ select.input {
   background: var(--bg);
 }
 
-/* Landing page only: the header floats over the hero, out of flow, and slides
-   down once the reader scrolls (site-nav.tsx toggles .is-shown). */
+/* Landing page only: the header floats over the hero, out of flow, see-through
+   at the top and solid once the reader scrolls (site-nav.tsx toggles .is-shown).
+   It is never hidden, so the nav and menu are reachable on first view. */
 .site-header-overlay {
   position: fixed;
   inset-inline: 0;
   top: 0;
-  translate: 0 -100%;
-  transition: translate 200ms ease;
+  border-bottom-color: transparent;
+  background: linear-gradient(180deg, rgba(32, 26, 43, 0.85), rgba(32, 26, 43, 0));
+  /* Size the gradient to the border box: otherwise it tiles into the transparent
+     bottom border and repeats its dark top edge as a hard line. */
+  background-origin: border-box;
+  transition: background-color 200ms ease, border-color 200ms ease;
 }
 
-/* Keyboard users must never have the nav hidden above them. */
-.site-header-overlay.is-shown,
-.site-header-overlay:focus-within {
-  translate: 0 0;
+.site-header-overlay.is-shown {
+  border-bottom-color: var(--surface-2);
+  background: var(--bg);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1019,6 +1030,23 @@ select.input {
 }
 
 /* ---------- Misc ---------- */
+
+/* First Tab stop on every page; off-screen until focused. */
+.skip-link {
+  position: absolute;
+  z-index: 50;
+  top: 8px;
+  left: 8px;
+  padding: 10px 16px;
+  background: var(--pink);
+  color: var(--bg);
+  font-weight: 700;
+  translate: 0 -200%;
+}
+
+.skip-link:focus {
+  translate: 0 0;
+}
 
 .sr-only {
   position: absolute;

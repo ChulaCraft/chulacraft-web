@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { PixelIcon } from "@/components/icons";
 import { StepProgress } from "@/components/step-progress";
 import { toStudyLevel } from "@/lib/faculties";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import { ServiceUnavailable } from "../../dashboard/service-unavailable";
 import { AboutYouForm } from "./about-you-form";
+
+export const metadata: Metadata = { title: "Your details" };
 
 /** Step 3 of sign-up, after Discord and Chula verification. */
 export default async function AboutYouPage() {

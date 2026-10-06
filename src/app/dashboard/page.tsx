@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import { AchievementGrid, type AchievementGroup } from "@/components/achievement-grid";
 import { CopyButton } from "@/components/copy-button";
 import { PixelIcon } from "@/components/icons";
+import { discordAvatar } from "@/lib/chula";
 import { getSiteUrl } from "@/lib/env";
 import { toStudyLevel } from "@/lib/faculties";
 import { requireVerifiedUser } from "@/lib/verified-user";
@@ -12,6 +14,8 @@ import { BanCard, type MyBan } from "./ban-card";
 import styles from "./dashboard.module.css";
 import { ServiceUnavailable } from "./service-unavailable";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = { title: "Your profile" };
 
 type Profile = { first_name: string | null; last_name: string | null; nickname: string | null; study_level: string | null; faculty: string | null; major: string | null };
 
@@ -83,7 +87,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const meta = user.user_metadata;
   const displayName = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Discord player";
   const handle = typeof meta.user_name === "string" ? meta.user_name : typeof meta.name === "string" ? meta.name : null;
-  const avatar = typeof meta.avatar_url === "string" ? meta.avatar_url : null;
+  const avatar = discordAvatar(user.identities);
   const editing = edit === "info";
   const infoRows = [
     ["First name", profile?.first_name],

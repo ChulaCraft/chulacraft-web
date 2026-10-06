@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 import { fileURLToPath } from "node:url";
 
+// Achievement and event images live in the public "achievements" Storage bucket.
+const storage = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL("/storage/v1/object/public/achievements/**", process.env.NEXT_PUBLIC_SUPABASE_URL) : null;
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   turbopack: { root: fileURLToPath(new URL(".", import.meta.url)) },
@@ -16,8 +19,12 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 2678400,
     remotePatterns: [
       { protocol: "https", hostname: "cdn.discordapp.com" },
-      { protocol: "https", hostname: "media.discordapp.net" }
-    ]
+      { protocol: "https", hostname: "media.discordapp.net" },
+      ...(storage ? [storage] : [])
+    ],
+    // Local `supabase start` serves Storage from 127.0.0.1, which the optimizer
+    // refuses by default. Only ever true for that loopback dev setup.
+    dangerouslyAllowLocalIP: storage !== null && ["127.0.0.1", "localhost"].includes(storage.hostname)
   },
   async headers() {
     return [{

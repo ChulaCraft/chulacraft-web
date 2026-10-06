@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./event-card.module.css";
 
@@ -20,7 +21,7 @@ export const UPCOMING_EVENTS_TAG = "upcoming-events";
 
 const BUCKET = "achievements";
 
-/** Public bucket, so a plain <img> is all this needs (the same URL builder the
+/** Public bucket URL (the same URL builder the
  *  badge grid and the admin preview use, repeated because those live in
  *  app/ trees this component does not import from). */
 export function eventImageUrl(path: string) {
@@ -57,8 +58,9 @@ export function EventCard({ event, coverSrc }: { event: UpcomingEvent; coverSrc?
     <Link href={`/events/${event.id}`} className={styles.link}>
       <div className={`pixel-4 ${styles.cover}`}>
         {coverSrc || event.image_path ? (
-          // eslint-disable-next-line @next/next/no-img-element -- public Storage object; next/image would need a remote pattern for no gain
-          <img className={styles.coverImage} src={coverSrc ?? eventImageUrl(event.image_path!)} alt="" width={320} height={180} />
+          // The admin form previews a picked (blob:) file, which the optimizer can't fetch.
+          <Image className={styles.coverImage} src={coverSrc ?? eventImageUrl(event.image_path!)} alt="" width={320} height={180}
+            sizes="(min-width: 1200px) 340px, (min-width: 520px) 50vw, 100vw" unoptimized={!!coverSrc} />
         ) : (
           // No cover uploaded: the panel's own tone stands in, so the grid keeps
           // its rhythm rather than showing a broken image.

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LinkGoogleButton } from "@/components/google-auth";
@@ -8,6 +9,8 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import { ServiceUnavailable } from "../dashboard/service-unavailable";
 import styles from "./welcome.module.css";
+
+export const metadata: Metadata = { title: "Welcome" };
 
 type StepKind = "done" | "current" | "waiting" | "upcoming";
 type Step = { title: string; kind: StepKind; label: string; optional?: boolean; action?: React.ReactNode; address?: boolean };

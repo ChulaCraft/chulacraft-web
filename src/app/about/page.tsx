@@ -6,7 +6,7 @@ import { discordCommunityUrl } from "@/lib/site-links";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = {
-  title: "About | ChulaCraft",
+  title: "About",
   description: "A community-run Minecraft Java server for the Chula community.",
 };
 

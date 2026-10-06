@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { ErrorScreen } from "@/components/error-screen";
 import { authFailureMessage, safeAuthFailureReason } from "@/lib/auth-error";
+
+export const metadata: Metadata = { title: "Sign-in problem" };
 
 export default async function AuthErrorPage({
   searchParams,

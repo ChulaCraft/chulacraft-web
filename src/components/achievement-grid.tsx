@@ -1,3 +1,4 @@
+import Image from "next/image";
 import styles from "./achievement-grid.module.css";
 
 /** achievement_groups() in supabase/migrations/20261006000001_achievements.sql:427
@@ -17,7 +18,7 @@ export type AchievementGroup = {
 
 const BUCKET = "achievements";
 
-/** Public bucket, so a plain <img> is all this needs. */
+/** Public bucket URL; next/image resizes it (remote pattern in next.config.ts). */
 export function achievementImage(path: string) {
   const base = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/+$/, "");
   return `${base}/storage/v1/object/public/${BUCKET}/${path}`;
@@ -35,8 +36,7 @@ export function AchievementGrid({ groups }: { groups: AchievementGroup[] }) {
   return <ul className={styles["badge-grid"]}>
     {groups.map((group) => (
       <li key={group.achievement_id} className={`${styles["badge-card"]} pixel-4`}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- public Storage object; next/image would need a remote pattern for no gain */}
-        <img className={styles["badge-image"]} src={achievementImage(group.image_path)} alt="" width={96} height={96} />
+        <Image className={styles["badge-image"]} src={achievementImage(group.image_path)} alt="" width={96} height={96} />
         <p className={styles["badge-name"]}>{group.name}</p>
         <p className={styles["badge-count"]}>
           ×{group.count}

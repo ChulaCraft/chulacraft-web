@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
@@ -5,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import styles from "../admin.module.css";
 import { StatRow, ToolCards, type Stats } from "../overview";
+
+export const metadata: Metadata = { title: "Players" };
 
 type Fn = Database["public"]["Functions"];
 type UserRow = Fn["admin_search_users"]["Returns"][number];

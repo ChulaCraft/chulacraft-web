@@ -10,6 +10,17 @@ export function identityEmail(identity: UserIdentity): string | null {
   return typeof email === "string" ? email : null;
 }
 
+/**
+ * The Discord avatar, whichever provider signed in last. user_metadata.avatar_url
+ * is overwritten by the latest sign-in, so after Google it points at
+ * googleusercontent.com, which the CSP (img-src) doesn't allow. Mirrors
+ * public.player_avatar in SQL, which also reads the Discord identity.
+ */
+export function discordAvatar(identities: UserIdentity[] | undefined): string | null {
+  const avatar = identities?.find((i) => i.provider === "discord")?.identity_data?.avatar_url;
+  return typeof avatar === "string" ? avatar : null;
+}
+
 const byAge = (a: UserIdentity, b: UserIdentity) => (a.created_at ?? "").localeCompare(b.created_at ?? "");
 
 /**

@@ -12,20 +12,29 @@ export function HeaderShell({ children }: { children: React.ReactNode }) {
   const home = path === "/";
   const [scrolled, setScrolled] = useState(false);
   const ref = useRef<HTMLElement>(null);
-  const hidden = home && !scrolled;
 
-  // An open menu hangs below the header, so it would float on its own once
-  // the header slides away; close it then, after navigating, and on any
-  // click outside it.
+  // Close an open menu after navigating, on any click outside it, and on Escape
+  // (which also hands focus back to its toggle).
   useEffect(() => {
     ref.current?.querySelectorAll("details[open]").forEach((d) => d.removeAttribute("open"));
-  }, [path, hidden]);
+  }, [path]);
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       ref.current?.querySelectorAll("details[open]").forEach((d) => { if (!d.contains(e.target as Node)) d.removeAttribute("open"); });
     };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      ref.current?.querySelectorAll<HTMLDetailsElement>("details[open]").forEach((d) => {
+        d.removeAttribute("open");
+        d.querySelector("summary")?.focus();
+      });
+    };
     document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   useEffect(() => {

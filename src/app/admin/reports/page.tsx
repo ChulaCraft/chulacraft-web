@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
@@ -5,6 +6,8 @@ import styles from "../admin.module.css";
 import { when } from "../overview";
 import { handleReport } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = { title: "Reports" };
 
 const CATEGORIES: Record<string, string> = { grief: "Griefing", cheat: "Cheating", harassment: "Harassment", other: "Other" };
 const ERRORS: Record<string, string> = {

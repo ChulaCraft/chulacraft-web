@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { CUIcon, GoogleIcon } from "@/components/icons";
 
 // No `hd` hint: chula.ac.th and student.chula.ac.th may be separate Google
@@ -14,6 +13,8 @@ function useGoogle(mode: "sign-in" | "link") {
   async function start() {
     setLoading(true);
     try {
+      // Loaded on click, not with the page: the auth client is ~250 KB of JS.
+      const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       const options = { redirectTo: `${window.location.origin}/auth/callback`, queryParams: { prompt: "select_account" } };
       const { error } = mode === "link"

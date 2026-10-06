@@ -1,6 +1,6 @@
 import { generateKeyPairSync, verify } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { PERMISSION, maskFor, mintToken } from "./mcsv-token";
+import { PERMISSION, managerSocketOrigin, maskFor, mintToken } from "./mcsv-token";
 
 const { privateKey, publicKey } = generateKeyPairSync("ed25519");
 
@@ -35,5 +35,25 @@ describe("manager tokens", () => {
     expect(maskFor("admin") & (PERMISSION.CONSOLE_WRITE | PERMISSION.START | PERMISSION.STOP)).toBe(0);
     expect(maskFor("player")).toBe(0);
     expect(maskFor(null)).toBe(0);
+  });
+});
+
+describe("manager socket origin (CSP connect-src for the live console)", () => {
+  afterEach(() => {
+    delete process.env.MCSV_MANAGER_URL;
+  });
+
+  it("is the wss:// origin of the default https manager", () => {
+    expect(managerSocketOrigin()).toBe("wss://mc.chulacraft.com");
+  });
+
+  it("is ws:// for a local http manager, without the path", () => {
+    process.env.MCSV_MANAGER_URL = "http://127.0.0.1:54340/api/";
+    expect(managerSocketOrigin()).toBe("ws://127.0.0.1:54340");
+  });
+
+  it("is null for a malformed URL instead of breaking the CSP", () => {
+    process.env.MCSV_MANAGER_URL = "not a url";
+    expect(managerSocketOrigin()).toBeNull();
   });
 });

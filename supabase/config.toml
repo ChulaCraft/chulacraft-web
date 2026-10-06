@@ -160,7 +160,9 @@ site_url = "http://127.0.0.1:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+# The app sends window.location.origin + "/auth/callback": localhost:3000 for `next dev`,
+# 3100 for a local `next start` (both local only).
+additional_redirect_urls = ["https://127.0.0.1:3000", "http://localhost:3000/auth/callback", "http://127.0.0.1:3000/auth/callback", "http://localhost:3100/auth/callback"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -320,6 +322,16 @@ max_frequency = "5s"
 # Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
 # `twitter`, `x`, `slack`, `spotify`, `workos`, `zoom`.
+# LOCAL ONLY: Discord sign-in goes to the mock in scripts/local-mocks.mjs
+# (`npm run dev:mocks -- --setup` writes LOCAL_DISCORD_MOCK_URL to supabase/.env).
+# The client id/secret are placeholders the mock ignores, not credentials.
+# Never `supabase config push` this file: hosted projects configure Discord in the dashboard.
+[auth.external.discord]
+enabled = true
+client_id = "local-mock"
+secret = "local-mock"
+url = "env(LOCAL_DISCORD_MOCK_URL)"
+
 [auth.external.apple]
 enabled = false
 client_id = ""

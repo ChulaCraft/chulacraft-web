@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import styles from "../../admin.module.css";
 import { saveAchievement } from "../[id]/actions";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = { title: "New achievement" };
 
 /** Creating is the edit form with nothing filled in; saveAchievement mints the
  *  id when none is posted. */

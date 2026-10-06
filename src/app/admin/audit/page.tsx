@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { describeChange } from "@/lib/change-log";
@@ -6,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import styles from "../admin.module.css";
 import { when } from "../overview";
+
+export const metadata: Metadata = { title: "Audit log" };
 
 type Entry = Database["public"]["Functions"]["admin_audit_log"]["Returns"][number];
 type Params = { actor?: string; target?: string; entity?: string; from?: string; to?: string; before?: string };

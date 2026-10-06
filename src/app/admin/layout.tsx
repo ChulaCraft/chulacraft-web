@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import styles from "./admin.module.css";
+
+export const metadata: Metadata = { title: { default: "Admin", template: "%s · Admin | ChulaCraft" } };
 
 // Real gate: every admin RPC re-checks the caller's role in the database.
 // This layout only keeps non-admins from seeing the admin screens at all.

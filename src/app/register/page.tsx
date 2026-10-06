@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -6,6 +7,8 @@ import { DiscordAuthButton } from "@/components/discord-auth";
 import { GoogleSignInButton } from "@/components/google-auth";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
 import { discordCommunityUrl } from "@/lib/site-links";
+
+export const metadata: Metadata = { title: "Sign in" };
 
 export default async function RegisterPage() {
   const supabase = await createClient();

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PixelIcon } from "@/components/icons";
@@ -8,6 +9,8 @@ import styles from "../../../admin.module.css";
 import { addPlayers, confirmAward, prefillInterested, previewAward } from "./actions";
 import { selectionParam, selectionIds } from "../../selection";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = { title: "Award achievement" };
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to award this.",

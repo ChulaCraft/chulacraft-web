@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AnnouncementBanner } from "@/components/announcement-banner";
 import { Brand } from "@/components/brand";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
+import { discordAvatar } from "@/lib/chula";
 import { discordCommunityUrl } from "@/lib/site-links";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
@@ -18,12 +19,13 @@ function Avatar({ src, name, size = 36 }: { src: string | null; name: string; si
 // full loads and after sign-out (which revalidates the layout), not per page.
 export async function SiteHeader() {
   const supabase = await createClient();
-  let user = null;
-  try {
-    ({ data: { user } } = await supabase.auth.getUser());
-  } catch {
-    // Signed-out header is the safe fallback.
-  }
+  // list_announcements puts pinned rows first, so the banner is the first row
+  // when that row is pinned. It doesn't depend on the user, so it runs
+  // alongside the user lookup. Any failure just means no banner.
+  const [user, banner] = await Promise.all([
+    supabase.auth.getUser().then(({ data }) => data.user, () => null), // Signed-out header is the safe fallback.
+    supabase.rpc("list_announcements", { p_limit: 1 }).then(({ data }) => (data?.[0]?.pinned ? data[0] : null), () => null),
+  ]);
 
   let isAdmin = false;
   if (user) {
@@ -35,19 +37,9 @@ export async function SiteHeader() {
     }
   }
 
-  // list_announcements puts pinned rows first, so the banner is the first row
-  // when that row is pinned. Any failure just means no banner.
-  let banner = null;
-  try {
-    const { data } = await supabase.rpc("list_announcements", { p_limit: 1 });
-    if (data?.[0]?.pinned) banner = data[0];
-  } catch {
-    // No banner.
-  }
-
   const meta = user?.user_metadata ?? {};
   const name = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Player";
-  const avatar = typeof meta.avatar_url === "string" ? meta.avatar_url : null;
+  const avatar = discordAvatar(user?.identities);
 
   const links = [{ label: "Home", href: "/" }, { label: "Events", href: "/events" }, { label: "News", href: "/announcements" }];
   // D1: search and profiles are signed-in only, so the entry point is hidden

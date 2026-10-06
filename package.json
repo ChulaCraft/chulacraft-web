@@ -12,7 +12,8 @@
     "db:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts",
     "test": "vitest run",
     "test:visual": "playwright test tests/visual",
-    "test:visual:list": "playwright test tests/visual --list"
+    "test:visual:list": "playwright test tests/visual --list",
+    "dev:mocks": "node scripts/local-mocks.mjs"
   },
   "dependencies": {
     "@emnapi/core": "1.11.3",

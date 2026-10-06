@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SEVERITY } from "@/lib/announcement-severity";
 import styles from "./announcements.module.css";
 
-export const metadata: Metadata = { title: "Announcements | ChulaCraft" };
+export const metadata: Metadata = { title: "Announcements" };
 
 /** Every live announcement, pinned first. The read is granted to anon
  *  (20261009000001), so this page is public. */

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
@@ -5,6 +6,8 @@ import styles from "../admin.module.css";
 import { when } from "../overview";
 import { decideAppeal } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = { title: "Appeals" };
 
 const ERRORS: Record<string, string> = {
   NOT_FOUND: "Another admin already answered that appeal.",

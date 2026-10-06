@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
 import styles from "./players.module.css";
+
+export const metadata: Metadata = { title: "Find players" };
 
 /** search_players() in supabase/migrations/20261007000001_social.sql:84
  *  returns this jsonb array of trimmed cards — display keys only, no sections.

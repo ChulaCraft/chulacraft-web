@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { discordCommunityUrl } from "@/lib/site-links";
 import styles from "./events.module.css";
 
-export const metadata: Metadata = { title: "Events | ChulaCraft" };
+export const metadata: Metadata = { title: "Events" };
 
 /** Every published event: what's coming up, then the archive. Both reads are
  *  granted to anon (20261006000002), so this page is public. */

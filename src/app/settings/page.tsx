@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { LinkGoogleButton } from "@/components/google-auth";
 import { PixelIcon } from "@/components/icons";
 import { RegistrationPanel } from "@/components/registration-panel";
@@ -9,6 +10,8 @@ import { unlinkPersonalGoogle, updatePrivacy } from "../dashboard/actions";
 import styles from "../dashboard/dashboard.module.css";
 import { ServiceUnavailable } from "../dashboard/service-unavailable";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = { title: "Settings" };
 
 /** my_privacy() builds jsonb, so generated types cannot describe it; a
  *  missing row reads back as all-public. */

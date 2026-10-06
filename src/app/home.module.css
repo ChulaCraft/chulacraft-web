@@ -29,7 +29,9 @@
 
 .heroInner {
   position: relative;
-  padding-top: 48px;
+  /* Clears the 70px see-through header floating over the hero, so on short
+     screens the text never runs under the nav. */
+  padding-top: 96px;
   padding-bottom: 120px;
   display: flex;
   flex-direction: column;
@@ -63,16 +65,15 @@
 }
 
 @keyframes word-drop {
+  /* Motion only, never opacity: hidden text would hold back the page's
+     largest paint until the animation ends. */
   from {
-    opacity: 0;
     transform: translateY(-0.6em);
   }
   60% {
-    opacity: 1;
     transform: translateY(0.06em);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }

@@ -208,13 +208,36 @@ The first registration migration creates:
 
 The migration at `supabase/migrations/20260821183459_chula_sso_identities.sql` is currently empty and makes no database changes.
 
+### Local mock services
+
+`scripts/local-mocks.mjs` stands in for the services a laptop can't reach, so every page and flow can be clicked through against the local Supabase stack. It refuses to run unless `NEXT_PUBLIC_SUPABASE_URL` in `.env.development.local` is a local Supabase.
+
+```bash
+npm run dev:mocks -- --setup          # once: dev signing key + mock addresses (only adds missing keys)
+npx supabase stop && npx supabase start   # once after setup, so Auth picks up the Discord mock
+npm run dev:mocks                     # run the mocks next to `npm run dev`
+```
+
+| Mock | Covers | Listens on |
+| --- | --- | --- |
+| Discord OAuth | "Continue with Discord": consent page with seeded users, a new player, or Deny, through the real `/auth/callback` | Supabase docker gateway `:54342` (host-only; Auth and the browser both reach it) |
+| Server manager | `/admin/server`: status, logs, live console, start/stop/restart; checks the EdDSA token like the real manager | `127.0.0.1:54340` |
+| Minecraft ping | The "Online · N/M playing" badge (`NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS`) | `127.0.0.1:54341` |
+
+Setup writes `MCSV_JWT_PRIVATE_KEY` (a dev-only key), `MCSV_MANAGER_URL` and `NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS` to `.env.development.local`, and `LOCAL_DISCORD_MOCK_URL` to `supabase/.env`. Both files are gitignored. Without that value, local Discord sign-in doesn't work.
+
+Real Google OAuth can't be mocked: Supabase Auth ignores a URL override for Google. To test the Chula verification outcomes, sign in as a new player through the Discord mock, attach a Google identity, then reload `/verify` (it runs the same `reconcileIdentities()` as the OAuth callback):
+
+```bash
+node scripts/local-mocks.mjs --google someone@student.chula.ac.th   # verified Chula account
+node scripts/local-mocks.mjs --google someone@gmail.com             # wrong domain
+node scripts/local-mocks.mjs --google admin.dev@chula.ac.th         # already claimed by the seeded admin
+# flags: --unverified (email_verified false), --sub <id>, --user <uuid>
+```
+
 ### Supabase Auth configuration
 
-For local Discord sign-in, allow:
-
-```text
-http://localhost:3000/auth/callback
-```
+For local Discord sign-in, `supabase/config.toml` already allows `http://localhost:3000/auth/callback` (and `:3100` for a local `next start`) and points Discord at the mock above.
 
 For production, configure the canonical site and callback:
 

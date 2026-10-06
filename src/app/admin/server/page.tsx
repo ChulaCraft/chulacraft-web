@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ConfirmAction } from "@/components/confirm-action";
 import { PixelIcon } from "@/components/icons";
@@ -8,6 +9,8 @@ import { serverAction } from "./actions";
 import { SERVER_ID, grant, managerFetch } from "./manager";
 import { ServerConsole } from "./server-console";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = { title: "Server" };
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to do that.",
@@ -29,9 +32,10 @@ function uptime(seconds: number) {
 
 /** Everything the page shows comes from one STATUS|LOGS token; null when the manager can't be reached. */
 async function load(picked: string | undefined) {
-  const token = await grant("status", PERMISSION.STATUS | PERMISSION.LOGS, picked ?? "");
-  if (!token) return null;
   try {
+    // Inside the try: a missing signing key must show the alert below, not crash the page.
+    const token = await grant("status", PERMISSION.STATUS | PERMISSION.LOGS, picked ?? "");
+    if (!token) return null;
     const servers = ((await (await managerFetch("/servers", token)).json()) as unknown[]).map(String).filter((s) => SERVER_ID.test(s));
     const server = picked && servers.includes(picked) ? picked : servers[0];
     if (!server) return { servers, server: null, status: null, lines: [] };

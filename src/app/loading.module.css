@@ -1,5 +1,8 @@
 .main {
   padding-block: 48px;
+  /* At least a screen tall, so the footer never paints in view and then jumps
+     away when the real page streams in (a layout shift). */
+  min-height: 100svh;
 }
 
 .title {

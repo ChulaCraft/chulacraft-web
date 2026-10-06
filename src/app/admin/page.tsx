@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { describeChange } from "@/lib/change-log";
@@ -5,6 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import styles from "./admin.module.css";
 import { StatRow, timeSince, ToolCards, when, type Stats } from "./overview";
+
+// The admin layout's title template only reaches child segments, not this page.
+export const metadata: Metadata = { title: "Admin dashboard" };
 
 type Activity = Database["public"]["Functions"]["admin_recent_activity"]["Returns"][number];
 
@@ -73,7 +77,7 @@ export default async function AdminPage() {
 
     <ToolCards title="Categories" tools={[
       { title: "Players", desc: "Manage players, verify guests, change roles, restore removed accounts.", icon: "user", href: "/admin/players", cta: "Open players", count: s ? String(s.players) : undefined },
-      { title: "Minecraft server", desc: "Server status, whitelist sync, and the sync queue.", icon: "retry" },
+      { title: "Minecraft server", desc: "Server status, live console, and start, stop or restart.", icon: "retry", href: "/admin/server", cta: "Open server" },
       { title: "Community", desc: "Achievements, events, and announcements on the site and Discord.", icon: "info", href: "/admin/achievements", cta: "Open achievements" },
       { title: "Audit log", desc: "Every admin action across all players.", icon: "lock", href: "/admin/audit", cta: "Open audit log" },
     ]} />

@@ -1,3 +1,5 @@
+import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfirmAction } from "@/components/confirm-action";
@@ -9,6 +11,8 @@ import { when } from "../../overview";
 import { publicImageUrl } from "../images";
 import { deleteAchievement, revokeAward, saveAchievement } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = { title: "Achievement" };
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to change achievements.",
@@ -112,8 +116,7 @@ export default async function AdminAchievementPage({ params, searchParams }: {
       <div className={styles.mainCol}>
         <section className="panel stack gap-16" aria-labelledby="preview-title">
           <h2 id="preview-title" className={styles.sectionTitle}>Image</h2>
-          {/* eslint-disable-next-line @next/next/no-img-element -- public Storage object; next/image would need a remote pattern for no gain */}
-          <img className={`pixel-4 ${styles.catalogImage}`} src={publicImageUrl(achievement.image_path)} alt="" width={160} height={160} />
+          <Image className={`pixel-4 ${styles.catalogImage}`} src={publicImageUrl(achievement.image_path)} alt="" width={160} height={160} />
           <p className="hint">Updated {when(achievement.updated_at)}.</p>
         </section>
 
