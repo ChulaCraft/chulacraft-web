@@ -27,6 +27,7 @@ export type Database = {
                   Row: {
                     "actor_user_id": string | null,"created_at": string,"entity": string,"entity_id": string | null,"field": string,"id": string,"new_value": string | null,"old_value": string | null,"source": string,"target_user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "actor_user_id"?: string | null,"created_at"?: string,"entity": string,"entity_id"?: string | null,"field": string,"id"?: string,"new_value"?: string | null,"old_value"?: string | null,"source"?: string,"target_user_id": string
                   }
@@ -40,6 +41,7 @@ export type Database = {
                   Row: {
                     "achievement_id": string,"awarded_by": string | null,"awarded_on": string,"created_at": string,"event_id": string | null,"id": string,"user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "achievement_id": string,"awarded_by"?: string | null,"awarded_on": string,"created_at"?: string,"event_id"?: string | null,"id"?: string,"user_id": string
                   }
@@ -65,6 +67,7 @@ isOneToOne: false
                   Row: {
                     "created_at": string,"created_by": string | null,"description": string | null,"id": string,"image_path": string,"name": string,"status": string,"updated_at": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "created_at"?: string,"created_by"?: string | null,"description"?: string | null,"id"?: string,"image_path": string,"name": string,"status"?: string,"updated_at"?: string
                   }
@@ -78,6 +81,7 @@ isOneToOne: false
                   Row: {
                     "body": string,"created_at": string,"created_by": string | null,"deleted_at": string | null,"discord_message_id": string | null,"discord_revision": number | null,"expires_at": string | null,"id": string,"pinned": boolean,"post_to_discord": boolean,"published_at": string | null,"revision": number,"severity": string,"title": string,"updated_at": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "body": string,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"discord_message_id"?: string | null,"discord_revision"?: number | null,"expires_at"?: string | null,"id"?: string,"pinned"?: boolean,"post_to_discord"?: boolean,"published_at"?: string | null,"revision"?: number,"severity"?: string,"title": string,"updated_at"?: string
                   }
@@ -91,6 +95,7 @@ isOneToOne: false
                   Row: {
                     "admin_response": string | null,"ban_id": string,"created_at": string,"decided_at": string | null,"decided_by": string | null,"id": string,"message": string,"status": string,"user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "admin_response"?: string | null,"ban_id": string,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"id"?: string,"message": string,"status"?: string,"user_id": string
                   }
@@ -110,6 +115,7 @@ isOneToOne: false
                   Row: {
                     "created_at": string,"created_by": string | null,"expires_at": string | null,"id": string,"lifted_at": string | null,"lifted_by": string | null,"public_note": string | null,"reason": string,"revoked_registrations": (string)[],"user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "created_at"?: string,"created_by"?: string | null,"expires_at"?: string | null,"id"?: string,"lifted_at"?: string | null,"lifted_by"?: string | null,"public_note"?: string | null,"reason": string,"revoked_registrations"?: (string)[],"user_id": string
                   }
@@ -123,6 +129,7 @@ isOneToOne: false
                   Row: {
                     "blocked_id": string,"blocker_id": string,"created_at": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "blocked_id": string,"blocker_id": string,"created_at"?: string
                   }
@@ -136,6 +143,7 @@ isOneToOne: false
                   Row: {
                     "claimed_at": string,"discord_id": string,"email": string,"google_sub": string,"user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "claimed_at"?: string,"discord_id": string,"email": string,"google_sub": string,"user_id": string
                   }
@@ -149,6 +157,7 @@ isOneToOne: false
                   Row: {
                     "created_at": string,"event_id": string,"user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "created_at"?: string,"event_id": string,"user_id": string
                   }
@@ -168,6 +177,7 @@ isOneToOne: false
                   Row: {
                     "created_at": string,"created_by": string | null,"description": string | null,"ends_at": string | null,"id": string,"image_path": string | null,"location": string | null,"name": string,"starts_at": string,"status": string,"updated_at": string,"event_is_ended": boolean | null
                   }
+                  ComputedFields: "event_is_ended"
                   Insert: {
                     "created_at"?: string,"created_by"?: string | null,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"image_path"?: string | null,"location"?: string | null,"name": string,"starts_at": string,"status"?: string,"updated_at"?: string
                   }
@@ -181,6 +191,7 @@ isOneToOne: false
                   Row: {
                     "addressee_id": string,"created_at": string,"requester_id": string,"status": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "addressee_id": string,"created_at"?: string,"requester_id": string,"status"?: string
                   }
@@ -190,10 +201,25 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"minecraft_ownership_history": {
+                  Row: {
+                    "discord_user_id": string,"discord_username": string | null,"id": string,"linked_at": string,"minecraft_username": string,"minecraft_uuid": string,"registration_id": string,"transferred_at": string,"transferred_to": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "discord_user_id": string,"discord_username"?: string | null,"id"?: string,"linked_at": string,"minecraft_username": string,"minecraft_uuid": string,"registration_id": string,"transferred_at"?: string,"transferred_to": string,"user_id": string
+                  }
+                  Update: {
+                    "discord_user_id"?: string,"discord_username"?: string | null,"id"?: string,"linked_at"?: string,"minecraft_username"?: string,"minecraft_uuid"?: string,"registration_id"?: string,"transferred_at"?: string,"transferred_to"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"minecraft_registrations": {
                   Row: {
                     "created_at": string,"desired_whitelisted": boolean,"discord_user_id": string,"discord_username": string | null,"id": string,"is_active": boolean,"last_sync_error_at": string | null,"last_sync_error_code": string | null,"minecraft_username": string,"minecraft_username_key": string,"minecraft_uuid": string,"next_sync_at": string,"revoked_at": string | null,"sync_attempts": number,"sync_failing_since": string | null,"sync_status": string,"updated_at": string,"user_id": string,"whitelisted_at": string | null
                   }
+                  ComputedFields: never
                   Insert: {
                     "created_at"?: string,"desired_whitelisted"?: boolean,"discord_user_id": string,"discord_username"?: string | null,"id"?: string,"is_active"?: boolean,"last_sync_error_at"?: string | null,"last_sync_error_code"?: string | null,"minecraft_username": string,"minecraft_username_key": string,"minecraft_uuid": string,"next_sync_at"?: string,"revoked_at"?: string | null,"sync_attempts"?: number,"sync_failing_since"?: string | null,"sync_status"?: string,"updated_at"?: string,"user_id": string,"whitelisted_at"?: string | null
                   }
@@ -207,6 +233,7 @@ isOneToOne: false
                   Row: {
                     "achievements": string,"friends": string,"minecraft": string,"profile": string,"updated_at": string,"user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "achievements"?: string,"friends"?: string,"minecraft"?: string,"profile"?: string,"updated_at"?: string,"user_id": string
                   }
@@ -220,6 +247,7 @@ isOneToOne: false
                   Row: {
                     "created_at": string,"faculty": string | null,"first_name": string | null,"guest_verified_at": string | null,"guest_verified_by": string | null,"last_name": string | null,"major": string | null,"nickname": string | null,"role": string,"study_level": string | null,"updated_at": string,"user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "created_at"?: string,"faculty"?: string | null,"first_name"?: string | null,"guest_verified_at"?: string | null,"guest_verified_by"?: string | null,"last_name"?: string | null,"major"?: string | null,"nickname"?: string | null,"role"?: string,"study_level"?: string | null,"updated_at"?: string,"user_id": string
                   }
@@ -233,6 +261,7 @@ isOneToOne: false
                   Row: {
                     "faculty": string | null,"major": string | null,"user_id": string | null
                   }
+                  ComputedFields: never
                   Insert: {
                     "faculty"?: string | null,"major"?: string | null,"user_id"?: string | null
                   }
@@ -246,6 +275,7 @@ isOneToOne: false
                   Row: {
                     "attempts": number,"user_id": string,"window_started_at": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "attempts"?: number,"user_id": string,"window_started_at"?: string
                   }
@@ -259,11 +289,26 @@ isOneToOne: false
                   Row: {
                     "admin_note": string | null,"category": string,"created_at": string,"details": string,"evidence_url": string | null,"handled_at": string | null,"handled_by": string | null,"id": string,"reporter_id": string | null,"status": string,"target_user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "admin_note"?: string | null,"category": string,"created_at"?: string,"details": string,"evidence_url"?: string | null,"handled_at"?: string | null,"handled_by"?: string | null,"id"?: string,"reporter_id"?: string | null,"status"?: string,"target_user_id": string
                   }
                   Update: {
                     "admin_note"?: string | null,"category"?: string,"created_at"?: string,"details"?: string,"evidence_url"?: string | null,"handled_at"?: string | null,"handled_by"?: string | null,"id"?: string,"reporter_id"?: string | null,"status"?: string,"target_user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"stats_daily": {
+                  Row: {
+                    "banned": number,"created_at": string,"day": string,"guests": number,"players": number,"unverified": number,"verified": number,"whitelisted": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "banned": number,"created_at"?: string,"day": string,"guests": number,"players": number,"unverified": number,"verified": number,"whitelisted": number
+                  }
+                  Update: {
+                    "banned"?: number,"created_at"?: string,"day"?: string,"guests"?: number,"players"?: number,"unverified"?: number,"verified"?: number,"whitelisted"?: number
                   }
                   Relationships: [
                     
@@ -351,6 +396,11 @@ isOneToOne: false
               "award_count": number,"created_at": string,"description": string,"ends_at": string,"id": string,"image_path": string,"location": string,"name": string,"starts_at": string,"status": string,"updated_at": string
             }[]
                            },
+"admin_list_players":
+{ Args: { "p_desc"?: boolean,"p_filters"?: Json,"p_limit"?: number,"p_offset"?: number,"p_query"?: string,"p_sort"?: string }; Returns: {
+              "banned": boolean,"chula_email": string,"created_at": string,"display_name": string,"email": string,"handle": string,"minecraft_usernames": string,"role": string,"total": number,"user_id": string,"verification_kind": string,"whitelist": string
+            }[]
+                           },
 "admin_list_reports":
 { Args: { "p_status"?: string }; Returns: {
               "admin_note": string,"category": string,"created_at": string,"details": string,"evidence_url": string,"handled_at": string,"handled_by_name": string,"id": string,"reporter_id": string,"reporter_name": string,"status": string,"target_banned": boolean,"target_name": string,"target_open_reports": number,"target_user_id": string
@@ -404,6 +454,23 @@ isOneToOne: false
 "admin_set_whitelisted":
 { Args: { "p_registration_id": string,"p_value": boolean }; Returns: undefined
                            },
+"admin_stats_daily":
+{ Args: { "p_days"?: number }; Returns: {
+              "banned": number,
+"created_at": string,
+"day": string,
+"guests": number,
+"players": number,
+"unverified": number,
+"verified": number,
+"whitelisted": number
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "stats_daily"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "admin_upsert_achievement":
 { Args: { "p_description": string,"p_id": string,"p_image_path": string,"p_name": string,"p_status": string }; Returns: string
                            },
@@ -450,7 +517,7 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: string
                            },
 "event_is_ended":
-{ Args: { "p_event": Database["public"]['Tables']["events"]['Row'] }; Returns: boolean
+{ Args: { "p_event": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']> }; Returns: boolean
                            },
 "get_event":
 { Args: { "p_id": string }; Returns: Json
@@ -552,6 +619,9 @@ isOneToOne: false
                            },
 "set_event_interest":
 { Args: { "p_event_id": string,"p_interested": boolean }; Returns: boolean
+                           },
+"snapshot_stats_daily":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "submit_appeal":
 { Args: { "p_message": string }; Returns: undefined

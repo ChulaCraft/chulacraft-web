@@ -5,7 +5,7 @@ export default function Loading() {
     <span className={`skeleton ${styles.skHead}`} />
     <span className={`skeleton ${styles.skLines}`} />
     <ul className={styles.results} aria-busy="true" aria-label="Loading players">
-      {[0, 1, 2].map((i) => (
+      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
         <li key={i} className={styles.skeletonRow}>
           <span className={`skeleton ${styles.avatarSm}`} />
           <span className={styles.skRowLines}><span className="skeleton" /><span className="skeleton" /></span>

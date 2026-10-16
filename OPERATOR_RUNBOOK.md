@@ -16,6 +16,11 @@
 - On restart, the worker reconciles all desired registrations. A `synced` record can therefore be restored after a world/container rebuild without manual RCON commands.
 - To revoke a player, set their known database record to `desired_whitelisted=false`. The worker removes only that known username; it does not remove manual entries such as `kaikub`.
 
+## Daily stats
+
+- `pg_cron` runs `public.snapshot_stats_daily()` at 23:55 Bangkok (job `stats-daily`), one row per day in `public.stats_daily`. Enable the `pg_cron` extension once on the hosted project (Dashboard → Database → Extensions) before applying `20261017000002_stats_daily.sql`.
+- Check it with `select * from cron.job_run_details order by start_time desc limit 5;`. A missed day is a gap, not an error; re-running the function for today is safe.
+
 ## Troubleshooting and recovery
 
 | Symptom | Check and recovery |

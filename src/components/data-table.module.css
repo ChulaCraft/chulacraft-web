@@ -1,0 +1,139 @@
+/* Sortable header: click cycles off → ▲ → ▼ → off. */
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sort span {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.sort:hover {
+  color: var(--text);
+}
+
+.sort[data-on] {
+  color: var(--text);
+}
+
+.sort[data-on] span {
+  color: var(--pink);
+}
+
+/* Filter button + panel. */
+.filters {
+  position: relative;
+}
+
+.filters > summary {
+  list-style: none;
+}
+
+.filters > summary::-webkit-details-marker {
+  display: none;
+}
+
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  padding: 0 5px;
+  font-size: 12px;
+  color: var(--bg);
+  background: var(--pink);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 10;
+  width: min(760px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 2px var(--edge-strong), 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px 18px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.group legend {
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.dates {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dates label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Active filter chips. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  font-size: 14px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 2px var(--pink);
+}
+
+.chip:hover {
+  background: var(--surface-hover);
+}

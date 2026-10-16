@@ -17,15 +17,19 @@ export function timeSince(iso: string) {
   return `${Math.round(hours / 24)} days`;
 }
 
-export function StatRow({ label, stats }: { label: string; stats: { label: string; value: number; rail?: string }[] }) {
+/** A stat with an href opens the list behind the number. */
+export function StatRow({ label, stats }: { label: string; stats: { label: string; value: number; rail?: string; href?: string }[] }) {
   return (
     <section aria-label={label} className={styles.stats}>
-      {stats.map((s) => (
-        <div key={s.label} className={styles.stat} style={s.rail ? { "--rail": s.rail } as React.CSSProperties : undefined}>
+      {stats.map((s) => {
+        const props = { className: styles.stat, style: s.rail ? { "--rail": s.rail } as React.CSSProperties : undefined };
+        const body = <>
           <span className={styles.statLabel}>{s.label}</span>
           <span className={styles.statValue}>{s.value.toLocaleString("en-GB")}</span>
-        </div>
-      ))}
+          {s.href && <span className={styles.statGo} aria-hidden="true"><PixelIcon name="arrow" size={16} /></span>}
+        </>;
+        return s.href ? <Link key={s.label} href={s.href} {...props}>{body}</Link> : <div key={s.label} {...props}>{body}</div>;
+      })}
     </section>
   );
 }

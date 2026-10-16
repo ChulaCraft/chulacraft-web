@@ -912,3 +912,66 @@ a.tool:hover {
 .consoleInput input {
   flex: 1;
 }
+
+/* Players table. */
+.tableTools { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+.tableWrap { background: var(--surface); box-shadow: var(--bevel-panel); }
+.tableWrap { overflow-x: auto; }
+.tableBar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.tableBar > a:last-child { margin-left: auto; }
+.tableCount { margin: 0; color: var(--text-2); }
+.tableCount strong { color: var(--text); font-size: 18px; }
+.cellLink { display: inline-flex; text-decoration: none; }
+.table td a:not(.badge) { text-decoration-color: var(--edge-strong); }
+.table td a:hover { text-decoration-color: currentColor; }
+.table td a.badge { text-decoration: none; }
+.table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.table th { position: sticky; top: 0; background: var(--surface-2); text-align: left; font-weight: 700; color: var(--text-2); }
+.table th, .table td { padding: 10px 12px; border-bottom: 1px solid var(--edge); vertical-align: middle; }
+.table tr[aria-selected="true"] td { background: var(--surface-hover); }
+.table td a { color: var(--text); }
+.tableFoot { display: flex; justify-content: center; padding: 16px; }
+
+.bulkBar {
+  position: sticky;
+  top: 76px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 2px var(--pink), var(--bevel-panel);
+}
+
+.bulkBar select {
+  width: auto;
+  min-height: 0;
+  padding: 6px 10px;
+}
+
+a.stat {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.stat {
+  position: relative;
+}
+
+a.stat:hover {
+  background: var(--surface-hover);
+  box-shadow: inset 0 0 0 2px var(--pink), var(--bevel-panel);
+}
+
+.statGo {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: var(--text-3);
+}
+
+a.stat:hover .statGo {
+  color: var(--pink);
+}

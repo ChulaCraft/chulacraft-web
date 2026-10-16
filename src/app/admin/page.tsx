@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import styles from "./admin.module.css";
 import { StatRow, timeSince, ToolCards, when, type Stats } from "./overview";
+import { playersHref } from "./players/params";
 
 // The admin layout's title template only reaches child segments, not this page.
 export const metadata: Metadata = { title: "Admin dashboard" };
@@ -40,7 +41,7 @@ export default async function AdminPage() {
           <ul className={styles.attention}>
             {s.retrying_sync > 0 && (
               <li>
-                <Link href="/admin/players" data-tone="amber">
+                <Link href={playersHref({ whitelist: ["retrying"] })} data-tone="amber">
                   <PixelIcon name="retry" size={20} />
                   <span>
                     <strong>{s.retrying_sync} {s.retrying_sync === 1 ? "account" : "accounts"} retrying sync</strong><br />
@@ -52,7 +53,7 @@ export default async function AdminPage() {
             )}
             {s.unverified > 0 && (
               <li>
-                <Link href="/admin/players">
+                <Link href={playersHref({ role: ["user"], status: ["unverified"] })}>
                   <PixelIcon name="info" size={20} />
                   <span>
                     <strong>{s.unverified} {s.unverified === 1 ? "player hasn't" : "players haven't"} verified</strong><br />
@@ -67,16 +68,16 @@ export default async function AdminPage() {
       )}
 
       <StatRow label="Overview" stats={[
-        { label: "Players", value: s.players },
-        { label: "Verified Chula", value: s.verified },
-        { label: "Guests", value: s.guests },
-        { label: "Whitelisted accounts", value: s.whitelisted_accounts },
-        { label: "Pending sync", value: s.pending_sync },
+        { label: "Players", value: s.players, href: playersHref({ role: ["user"] }) },
+        { label: "Verified Chula", value: s.verified, href: playersHref({ role: ["user"], status: ["verified"] }) },
+        { label: "Guests", value: s.guests, href: playersHref({ role: ["user"], status: ["guest"] }) },
+        { label: "Whitelisted accounts", value: s.whitelisted_accounts, href: playersHref({ whitelist: ["whitelisted", "pending", "retrying"] }) },
+        { label: "Pending sync", value: s.pending_sync, href: playersHref({ whitelist: ["pending"] }) },
       ]} />
     </>}
 
     <ToolCards title="Categories" tools={[
-      { title: "Players", desc: "Manage players, verify guests, change roles, restore removed accounts.", icon: "user", href: "/admin/players", cta: "Open players", count: s ? String(s.players) : undefined },
+      { title: "Players", desc: "Manage players, verify guests, change roles, restore removed accounts.", icon: "user", href: playersHref({ role: ["user"] }), cta: "Open players", count: s ? String(s.players) : undefined },
       { title: "Minecraft server", desc: "Server status, live console, and start, stop or restart.", icon: "retry", href: "/admin/server", cta: "Open server" },
       { title: "Community", desc: "Achievements, events, and announcements on the site and Discord.", icon: "info", href: "/admin/commu", cta: "Open community" },
       { title: "Audit log", desc: "Every admin action across all players.", icon: "lock", href: "/admin/audit", cta: "Open audit log" },
