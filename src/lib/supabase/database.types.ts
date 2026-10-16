@@ -448,6 +448,9 @@ isOneToOne: false
 "admin_server_console_access":
 { Args: { "p_action": string,"p_jti": string,"p_server": string }; Returns: string
                            },
+"admin_set_privacy":
+{ Args: { "p_achievements": string,"p_friends": string,"p_minecraft": string,"p_profile": string,"p_user_id": string }; Returns: undefined
+                           },
 "admin_set_role":
 { Args: { "p_role": string,"p_user_id": string }; Returns: undefined
                            },
@@ -471,6 +474,12 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"admin_support_guard":
+{ Args: { "p_user_id": string }; Returns: undefined
+                           },
+"admin_update_profile":
+{ Args: { "p_faculty": string,"p_first_name": string,"p_last_name": string,"p_major": string,"p_nickname": string,"p_study_level": string,"p_user_id": string }; Returns: undefined
+                           },
 "admin_upsert_achievement":
 { Args: { "p_description": string,"p_id": string,"p_image_path": string,"p_name": string,"p_status": string }; Returns: string
                            },
@@ -484,6 +493,9 @@ isOneToOne: false
 { Args: { "p_user_id": string }; Returns: {
               "active": boolean,"created_at": string,"created_by_name": string,"expires_at": string,"id": string,"lifted_at": string,"lifted_by_name": string,"public_note": string,"reason": string
             }[]
+                           },
+"admin_user_profile":
+{ Args: { "p_user_id": string }; Returns: Json
                            },
 "am_i_player_verified":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -622,6 +634,12 @@ isOneToOne: false
                            },
 "snapshot_stats_daily":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"staff_area_functions":
+{ Args: Record<PropertyKey, never>; Returns: (string)[]
+                           },
+"staff_can":
+{ Args: { "p_area": string }; Returns: boolean
                            },
 "submit_appeal":
 { Args: { "p_message": string }; Returns: undefined

@@ -4,16 +4,18 @@ import { useActionState, useState, type FormEvent, type ReactNode } from "react"
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { FACULTIES, STUDY_LEVELS, validateProfile, type ProfileDetails, type ProfileErrors } from "@/lib/faculties";
-import { saveProfile } from "./actions";
+import { saveProfile, type SaveProfileState } from "./actions";
 import styles from "./about-you.module.css";
 
 /** Profile details form: step 3 of sign-up, and the edit form on /dashboard (`next="/dashboard"`). */
-export function AboutYouForm({ initial, next = "/welcome", submitLabel = "Finish registration →", cancelHref }: {
+/** `save` swaps the action, e.g. the admin page edits another player's details with it. */
+export function AboutYouForm({ initial, next = "/welcome", submitLabel = "Finish registration →", cancelHref, save = saveProfile }: {
   initial: ProfileDetails; next?: "/welcome" | "/dashboard"; submitLabel?: string; cancelHref?: string;
+  save?: (prev: SaveProfileState, formData: FormData) => Promise<SaveProfileState>;
 }) {
   const [v, setV] = useState(initial);
   const [tried, setTried] = useState(false);
-  const [state, action, saving] = useActionState(saveProfile, {});
+  const [state, action, saving] = useActionState(save, {});
 
   const e: ProfileErrors = tried ? validateProfile(v) : state.errors ?? {};
   const count = Object.keys(e).length;

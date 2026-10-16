@@ -8,6 +8,7 @@ import styles from "../admin.module.css";
 import { bulkBan, bulkMarkGuest, type BulkResult } from "./actions";
 
 export type AchievementOption = { id: string; name: string };
+export type BulkPermissions = { guest: boolean; ban: boolean; award: boolean };
 
 const say = (r: BulkResult) => "error" in r
   ? (r.error === "TOO_MANY" ? "Select 200 players or fewer." : "That selection can't be used. Reload and try again.")
@@ -15,7 +16,7 @@ const say = (r: BulkResult) => "error" in r
 
 /** Actions for the ticked rows. Each player still goes through the same RPC as
  *  the single-player buttons, so the database applies every role rule. */
-export function BulkBar({ ids, achievements, onClear, onResult }: { ids: string[]; achievements: AchievementOption[]; onClear: () => void; onResult: (message: string) => void }) {
+export function BulkBar({ ids, achievements, can, onClear, onResult }: { ids: string[]; achievements: AchievementOption[]; can: BulkPermissions; onClear: () => void; onResult: (message: string) => void }) {
   const router = useRouter();
   const ban = useRef<HTMLDialogElement>(null);
   const [reason, setReason] = useState("");
@@ -31,9 +32,9 @@ export function BulkBar({ ids, achievements, onClear, onResult }: { ids: string[
   return (
     <div className={styles.bulkBar} role="region" aria-label="Bulk actions">
       <strong>{ids.length} selected</strong>
-      <button type="button" className="btn btn-sm" disabled={pending} onClick={() => run(() => bulkMarkGuest(ids))}>Mark as guest</button>
-      <button type="button" className="btn btn-sm" disabled={pending} onClick={() => { setReason(""); ban.current?.showModal(); }}>Ban…</button>
-      {achievements.length > 0 && <>
+      {can.guest && <button type="button" className="btn btn-sm" disabled={pending} onClick={() => run(() => bulkMarkGuest(ids))}>Mark as guest</button>}
+      {can.ban && <button type="button" className="btn btn-sm" disabled={pending} onClick={() => { setReason(""); ban.current?.showModal(); }}>Ban…</button>}
+      {can.award && achievements.length > 0 && <>
         <label htmlFor="bulk-award" className="sr-only">Achievement to award</label>
         <select id="bulk-award" className="input" value={award} onChange={(e) => setAward(e.target.value)}>
           <option value="">Award achievement…</option>

@@ -6,6 +6,8 @@ import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
 import type { RawParams } from "@/lib/table-query";
 import styles from "../admin.module.css";
+import { staffCan } from "@/lib/staff";
+import { myRole } from "../staff-gate";
 import { loadPlayers } from "./actions";
 import { activeView, BASE, COLUMNS, hrefFor, readPlayers, VIEWS } from "./params";
 import { PlayerTable } from "./player-table";
@@ -16,7 +18,13 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
   const search = await searchParams;
   const state = readPlayers(search);
   const supabase = await createClient();
-  const [first, catalog] = await Promise.all([loadPlayers(search, 0), supabase.rpc("admin_list_achievements")]);
+  const role = await myRole();
+  const isAdmin = staffCan(role, "admin");
+  const can = { guest: isAdmin, ban: staffCan(role, "moderation"), award: staffCan(role, "community") };
+  const [first, catalog] = await Promise.all([
+    loadPlayers(search, 0),
+    can.award ? supabase.rpc("admin_list_achievements") : Promise.resolve({ data: [] as { id: string; name: string; status: string }[] }),
+  ]);
   const achievements = (catalog.data ?? []).filter((a) => a.status === "published").map((a) => ({ id: a.id, name: a.name }));
   const view = activeView(state);
   const ctx = { base: BASE, state };
@@ -24,7 +32,7 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
   return <>
     <div className={styles.titleRow}>
       <h1 className={styles.title}>Players</h1>
-      <Link href="/admin/restore" className="link-button">Removed accounts →</Link>
+      {isAdmin && <Link href="/admin/restore" className="link-button">Removed accounts →</Link>}
     </div>
 
     <Form scroll={false} action={BASE} className={`panel pixel-4 ${styles.search}`} role="search">
@@ -54,9 +62,9 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
           <FilterPanel key={hrefFor(state)} columns={COLUMNS} {...ctx} />
           <p className={styles.tableCount} aria-live="polite"><strong>{first.total.toLocaleString("en-GB")}</strong> {first.total === 1 ? "player" : "players"}</p>
           <FilterChips columns={COLUMNS} {...ctx} />
-          <a href={hrefFor(state).replace(BASE, `${BASE}/export`)} className="btn btn-sm" download><PixelIcon name="arrow" />Export CSV</a>
+          {isAdmin && <a href={hrefFor(state).replace(BASE, `${BASE}/export`)} className="btn btn-sm" download><PixelIcon name="arrow" />Export CSV</a>}
         </div>
-        <PlayerTable key={hrefFor(state)} initial={first.rows} total={first.total} search={search} achievements={achievements} />
+        <PlayerTable key={hrefFor(state)} initial={first.rows} total={first.total} search={search} achievements={achievements} can={can} />
       </>}
   </>;
 }

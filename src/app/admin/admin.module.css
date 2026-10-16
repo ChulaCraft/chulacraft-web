@@ -975,3 +975,16 @@ a.stat:hover {
 a.stat:hover .statGo {
   color: var(--pink);
 }
+
+/* Admin player page: privacy selects, two per row on wide screens. */
+.privacyGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px 18px;
+  align-items: end;
+}
+
+.navSearch {
+  margin-left: auto;
+  flex: none;
+}

@@ -6,6 +6,7 @@ import { classifyIdentities, identityEmail, linkErrorMessage } from "@/lib/chula
 import { REGISTRATION_COLUMNS, toRegistrationView, type RegistrationView } from "@/lib/registration";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import Link from "next/link";
+import { LEVEL_OPTIONS, PRIVACY_FIELDS } from "@/lib/privacy";
 import { unlinkPersonalGoogle, updatePrivacy } from "../dashboard/actions";
 import styles from "../dashboard/dashboard.module.css";
 import { ServiceUnavailable } from "../dashboard/service-unavailable";
@@ -17,23 +18,10 @@ export const metadata: Metadata = { title: "Settings" };
  *  missing row reads back as all-public. */
 type Privacy = { profile: string; minecraft: string; achievements: string; friends: string };
 
-const LEVEL_OPTIONS: { value: string; label: string }[] = [
-  { value: "public", label: "Anyone signed in" },
-  { value: "friends", label: "Friends only" },
-  { value: "private", label: "Nobody" }
-];
-
 const PRIVACY_ERRORS: Record<string, string> = {
   INVALID_LEVEL: "That privacy setting isn't one we know.",
   FAILED: "That didn't save. Please try again in a moment."
 };
-
-const PRIVACY_FIELDS = [
-  ["profile", "Profile", "Whether anybody can open your profile at all."],
-  ["minecraft", "Minecraft names", "The usernames linked to your account."],
-  ["achievements", "Achievements", "The badges you have earned."],
-  ["friends", "Friend list", "Who you are friends with."]
-] as const;
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ error?: string; unlinked?: string; done?: string }> }) {
   const { error: errorCode, unlinked, done } = await searchParams;

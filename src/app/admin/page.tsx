@@ -7,6 +7,8 @@ import type { Database } from "@/lib/supabase/database.types";
 import styles from "./admin.module.css";
 import { StatRow, timeSince, ToolCards, when, type Stats } from "./overview";
 import { playersHref } from "./players/params";
+import { staffCan } from "@/lib/staff";
+import { myRole } from "./staff-gate";
 
 // The admin layout's title template only reaches child segments, not this page.
 export const metadata: Metadata = { title: "Admin dashboard" };
@@ -15,9 +17,11 @@ type Activity = Database["public"]["Functions"]["admin_recent_activity"]["Return
 
 export default async function AdminPage() {
   const supabase = await createClient();
+  const role = await myRole();
+  const isAdmin = staffCan(role, "admin");
   const [stats, activity] = await Promise.all([
     supabase.rpc("admin_overview_stats").single<Stats>(),
-    supabase.rpc("admin_recent_activity", { p_limit: 5 }),
+    isAdmin ? supabase.rpc("admin_recent_activity", { p_limit: 5 }) : Promise.resolve({ data: [], error: null }),
   ]);
   const s = stats.data;
   const log: Activity[] = activity.data ?? [];
@@ -76,13 +80,15 @@ export default async function AdminPage() {
       ]} />
     </>}
 
-    <ToolCards title="Categories" tools={[
-      { title: "Players", desc: "Manage players, verify guests, change roles, restore removed accounts.", icon: "user", href: playersHref({ role: ["user"] }), cta: "Open players", count: s ? String(s.players) : undefined },
-      { title: "Minecraft server", desc: "Server status, live console, and start, stop or restart.", icon: "retry", href: "/admin/server", cta: "Open server" },
-      { title: "Community", desc: "Achievements, events, and announcements on the site and Discord.", icon: "info", href: "/admin/commu", cta: "Open community" },
-      { title: "Audit log", desc: "Every admin action across all players.", icon: "lock", href: "/admin/audit", cta: "Open audit log" },
-    ]} />
+    <ToolCards title="Categories" tools={([
+      { area: "players_read", title: "Players", desc: "Manage players, verify guests, change roles, restore removed accounts.", icon: "user", href: playersHref({ role: ["user"] }), cta: "Open players", count: s ? String(s.players) : undefined },
+      { area: "moderation", title: "Moderation", desc: "Player reports, ban appeals and bans.", icon: "shield", href: "/admin/reports", cta: "Open reports" },
+      { area: "community", title: "Community", desc: "Achievements, events, and announcements on the site and Discord.", icon: "info", href: "/admin/commu", cta: "Open community" },
+      { area: "admin", title: "Minecraft server", desc: "Server status, live console, and start, stop or restart.", icon: "retry", href: "/admin/server", cta: "Open server" },
+      { area: "admin", title: "Audit log", desc: "Every admin action across all players.", icon: "lock", href: "/admin/audit", cta: "Open audit log" },
+    ] as const).filter((t) => staffCan(role, t.area))} />
 
+    {isAdmin && <>
     <section aria-labelledby="act-title" className="panel">
       <div className={styles.listHead}>
         <h2 id="act-title">Recent admin activity</h2>
@@ -105,5 +111,6 @@ export default async function AdminPage() {
           </ol>
         )}
     </section>
+    </>}
   </>;
 }

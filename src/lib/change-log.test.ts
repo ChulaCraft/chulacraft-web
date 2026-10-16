@@ -20,6 +20,7 @@ describe("describeChange", () => {
     expect(describeChange("faculty", null, "Engineering")).toBe("updated faculty");
     expect(describeChange("study_level", null, "graduate")).toBe("updated study level");
     expect(describeChange("some_field", "a", "b")).toBe("changed some field");
+    expect(describeChange("privacy_minecraft", "public", "private")).toBe("set Minecraft privacy to private");
   });
 
   it("phrases content and server console actions", () => {

@@ -14,7 +14,8 @@ export const COLUMNS: Column[] = [
   { key: "status", label: "Status", sort: true, filter: "enum", options: [
     { value: "verified", label: "Verified Chula" }, { value: "guest", label: "Guest" }, { value: "unverified", label: "Unverified" }] },
   { key: "role", label: "Role", sort: true, filter: "enum", options: [
-    { value: "user", label: "Player" }, { value: "admin", label: "Admin" }, { value: "owner", label: "Owner" }] },
+    { value: "user", label: "Player" }, { value: "moderator", label: "Moderator" }, { value: "event_staff", label: "Event staff" },
+    { value: "admin", label: "Admin" }, { value: "owner", label: "Owner" }] },
   { key: "banned", label: "Banned", sort: true, filter: "enum", options: [{ value: "yes", label: "Banned" }, { value: "no", label: "Not banned" }] },
   { key: "joined", label: "Joined", sort: true, filter: "date" },
 ];
@@ -36,7 +37,7 @@ export const VIEWS: { label: string; filters: Filters }[] = [
   { label: "Verified Chula", filters: { role: ["user"], status: ["verified"] } },
   { label: "Guests", filters: { role: ["user"], status: ["guest"] } },
   { label: "Unverified", filters: { role: ["user"], status: ["unverified"] } },
-  { label: "Staff", filters: { role: ["admin", "owner"] } },
+  { label: "Staff", filters: { role: ["moderator", "event_staff", "admin", "owner"] } },
   { label: "Banned", filters: { banned: ["yes"] } },
 ];
 

@@ -3,6 +3,7 @@ import { AnnouncementBanner } from "@/components/announcement-banner";
 import { Brand } from "@/components/brand";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
 import { discordAvatar, discordName } from "@/lib/chula";
+import { isStaff } from "@/lib/staff";
 import { discordCommunityUrl } from "@/lib/site-links";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
@@ -31,7 +32,7 @@ export async function SiteHeader() {
   if (user) {
     try {
       const { data } = await supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle();
-      isAdmin = data?.role === "owner" || data?.role === "admin";
+      isAdmin = isStaff(data?.role);
     } catch {
       // The /admin layout re-checks the role, so hiding the link is only cosmetic.
     }

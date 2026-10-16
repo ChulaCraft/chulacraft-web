@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { SortHeader } from "@/components/data-table";
 import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
+import { ROLE_LABELS } from "@/lib/staff";
 import type { Filters, RawParams } from "@/lib/table-query";
 import styles from "../admin.module.css";
 import { loadPlayers } from "./actions";
-import { BulkBar, type AchievementOption } from "./bulk-bar";
+import { BulkBar, type AchievementOption, type BulkPermissions } from "./bulk-bar";
 import { BASE, COLUMNS, hrefFor, readPlayers, type PlayerRow } from "./params";
 
 const kind = (value: string): VerificationKind => (value === "verified" || value === "guest" ? value : "unverified");
@@ -17,7 +18,7 @@ const WHITELIST: Record<string, [string, string]> = {
   whitelisted: ["Whitelisted", "badge-green"], pending: ["Pending sync", "badge-amber"], retrying: ["Retrying", "badge-danger"], none: ["None", "badge-muted"],
 };
 
-export function PlayerTable({ initial, total, search, achievements }: { initial: PlayerRow[]; total: number; search: RawParams; achievements: AchievementOption[] }) {
+export function PlayerTable({ initial, total, search, achievements, can }: { initial: PlayerRow[]; total: number; search: RawParams; achievements: AchievementOption[]; can: BulkPermissions }) {
   const state = readPlayers(search);
   const [rows, setRows] = useState(initial);
   const [failed, setFailed] = useState(false);
@@ -53,18 +54,19 @@ export function PlayerTable({ initial, total, search, achievements }: { initial:
   });
 
   const toggle = (id: string) => setSelected((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const selectable = can.guest || can.ban || can.award;
   const allOnScreen = rows.length > 0 && rows.every((r) => selected.has(r.user_id));
   const filtered = state.q !== "" || Object.keys(state.filters).length > 0;
 
   return <>
     <p role="status" className="hint">{result}</p>
-    {selected.size > 0 && <BulkBar ids={[...selected]} achievements={achievements} onClear={() => setSelected(new Set())} onResult={setResult} />}
+    {selected.size > 0 && <BulkBar ids={[...selected]} achievements={achievements} can={can} onClear={() => setSelected(new Set())} onResult={setResult} />}
     <div className={styles.tableWrap}>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th scope="col"><input type="checkbox" aria-label="Select all loaded players" checked={allOnScreen} disabled={rows.length === 0}
-              onChange={() => setSelected(allOnScreen ? new Set() : new Set(rows.map((r) => r.user_id)))} /></th>
+            {selectable && <th scope="col"><input type="checkbox" aria-label="Select all loaded players" checked={allOnScreen} disabled={rows.length === 0}
+              onChange={() => setSelected(allOnScreen ? new Set() : new Set(rows.map((r) => r.user_id)))} /></th>}
             {COLUMNS.map((c) => <SortHeader key={c.key} column={c} base={BASE} state={state} />)}
           </tr>
         </thead>
@@ -73,7 +75,7 @@ export function PlayerTable({ initial, total, search, achievements }: { initial:
             const [wlLabel, wlClass] = WHITELIST[r.whitelist] ?? WHITELIST.none;
             return (
               <tr key={r.user_id} aria-selected={selected.has(r.user_id)}>
-                <td><input type="checkbox" aria-label={`Select ${r.display_name ?? r.handle}`} checked={selected.has(r.user_id)} onChange={() => toggle(r.user_id)} /></td>
+                {selectable && <td><input type="checkbox" aria-label={`Select ${r.display_name ?? r.handle}`} checked={selected.has(r.user_id)} onChange={() => toggle(r.user_id)} /></td>}
                 <td>
                   <Link href={`/admin/users/${r.user_id}`}><strong>{r.display_name ?? r.handle}</strong></Link><br />
                   <Link href={`/admin/users/${r.user_id}`} className={styles.small}>{r.handle}</Link>
@@ -86,7 +88,7 @@ export function PlayerTable({ initial, total, search, achievements }: { initial:
                 <td><Link scroll={false} href={only({ whitelist: [r.whitelist] })} className={`badge ${wlClass}`}>{wlLabel}</Link></td>
                 <td><Link scroll={false} href={only({ status: [r.verification_kind] })} className={styles.cellLink}><VerificationBadge kind={kind(r.verification_kind)} /></Link></td>
                 <td>
-                  <Link scroll={false} href={only({ role: [r.role] })} className={r.role === "user" ? "muted" : "badge badge-lavender"}>{r.role === "user" ? "Player" : r.role}</Link>
+                  <Link scroll={false} href={only({ role: [r.role] })} className={r.role === "user" ? "muted" : "badge badge-lavender"}>{ROLE_LABELS[r.role] ?? r.role}</Link>
                 </td>
                 <td>
                   <Link scroll={false} href={only({ banned: [r.banned ? "yes" : "no"] })} className={r.banned ? "badge badge-danger" : "muted"}>{r.banned ? "Banned" : "No"}</Link>

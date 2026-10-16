@@ -7,6 +7,8 @@ import styles from "../../admin.module.css";
 
 const BODY: Record<string, (name: string) => string> = {
   admin: () => "Admins can search players, reset Chula links, and restore accounts.",
+  moderator: () => "Moderators see players and handle reports, appeals and bans. They can't edit players or open the server.",
+  event_staff: () => "Event staff see players and run achievements, events and announcements. Nothing else.",
   user: (name) => `${name} loses admin tools and goes back to a regular player account.`,
   owner: () => "Owners can change every player's role, including other owners and you. Only promote someone you'd trust to run the server.",
 };
@@ -20,6 +22,8 @@ export function RoleControl({ userId, role, name, handle }: { userId: string; ro
       <div className={styles.roleField}>
         <select id="role" className={`input ${styles.roleSelect}`} value={draft} onChange={(e) => setDraft(e.target.value)}>
           <option value="user">User</option>
+          <option value="moderator">Moderator</option>
+          <option value="event_staff">Event staff</option>
           <option value="admin">Admin</option>
           <option value="owner">Owner</option>
         </select>

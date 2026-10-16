@@ -1,3 +1,4 @@
+const PRIVACY_FIELDS: Record<string, string> = { privacy_profile: "profile", privacy_minecraft: "Minecraft", privacy_achievements: "achievements", privacy_friends: "friends" };
 const PROFILE_FIELDS: Record<string, string> = { first_name: "first name", last_name: "last name", nickname: "nickname", study_level: "study level", faculty: "faculty", major: "major" };
 
 /** Turns one account_change_log row into a short past-tense phrase for admin screens. */
@@ -41,6 +42,11 @@ export function describeChange(field: string, oldValue: string | null, newValue:
     case "stop":
     case "restart":
       return `${field === "stop" ? "stopped" : `${field}ed`} ${newValue}`;
+    case "privacy_profile":
+    case "privacy_minecraft":
+    case "privacy_achievements":
+    case "privacy_friends":
+      return `set ${PRIVACY_FIELDS[field]} privacy to ${newValue}`;
     default:
       if (field in PROFILE_FIELDS) return `updated ${PROFILE_FIELDS[field]}`;
       return `changed ${field.replaceAll("_", " ")}`;
