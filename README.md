@@ -1,4 +1,4 @@
-# ChulaCraft Web
+# ChulaCraft Web Version 1.0
 
 Public website, authentication gateway, and whitelist-registration portal for the ChulaCraft Minecraft Java Edition community.
 
