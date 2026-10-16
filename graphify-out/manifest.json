@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/page.tsx": {
-    "mtime": 1792156936.870524,
-    "seen": 1792157264.8385267,
-    "ast_hash": "47a1e1a979ded851215f53361c9fb2c4",
+    "mtime": 1792170018.687888,
+    "seen": 1792170354.9281838,
+    "ast_hash": "9b0c9f7be28c14ccb6aed073bc64539a",
     "semantic_hash": ""
   },
   "src/app/admin/restore/actions.ts": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/app/page.tsx": {
-    "mtime": 1792156936.8717995,
-    "seen": 1792157264.840052,
-    "ast_hash": "2b4b3a97308706e1654ab236aff78736",
+    "mtime": 1792158150.5890975,
+    "seen": 1792168941.9050312,
+    "ast_hash": "5ca55ed2ab37f9443a0fc90ad80427b9",
     "semantic_hash": ""
   },
   "src/app/register/page.test.tsx": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "OPERATOR_RUNBOOK.md": {
-    "mtime": 1791005541.4840293,
-    "seen": 1791012251.8005173,
-    "ast_hash": "ecb88f72aaa9503b615959d76f00529e",
+    "mtime": 1792159864.3762164,
+    "seen": 1792168941.9077919,
+    "ast_hash": "bd502e7ec6badf91d6f0e701fb0bd475",
     "semantic_hash": ""
   },
   "README.md": {
@@ -450,15 +450,15 @@
     "semantic_hash": ""
   },
   "src/app/admin/players/loading.tsx": {
-    "mtime": 1791126148.1581001,
-    "seen": 1791155155.0646377,
-    "ast_hash": "9e73bbb871b52d274d8846bea6aa581a",
+    "mtime": 1792159225.7692513,
+    "seen": 1792168941.9035811,
+    "ast_hash": "39356aed35a181e9fb2fbeb272da76a6",
     "semantic_hash": ""
   },
   "src/app/admin/players/page.tsx": {
-    "mtime": 1791223222.0346026,
-    "seen": 1791224486.7329578,
-    "ast_hash": "1ffd8515b8179a8d365a15b523421086",
+    "mtime": 1792171227.6803565,
+    "seen": 1792171468.197734,
+    "ast_hash": "f0e60e68b9eb69e29a1d327c76ae7b75",
     "semantic_hash": ""
   },
   "src/app/admin/users/[id]/role-control.tsx": {
@@ -564,9 +564,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/overview.tsx": {
-    "mtime": 1791126386.3028018,
-    "seen": 1791155155.064636,
-    "ast_hash": "ad91dfd5d4c8096b48f2004eccd5adc8",
+    "mtime": 1792170018.6885128,
+    "seen": 1792170354.9281824,
+    "ast_hash": "8fb24845a0dc9c0b918954f5d7b48b99",
     "semantic_hash": ""
   },
   "public/images/guide/1-discord.webp": {
@@ -732,9 +732,9 @@
     "semantic_hash": ""
   },
   "src/lib/supabase/database.types.ts": {
-    "mtime": 1791219013.424682,
-    "seen": 1791219141.747798,
-    "ast_hash": "3a387ec78784243350b4a396d2d606ba",
+    "mtime": 1792169791.4046884,
+    "seen": 1792170354.932039,
+    "ast_hash": "2783319e3ee030ab8e002a8138f72801",
     "semantic_hash": ""
   },
   "src/app/events/page.tsx": {
@@ -1059,6 +1059,96 @@
     "mtime": 1792156291.8293617,
     "seen": 1792157264.8429441,
     "ast_hash": "303a6ec79e57d610e177c066aa7640e2",
+    "semantic_hash": ""
+  },
+  "src/app/admin/players/actions.test.ts": {
+    "mtime": 1792160259.6306317,
+    "seen": 1792168941.9035761,
+    "ast_hash": "77767806d5771a8e98303adbc3521b8f",
+    "semantic_hash": ""
+  },
+  "src/app/admin/players/actions.ts": {
+    "mtime": 1792169925.0426333,
+    "seen": 1792170354.928226,
+    "ast_hash": "36da6eda4f81acbc3c277a0cba7a6b20",
+    "semantic_hash": ""
+  },
+  "src/app/admin/players/bulk-bar.tsx": {
+    "mtime": 1792159836.2970679,
+    "seen": 1792168941.903578,
+    "ast_hash": "8447ca073ad8c4d033cd3b7feb723a08",
+    "semantic_hash": ""
+  },
+  "src/app/admin/players/export/route.test.ts": {
+    "mtime": 1792169925.0439625,
+    "seen": 1792170354.928268,
+    "ast_hash": "649bc09063f4ed1a68ec0c36f00f2585",
+    "semantic_hash": ""
+  },
+  "src/app/admin/players/export/route.ts": {
+    "mtime": 1792169925.0427785,
+    "seen": 1792170354.9282694,
+    "ast_hash": "0f5a56259b60c29119a22e85d0f48648",
+    "semantic_hash": ""
+  },
+  "src/app/admin/players/params.test.ts": {
+    "mtime": 1792169849.2961273,
+    "seen": 1792170354.928311,
+    "ast_hash": "81a443ff59bca74713bf8484e814e802",
+    "semantic_hash": ""
+  },
+  "src/app/admin/players/params.ts": {
+    "mtime": 1792170776.3576179,
+    "seen": 1792170946.3337564,
+    "ast_hash": "798f04d385c50f7324024193d8642357",
+    "semantic_hash": ""
+  },
+  "src/app/admin/players/player-table.tsx": {
+    "mtime": 1792171227.6800332,
+    "seen": 1792171468.1978593,
+    "ast_hash": "98659e20a01ac27915b3f9cdda6c2ce7",
+    "semantic_hash": ""
+  },
+  "src/lib/csv.test.ts": {
+    "mtime": 1792159156.093942,
+    "seen": 1792168941.9067636,
+    "ast_hash": "9926128f9f4819b883b47c81eff12127",
+    "semantic_hash": ""
+  },
+  "src/lib/csv.ts": {
+    "mtime": 1792159170.144271,
+    "seen": 1792168941.9067647,
+    "ast_hash": "56bedb697bd7b71ebccc477fbe4313dc",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-10-16-v1.1-phase2a-players-table.md": {
+    "mtime": 1792158712.6523793,
+    "seen": 1792168941.9079545,
+    "ast_hash": "a5b4c8785e9b7e8d519864e3a8bc3259",
+    "semantic_hash": ""
+  },
+  "src/components/data-table.tsx": {
+    "mtime": 1792171227.6792662,
+    "seen": 1792171468.2009947,
+    "ast_hash": "a9f4d255a8d1d4b15ed555da52a7db08",
+    "semantic_hash": ""
+  },
+  "src/lib/table-query.test.ts": {
+    "mtime": 1792170686.2825394,
+    "seen": 1792170946.3379169,
+    "ast_hash": "6333fa2c72d41ba530e0c5227cd9a0df",
+    "semantic_hash": ""
+  },
+  "src/lib/table-query.ts": {
+    "mtime": 1792170776.3321455,
+    "seen": 1792170946.337918,
+    "ast_hash": "53a2fbd28daed7f826595c3b87d9e44c",
+    "semantic_hash": ""
+  },
+  "docs/admin-tables.md": {
+    "mtime": 1792170812.3217244,
+    "seen": 1792170946.3383708,
+    "ast_hash": "9b558cc4536ed959292db984cc6913cd",
     "semantic_hash": ""
   }
 }
