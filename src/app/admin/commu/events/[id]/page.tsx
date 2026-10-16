@@ -6,9 +6,9 @@ import { PixelIcon } from "@/components/icons";
 import { bangkokInput } from "@/lib/bangkok-time";
 import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
-import styles from "../../../admin.module.css";
-import { when } from "../../../overview";
-import { publicImageUrl } from "../../images";
+import styles from "@/app/admin/admin.module.css";
+import { when } from "@/app/admin/overview";
+import { publicImageUrl } from "@/app/admin/commu/achievements/images";
 import { EventForm } from "../event-form";
 import { deleteEvent } from "./actions";
 
@@ -49,7 +49,7 @@ export default async function AdminEventPage({ params, searchParams }: {
     return <section className={`panel ${styles.errorCard}`} role="alert">
       <h1 className={styles.sectionTitle}><PixelIcon name="warning" size={22} className="tone-danger" />Couldn&apos;t load events</h1>
       <p className="muted">The events didn&apos;t load. Nothing was changed.</p>
-      <Link href="/admin/achievements" className="link-button">Try again →</Link>
+      <Link href="/admin/commu/events" className="link-button">Try again →</Link>
     </section>;
   }
 
@@ -58,7 +58,7 @@ export default async function AdminEventPage({ params, searchParams }: {
   const interested = interests.data ?? [];
 
   return <>
-    <Link href="/admin/achievements" className="back-link"><PixelIcon name="back" />Achievements</Link>
+    <Link href="/admin/commu/events" className="back-link"><PixelIcon name="back" />Events</Link>
 
     <div aria-live="polite">
       {errorCode && <div className="alert alert-error" role="alert"><PixelIcon name="warning" /><p className="alert-body">{ERRORS[errorCode] ?? ERRORS.FAILED}</p></div>}

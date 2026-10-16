@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
-import styles from "../admin.module.css";
-import { when } from "../overview";
+import styles from "@/app/admin/admin.module.css";
+import { when } from "@/app/admin/overview";
 
 export const metadata: Metadata = { title: "Announcements" };
 
@@ -31,7 +31,7 @@ export default async function AdminAnnouncementsPage({ searchParams }: { searchP
   return <>
     <div className={styles.titleRow}>
       <h1 className={styles.title}>Announcements</h1>
-      <Link href="/admin/announcements/new" className="btn btn-sm"><PixelIcon name="plus" />New announcement</Link>
+      <Link href="/admin/commu/announcements/new" className="btn btn-sm"><PixelIcon name="plus" />New announcement</Link>
     </div>
 
     <div aria-live="polite">
@@ -53,7 +53,7 @@ export default async function AdminAnnouncementsPage({ searchParams }: { searchP
           const s = state(row.published_at as string | null, row.expires_at as string | null);
           return (
             <li key={row.id}>
-              <Link href={`/admin/announcements/${row.id}`}>
+              <Link href={`/admin/commu/announcements/${row.id}`}>
                 <span className={styles.catalogText}>
                   <strong>{row.title}</strong>
                   <span className={styles.small}>

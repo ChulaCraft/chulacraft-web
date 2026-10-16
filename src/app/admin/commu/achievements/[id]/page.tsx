@@ -6,8 +6,8 @@ import { ConfirmAction } from "@/components/confirm-action";
 import { PixelIcon } from "@/components/icons";
 import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
-import styles from "../../admin.module.css";
-import { when } from "../../overview";
+import styles from "@/app/admin/admin.module.css";
+import { when } from "@/app/admin/overview";
 import { publicImageUrl } from "../images";
 import { deleteAchievement, revokeAward, saveAchievement } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
@@ -46,7 +46,7 @@ export default async function AdminAchievementPage({ params, searchParams }: {
     return <section className={`panel ${styles.errorCard}`} role="alert">
       <h1 className={styles.sectionTitle}><PixelIcon name="warning" size={22} className="tone-danger" />Couldn&apos;t load achievements</h1>
       <p className="muted">The catalog didn&apos;t load. Nothing was changed.</p>
-      <Link href="/admin/achievements" className="link-button">Try again →</Link>
+      <Link href="/admin/commu/achievements" className="link-button">Try again →</Link>
     </section>;
   }
 
@@ -55,7 +55,7 @@ export default async function AdminAchievementPage({ params, searchParams }: {
   const rows = awards ?? [];
 
   return <>
-    <Link href="/admin/achievements" className="back-link"><PixelIcon name="back" />Achievements</Link>
+    <Link href="/admin/commu/achievements" className="back-link"><PixelIcon name="back" />Achievements</Link>
 
     <div aria-live="polite">
       {errorCode && <div className="alert alert-error" role="alert"><PixelIcon name="warning" /><p className="alert-body">{ERRORS[errorCode] ?? ERRORS.FAILED}</p></div>}
@@ -92,7 +92,7 @@ export default async function AdminAchievementPage({ params, searchParams }: {
 
           <div className={styles.formButtons}>
             <SubmitButton className="btn btn-primary">Save achievement</SubmitButton>
-            <Link href={`/admin/achievements/${achievement.id}/award`} className="btn">Award to players</Link>
+            <Link href={`/admin/commu/achievements/${achievement.id}/award`} className="btn">Award to players</Link>
           </div>
         </form>
 

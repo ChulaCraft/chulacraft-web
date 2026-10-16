@@ -25,7 +25,7 @@ function form(fields: Record<string, string>) {
   return data;
 }
 
-const target = (query = "") => `NEXT_REDIRECT:/admin/achievements/${ID}/award${query}`;
+const target = (query = "") => `NEXT_REDIRECT:/admin/commu/achievements/${ID}/award${query}`;
 const redirected = async (action: (data: FormData) => Promise<void>, data: FormData) =>
   action(data).then(() => null, (error: Error) => error.message);
 
@@ -39,9 +39,9 @@ describe("admin award actions", () => {
 
   it("never reaches the database for an achievement id that isn't a UUID", async () => {
     for (const bad of ["", "e1", "0000-0000"]) {
-      expect(await redirected(addPlayers, form({ achievementId: bad }))).toBe("NEXT_REDIRECT:/admin/achievements");
-      expect(await redirected(previewAward, form({ achievementId: bad, csv: "a" }))).toBe("NEXT_REDIRECT:/admin/achievements");
-      expect(await redirected(confirmAward, form({ achievementId: bad }))).toBe("NEXT_REDIRECT:/admin/achievements");
+      expect(await redirected(addPlayers, form({ achievementId: bad }))).toBe("NEXT_REDIRECT:/admin/commu/achievements");
+      expect(await redirected(previewAward, form({ achievementId: bad, csv: "a" }))).toBe("NEXT_REDIRECT:/admin/commu/achievements");
+      expect(await redirected(confirmAward, form({ achievementId: bad }))).toBe("NEXT_REDIRECT:/admin/commu/achievements");
     }
     expect(m.rpc).not.toHaveBeenCalled();
     expect(m.revalidatePath).not.toHaveBeenCalled();
@@ -51,14 +51,14 @@ describe("admin award actions", () => {
     const data = form({ achievementId: ID, q: "steve", sel: `${OTHER},not-a-uuid` });
     ticked(data, [USER, OTHER]);
     const redirect = await redirected(addPlayers, data);
-    expect(redirect).toBe(`NEXT_REDIRECT:/admin/achievements/${ID}/award?q=steve&sel=${OTHER}%2C${USER}`);
+    expect(redirect).toBe(`NEXT_REDIRECT:/admin/commu/achievements/${ID}/award?q=steve&sel=${OTHER}%2C${USER}`);
     expect(m.rpc).not.toHaveBeenCalled();
   });
 
   it("keeps the query when no search term was posted", async () => {
     const data = form({ achievementId: ID });
     ticked(data, [USER]);
-    expect(await redirected(addPlayers, data)).toBe(`NEXT_REDIRECT:/admin/achievements/${ID}/award?sel=${USER}`);
+    expect(await redirected(addPlayers, data)).toBe(`NEXT_REDIRECT:/admin/commu/achievements/${ID}/award?sel=${USER}`);
   });
 
   it("resolves the list and previews it without writing anything", async () => {
@@ -104,7 +104,7 @@ describe("admin award actions", () => {
     expect(m.rpc).toHaveBeenCalledWith("admin_award", {
       p_achievement_id: ID, p_event_id: null, p_awarded_on: "2026-10-20", p_user_ids: [USER, OTHER]
     });
-    expect(m.revalidatePath).toHaveBeenCalledWith(`/admin/achievements/${ID}`);
+    expect(m.revalidatePath).toHaveBeenCalledWith(`/admin/commu/achievements/${ID}`);
   });
 
   it("lets an event set the award date and keeps the date otherwise", async () => {
@@ -131,7 +131,7 @@ describe("admin award actions", () => {
     m.rpc.mockResolvedValueOnce({ data: null, error: { message: "connection reset" } });
     expect(await redirected(confirmAward, form({ achievementId: ID, sel: USER, awardedOn: "2026-10-20" })))
       .toBe(`${target()}?error=FAILED`);
-    expect(m.revalidatePath).toHaveBeenCalledWith(`/admin/achievements/${ID}`);
+    expect(m.revalidatePath).toHaveBeenCalledWith(`/admin/commu/achievements/${ID}`);
   });
 
   it("ticks the event's interested players without awarding anyone", async () => {

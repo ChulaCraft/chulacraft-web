@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireVerifiedUser } from "@/lib/verified-user";
+import { AdminNav } from "./admin-nav";
 import styles from "./admin.module.css";
 
 export const metadata: Metadata = { title: { default: "Admin", template: "%s · Admin | ChulaCraft" } };
@@ -17,17 +17,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <main className={`container ${styles.main}`}>
-      <nav className={styles.subnav} aria-label="Admin sections">
-        <Link href="/admin">Overview</Link>
-        <Link href="/admin/players">Players</Link>
-        <Link href="/admin/achievements">Achievements</Link>
-        <Link href="/admin/announcements">Announcements</Link>
-        <Link href="/admin/server">Server</Link>
-        <Link href="/admin/restore">Removed accounts</Link>
-        <Link href="/admin/reports">Reports</Link>
-        <Link href="/admin/appeals">Appeals</Link>
-        <Link href="/admin/audit">Audit log</Link>
-      </nav>
+      <AdminNav />
       {children}
     </main>
   );

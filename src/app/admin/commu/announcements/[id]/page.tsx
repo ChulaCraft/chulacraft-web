@@ -6,7 +6,7 @@ import { PixelIcon } from "@/components/icons";
 import { bangkokInput } from "@/lib/bangkok-time";
 import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
-import styles from "../../admin.module.css";
+import styles from "@/app/admin/admin.module.css";
 import { deleteAnnouncement, saveAnnouncement } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -24,7 +24,7 @@ const DONE: Record<string, string> = {
   saved: "Announcement saved."
 };
 
-/** `/admin/announcements/new` is this form with nothing filled in;
+/** `/admin/commu/announcements/new` is this form with nothing filled in;
  *  saveAnnouncement mints the id when none is posted. */
 export default async function AdminAnnouncementPage({ params, searchParams }: {
   params: Promise<{ id: string }>;
@@ -43,7 +43,7 @@ export default async function AdminAnnouncementPage({ params, searchParams }: {
       return <section className={`panel ${styles.errorCard}`} role="alert">
         <h1 className={styles.sectionTitle}><PixelIcon name="warning" size={22} className="tone-danger" />Couldn&apos;t load announcements</h1>
         <p className="muted">The announcement didn&apos;t load. Nothing was changed.</p>
-        <Link href="/admin/announcements" className="link-button">Try again →</Link>
+        <Link href="/admin/commu/announcements" className="link-button">Try again →</Link>
       </section>;
     }
     row = (data ?? []).find((a) => a.id === id) ?? null;
@@ -54,7 +54,7 @@ export default async function AdminAnnouncementPage({ params, searchParams }: {
   const expiresAt = row?.expires_at as string | null | undefined;
 
   return <>
-    <Link href="/admin/announcements" className="back-link"><PixelIcon name="back" />Announcements</Link>
+    <Link href="/admin/commu/announcements" className="back-link"><PixelIcon name="back" />Announcements</Link>
 
     <div aria-live="polite">
       {errorCode && <div className="alert alert-error" role="alert"><PixelIcon name="warning" /><p className="alert-body">{ERRORS[errorCode] ?? ERRORS.FAILED}</p></div>}
@@ -118,7 +118,7 @@ export default async function AdminAnnouncementPage({ params, searchParams }: {
 
       <div className={styles.formButtons}>
         <SubmitButton className="btn btn-primary">{row ? "Save announcement" : "Create announcement"}</SubmitButton>
-        {!row && <Link href="/admin/announcements" className="btn">Cancel</Link>}
+        {!row && <Link href="/admin/commu/announcements" className="btn">Cancel</Link>}
       </div>
     </form>
 

@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "New event" };
  *  none is posted. */
 export default function NewEventPage() {
   return <>
-    <Link href="/admin/achievements" className="back-link"><PixelIcon name="back" />Achievements</Link>
+    <Link href="/admin/commu/events" className="back-link"><PixelIcon name="back" />Events</Link>
     <EventForm
       submitLabel="Create event"
       coverUrl={null}

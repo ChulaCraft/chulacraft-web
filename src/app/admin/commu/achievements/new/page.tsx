@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
-import styles from "../../admin.module.css";
+import styles from "@/app/admin/admin.module.css";
 import { saveAchievement } from "../[id]/actions";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "New achievement" };
  *  id when none is posted. */
 export default function NewAchievementPage() {
   return <>
-    <Link href="/admin/achievements" className="back-link"><PixelIcon name="back" />Achievements</Link>
+    <Link href="/admin/commu/achievements" className="back-link"><PixelIcon name="back" />Achievements</Link>
     <h1 className={styles.title}>New achievement</h1>
 
     <form action={saveAchievement} className={`panel ${styles.catalogForm}`}>
@@ -37,7 +37,7 @@ export default function NewAchievementPage() {
       </div>
       <div className={styles.formButtons}>
         <SubmitButton className="btn btn-primary">Create achievement</SubmitButton>
-        <Link href="/admin/achievements" className="btn">Cancel</Link>
+        <Link href="/admin/commu/achievements" className="btn">Cancel</Link>
       </div>
     </form>
   </>;

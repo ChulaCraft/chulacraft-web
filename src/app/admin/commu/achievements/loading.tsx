@@ -1,4 +1,4 @@
-import styles from "../admin.module.css";
+import styles from "@/app/admin/admin.module.css";
 
 export default function Loading() {
   return <>

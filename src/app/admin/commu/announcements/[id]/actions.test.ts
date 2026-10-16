@@ -14,7 +14,7 @@ vi.mock("next/navigation", () => ({
 import { deleteAnnouncement, saveAnnouncement } from "./actions";
 
 const ID = "00000000-0000-0000-0000-0000000000a1";
-const BASE = "NEXT_REDIRECT:/admin/announcements";
+const BASE = "NEXT_REDIRECT:/admin/commu/announcements";
 
 function form(fields: Record<string, string>) {
   const data = new FormData();

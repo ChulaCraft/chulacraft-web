@@ -16,7 +16,7 @@ function postedId(formData: FormData, field: string) {
   const raw = formData.get(field);
   if (raw === null) return null;
   const value = String(raw);
-  if (!UUID.test(value)) redirect("/admin/achievements");
+  if (!UUID.test(value)) redirect("/admin/commu/achievements");
   return value;
 }
 
@@ -26,11 +26,11 @@ function id(formData: FormData, field: string) {
 }
 
 function finish(achievementId: string | null, error: { message: string } | null, done: string) {
-  if (!achievementId) redirect("/admin/achievements");
+  if (!achievementId) redirect("/admin/commu/achievements");
   const code = dbErrorCode(error) ?? (error ? "FAILED" : null);
-  revalidatePath("/admin/achievements");
-  revalidatePath(`/admin/achievements/${achievementId}`);
-  redirect(`/admin/achievements/${achievementId}${code ? `?error=${code}` : `?done=${done}`}`);
+  revalidatePath("/admin/commu/achievements");
+  revalidatePath(`/admin/commu/achievements/${achievementId}`);
+  redirect(`/admin/commu/achievements/${achievementId}${code ? `?error=${code}` : `?done=${done}`}`);
 }
 
 export async function saveAchievement(formData: FormData) {
@@ -78,15 +78,15 @@ export async function saveAchievement(formData: FormData) {
   if (error) finish(achievementId, error, "saved");
 
   if (!achievementId && data) {
-    revalidatePath("/admin/achievements");
-    redirect(`/admin/achievements/${data}?done=created`);
+    revalidatePath("/admin/commu/achievements");
+    redirect(`/admin/commu/achievements/${data}?done=created`);
   }
   finish(achievementId, null, "saved");
 }
 
 export async function deleteAchievement(formData: FormData) {
   const achievementId = id(formData, "achievementId");
-  if (!achievementId) redirect("/admin/achievements");
+  if (!achievementId) redirect("/admin/commu/achievements");
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_delete_achievement", { p_id: achievementId });
   const code = dbErrorCode(error) ?? (error ? "FAILED" : null);
@@ -94,14 +94,14 @@ export async function deleteAchievement(formData: FormData) {
     const path = data?.[0]?.image_path;
     if (path) await supabase.storage.from(BUCKET).remove([path]);
   }
-  revalidatePath("/admin/achievements");
-  redirect(`/admin/achievements${code ? `?error=${code}` : "?done=deleted"}`);
+  revalidatePath("/admin/commu/achievements");
+  redirect(`/admin/commu/achievements${code ? `?error=${code}` : "?done=deleted"}`);
 }
 
 export async function revokeAward(formData: FormData) {
   const achievementId = id(formData, "achievementId");
   const awardId = id(formData, "awardId");
-  if (!achievementId || !awardId) redirect("/admin/achievements");
+  if (!achievementId || !awardId) redirect("/admin/commu/achievements");
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_revoke_award", { p_award_id: awardId });
   finish(achievementId, error, "revoked");

@@ -7,7 +7,7 @@ import { dbErrorCode } from "@/lib/db-error";
 import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 
-const BASE = "/admin/announcements";
+const BASE = "/admin/commu/announcements";
 const SEVERITIES = ["info", "warning", "maintenance"];
 
 /** null means the New page is creating one; a posted value that is not a UUID

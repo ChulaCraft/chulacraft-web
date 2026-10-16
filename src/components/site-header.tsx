@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AnnouncementBanner } from "@/components/announcement-banner";
 import { Brand } from "@/components/brand";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
-import { discordAvatar } from "@/lib/chula";
+import { discordAvatar, discordName } from "@/lib/chula";
 import { discordCommunityUrl } from "@/lib/site-links";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
@@ -38,7 +38,7 @@ export async function SiteHeader() {
   }
 
   const meta = user?.user_metadata ?? {};
-  const name = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Player";
+  const name = discordName(user?.identities) ?? (typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Player");
   const avatar = discordAvatar(user?.identities);
 
   const links = [{ label: "Home", href: "/" }, { label: "Events", href: "/events" }, { label: "News", href: "/announcements" }];

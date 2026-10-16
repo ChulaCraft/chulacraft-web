@@ -36,7 +36,7 @@ const valid = (extra: Record<string, string> = {}) => form({
   startsAt: "2026-10-20T19:00", endsAt: "2026-10-20T21:30",
   currentImage: COVER, status: "published", ...extra
 });
-const target = (query = "") => `NEXT_REDIRECT:/admin/achievements/events/${ID}${query}`;
+const target = (query = "") => `NEXT_REDIRECT:/admin/commu/events/${ID}${query}`;
 const redirected = async (action: (data: FormData) => Promise<void>, data: FormData) =>
   action(data).then(() => null, (error: Error) => error.message);
 
@@ -53,8 +53,8 @@ describe("admin event actions", () => {
 
   it("never calls the database for an id that isn't a UUID", async () => {
     for (const bad of ["r1", "0000-0000", "00000000-0000-0000-0000-00000000000z"]) {
-      expect(await redirected(saveEvent, form({ eventId: bad, name: "X", startsAt: "2026-10-20T19:00" }))).toBe("NEXT_REDIRECT:/admin/achievements");
-      expect(await redirected(deleteEvent, form({ eventId: bad }))).toBe("NEXT_REDIRECT:/admin/achievements");
+      expect(await redirected(saveEvent, form({ eventId: bad, name: "X", startsAt: "2026-10-20T19:00" }))).toBe("NEXT_REDIRECT:/admin/commu/events");
+      expect(await redirected(deleteEvent, form({ eventId: bad }))).toBe("NEXT_REDIRECT:/admin/commu/events");
     }
     expect(m.rpc).not.toHaveBeenCalled();
     expect(m.upload).not.toHaveBeenCalled();
@@ -128,7 +128,7 @@ describe("admin event actions", () => {
     const data = form({ name: "Race night", startsAt: "2026-11-01T18:00", status: "draft" });
     data.delete("eventId");
     data.delete("currentImage");
-    expect(await redirected(saveEvent, data)).toBe(`NEXT_REDIRECT:/admin/achievements/events/${created}?done=created`);
+    expect(await redirected(saveEvent, data)).toBe(`NEXT_REDIRECT:/admin/commu/events/${created}?done=created`);
     expect(m.rpc).toHaveBeenCalledWith("admin_upsert_event", expect.objectContaining({ p_id: expect.any(String), p_image_path: "" }));
   });
 
@@ -137,18 +137,18 @@ describe("admin event actions", () => {
     m.rpc.mockImplementationOnce(async (...args: unknown[]) => ({ data: (args[1] as Record<string, unknown>).p_id, error: null }));
     const data = form({ name: "Race night", startsAt: "2026-11-01T18:00", status: "draft" });
     data.set("cover", cover("image/png"));
-    expect(await redirected(saveEvent, data)).toMatch(/^NEXT_REDIRECT:\/admin\/achievements\/events\/[0-9a-f-]{36}\?done=created$/);
+    expect(await redirected(saveEvent, data)).toMatch(/^NEXT_REDIRECT:\/admin\/commu\/events\/[0-9a-f-]{36}\?done=created$/);
     expect(m.remove).not.toHaveBeenCalled();
   });
 
   it("deletes the event and its cover, leaving awards alone", async () => {
     m.rpc.mockResolvedValueOnce({ data: [{ removed: 2, image_path: COVER }], error: null });
-    expect(await redirected(deleteEvent, form({ eventId: ID }))).toBe("NEXT_REDIRECT:/admin/achievements?done=event-deleted");
+    expect(await redirected(deleteEvent, form({ eventId: ID }))).toBe("NEXT_REDIRECT:/admin/commu/events?done=event-deleted");
     expect(m.remove).toHaveBeenCalledExactlyOnceWith([COVER]);
 
     m.remove.mockReset();
     m.rpc.mockResolvedValueOnce({ data: null, error: { message: "NOT_FOUND" } });
-    expect(await redirected(deleteEvent, form({ eventId: ID }))).toBe("NEXT_REDIRECT:/admin/achievements?error=NOT_FOUND");
+    expect(await redirected(deleteEvent, form({ eventId: ID }))).toBe("NEXT_REDIRECT:/admin/commu/events?error=NOT_FOUND");
     expect(m.remove).not.toHaveBeenCalled();
   });
 });

@@ -48,10 +48,10 @@ export function HeaderShell({ children }: { children: React.ReactNode }) {
   return <header ref={ref} className={`site-header${home ? " site-header-overlay" : ""}${home && scrolled ? " is-shown" : ""}`}>{children}</header>;
 }
 
-export function NavLinks({ links }: { links: { label: string; href: string }[] }) {
+export function NavLinks({ links }: { links: { label: string; href: string; exact?: boolean }[] }) {
   const path = usePathname();
   return links.map((l) => {
-    const active = l.href === "/" ? path === "/" : path === l.href || path.startsWith(`${l.href}/`);
+    const active = l.exact || l.href === "/" ? path === l.href : path === l.href || path.startsWith(`${l.href}/`);
     return <Link key={l.href} href={l.href} aria-current={active ? "page" : undefined}>{l.label}</Link>;
   });
 }

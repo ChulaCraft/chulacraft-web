@@ -44,6 +44,31 @@
   box-shadow: inset 0 0 0 2px var(--pink);
 }
 
+/* Admin sections: labelled groups of tabs (People, Community, ...). */
+.adminNav {
+  gap: 10px 22px;
+  align-items: flex-end;
+}
+
+.subnavGroup {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subnavLabel {
+  font: 500 11px/1 var(--font-mono), monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.subnavLinks {
+  display: flex;
+  gap: 6px;
+}
+
 .title {
   font: 700 clamp(28px, 4vw, 36px)/1.1 var(--font-display), monospace;
   overflow-wrap: anywhere;
@@ -534,7 +559,8 @@
 }
 
 .statValue {
-  font: 600 32px/1.1 var(--font-display), monospace;
+  font: 700 32px/1.1 var(--font-body), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 .toolsSection {

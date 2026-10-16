@@ -80,9 +80,8 @@ export default async function HomePage() {
           <div className={`container ${styles.heroInner}`}>
             <p className="eyebrow">Minecraft Java survival server for the Chula community</p>
             <h1 id="hero-title" className={styles.heroTitle}>
-              <span className={styles.word}>Build.</span>{" "}
-              <span className={styles.word}>Explore.</span>{" "}
-              <span className={`${styles.word} ${styles.accent}`}>Connect.</span>
+              <span className={styles.kicker}>Build your world at</span>{" "}
+              <span className={styles.brandName}>ChulaCraft</span>
             </h1>
             <p className={styles.heroIntro}>A community-run survival world for the Chula community. Sign in with Discord, verify your Chula account, and start building.</p>
             <div className={styles.actions}>

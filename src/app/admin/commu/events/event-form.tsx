@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { EventCard } from "@/components/event-card";
 import { PixelIcon } from "@/components/icons";
-import styles from "../../admin.module.css";
-import { IMAGE_TYPES } from "../images";
+import styles from "@/app/admin/admin.module.css";
+import { IMAGE_TYPES } from "@/app/admin/commu/achievements/images";
 import { saveEvent } from "./[id]/actions";
 
 export type EventFormValues = {
@@ -186,7 +186,7 @@ export function EventForm({ initial, submitLabel, coverUrl, aside, footer }: {
 
           <div className={styles.formButtons}>
             <button type="submit" className="btn btn-primary" disabled={busy}>{submitLabel}</button>
-            {!initial.id && <Link href="/admin/achievements" className="btn">Cancel</Link>}
+            {!initial.id && <Link href="/admin/commu/events" className="btn">Cancel</Link>}
           </div>
         </form>
         {footer}

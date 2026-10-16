@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { discordName } from "@/lib/chula";
 import { managerUrl, maskFor, mintToken } from "@/lib/mcsv-token";
 import { createClient } from "@/lib/supabase/server";
 
@@ -23,7 +24,7 @@ export async function grant(action: ConsoleAction, need: number, server: string)
   if (error || (maskFor(role) & need) !== need) return null;
   // Only for the manager's log; the jti is what ties it to the audit row.
   const meta = user.user_metadata ?? {};
-  const sub = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : user.id;
+  const sub = discordName(user.identities) ?? (typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : user.id);
   return mintToken(sub, need, jti);
 }
 

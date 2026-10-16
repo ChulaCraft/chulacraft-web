@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AchievementGrid, type AchievementGroup } from "@/components/achievement-grid";
 import { CopyButton } from "@/components/copy-button";
 import { PixelIcon } from "@/components/icons";
-import { discordAvatar } from "@/lib/chula";
+import { discordAvatar, discordName } from "@/lib/chula";
 import { getSiteUrl } from "@/lib/env";
 import { toStudyLevel } from "@/lib/faculties";
 import { requireVerifiedUser } from "@/lib/verified-user";
@@ -85,8 +85,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const socialDone = done ? SOCIAL_DONE[done] ?? null : null;
 
   const meta = user.user_metadata;
-  const displayName = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Discord player";
-  const handle = typeof meta.user_name === "string" ? meta.user_name : typeof meta.name === "string" ? meta.name : null;
+  const displayName = discordName(user.identities) ?? (typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Discord player");
+  const handle = discordName(user.identities) ?? (typeof meta.user_name === "string" ? meta.user_name : null);
   const avatar = discordAvatar(user.identities);
   const editing = edit === "info";
   const infoRows = [

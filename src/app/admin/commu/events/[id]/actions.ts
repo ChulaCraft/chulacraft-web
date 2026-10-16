@@ -7,7 +7,7 @@ import { dbErrorCode } from "@/lib/db-error";
 import { UUID } from "@/lib/registration";
 import { UPCOMING_EVENTS_TAG } from "@/components/event-card";
 import { createClient } from "@/lib/supabase/server";
-import { BUCKET, imageError, imageKey, toStatus } from "../../images";
+import { BUCKET, imageError, imageKey, toStatus } from "@/app/admin/commu/achievements/images";
 
 /** null means the New page is creating one; a posted value that is not a UUID
  *  is a malformed form and never reaches the database. */
@@ -15,18 +15,18 @@ function postedId(formData: FormData, field: string) {
   const raw = formData.get(field);
   if (raw === null) return null;
   const value = String(raw);
-  if (!UUID.test(value)) redirect("/admin/achievements");
+  if (!UUID.test(value)) redirect("/admin/commu/events");
   return value;
 }
 
 /** `never` so TypeScript knows the guards below are unreachable after it. */
 function finish(eventId: string | null, error: { message: string } | null, done: string): never {
-  if (!eventId) redirect("/admin/achievements");
+  if (!eventId) redirect("/admin/commu/events");
   const code = dbErrorCode(error) ?? (error ? "FAILED" : null);
-  revalidatePath("/admin/achievements");
-  revalidatePath(`/admin/achievements/events/${eventId}`);
+  revalidatePath("/admin/commu/events");
+  revalidatePath(`/admin/commu/events/${eventId}`);
   updateTag(UPCOMING_EVENTS_TAG);
-  redirect(`/admin/achievements/events/${eventId}${code ? `?error=${code}` : `?done=${done}`}`);
+  redirect(`/admin/commu/events/${eventId}${code ? `?error=${code}` : `?done=${done}`}`);
 }
 
 export async function saveEvent(formData: FormData) {
@@ -80,16 +80,16 @@ export async function saveEvent(formData: FormData) {
   if (error) finish(eventId, error, "saved");
 
   if (!eventId && data) {
-    revalidatePath("/admin/achievements");
+    revalidatePath("/admin/commu/events");
     updateTag(UPCOMING_EVENTS_TAG);
-    redirect(`/admin/achievements/events/${data}?done=created`);
+    redirect(`/admin/commu/events/${data}?done=created`);
   }
   finish(eventId, null, "saved");
 }
 
 export async function deleteEvent(formData: FormData) {
   const eventId = postedId(formData, "eventId");
-  if (!eventId) redirect("/admin/achievements");
+  if (!eventId) redirect("/admin/commu/events");
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_delete_event", { p_id: eventId });
   const code = dbErrorCode(error) ?? (error ? "FAILED" : null);
@@ -97,7 +97,7 @@ export async function deleteEvent(formData: FormData) {
     const path = data?.[0]?.image_path;
     if (path) await supabase.storage.from(BUCKET).remove([path]);
   }
-  revalidatePath("/admin/achievements");
+  revalidatePath("/admin/commu/events");
   updateTag(UPCOMING_EVENTS_TAG);
-  redirect(`/admin/achievements${code ? `?error=${code}` : "?done=event-deleted"}`);
+  redirect(`/admin/commu/events${code ? `?error=${code}` : "?done=event-deleted"}`);
 }

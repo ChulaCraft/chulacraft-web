@@ -26,6 +26,15 @@ const nextConfig: NextConfig = {
     // refuses by default. Only ever true for that loopback dev setup.
     dangerouslyAllowLocalIP: storage !== null && ["127.0.0.1", "localhost"].includes(storage.hostname)
   },
+  // v1.1 moved community admin under /admin/commu; keep old bookmarks working.
+  // Events first: the achievements rule would otherwise catch it.
+  async redirects() {
+    return [
+      { source: "/admin/achievements/events/:path*", destination: "/admin/commu/events/:path*", permanent: true },
+      { source: "/admin/achievements/:path*", destination: "/admin/commu/achievements/:path*", permanent: true },
+      { source: "/admin/announcements/:path*", destination: "/admin/commu/announcements/:path*", permanent: true }
+    ];
+  },
   async headers() {
     return [{
       source: "/(.*)",

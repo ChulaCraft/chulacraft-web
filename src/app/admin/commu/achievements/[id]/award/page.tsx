@@ -5,7 +5,7 @@ import { PixelIcon } from "@/components/icons";
 import { AWARD_KINDS, MAX_CSV_ROWS, parseAwardCsv } from "@/lib/award-csv";
 import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
-import styles from "../../../admin.module.css";
+import styles from "@/app/admin/admin.module.css";
 import { addPlayers, confirmAward, prefillInterested, previewAward } from "./actions";
 import { selectionParam, selectionIds } from "../../selection";
 import { SubmitButton } from "@/components/submit-button";
@@ -66,11 +66,11 @@ export default async function AdminAwardPage({ params, searchParams }: {
     const params = new URLSearchParams(extra);
     if (q) params.set("q", q);
     if (selected.length) params.set("sel", selectionParam(selected));
-    return `/admin/achievements/${id}/award?${params}`;
+    return `/admin/commu/achievements/${id}/award?${params}`;
   };
 
   return <>
-    <Link href={`/admin/achievements/${id}`} className="back-link"><PixelIcon name="back" />{achievement.name}</Link>
+    <Link href={`/admin/commu/achievements/${id}`} className="back-link"><PixelIcon name="back" />{achievement.name}</Link>
     <h1 className={styles.title}>Award {achievement.name}</h1>
 
     <div aria-live="polite">

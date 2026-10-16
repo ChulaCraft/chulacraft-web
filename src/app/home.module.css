@@ -23,7 +23,7 @@
   pointer-events: none;
   background:
     linear-gradient(180deg, rgba(32, 26, 43, 0) 45%, var(--bg) 100%),
-    linear-gradient(90deg, rgba(32, 26, 43, 0.94) 0%, rgba(32, 26, 43, 0.7) 38%, rgba(32, 26, 43, 0) 70%),
+    linear-gradient(90deg, rgba(32, 26, 43, 0.96) 0%, rgba(32, 26, 43, 0.78) 42%, rgba(32, 26, 43, 0) 72%),
     linear-gradient(90deg, var(--bg) 0, transparent max(0px, calc(50% - 960px)), transparent min(100%, calc(50% + 960px)), var(--bg) 100%);
 }
 
@@ -40,28 +40,27 @@
 }
 
 .heroTitle {
-  max-width: 11ch;
-  font: 700 clamp(46px, 8vw, 92px)/0.98 var(--font-display), monospace;
-  letter-spacing: -0.01em;
-  text-wrap: balance;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12em;
+  font-family: var(--font-display), monospace;
+  font-weight: 700;
 }
 
-/* Each word drops in like a placed block, in stepped (pixel) motion, one after
-   another; then "Connect." keeps a slow glow. */
-.word {
-  display: inline-block;
-  animation: word-drop 520ms steps(6, end) both;
+/* "Build your world at": a plain lead-in so the name carries the hero. */
+.kicker {
+  font: 700 clamp(20px, 2.4vw, 30px)/1.1 var(--font-body), system-ui, sans-serif;
 }
 
-.word:nth-child(2) {
-  animation-delay: 180ms;
-}
-
-.accent {
+/* Sized to stay left of the building in the photo on wide screens. */
+.brandName {
+  display: block;
+  font-size: clamp(48px, 7vw, 96px);
+  line-height: 0.95;
   color: var(--pink);
-  animation:
-    word-drop 520ms steps(6, end) 360ms both,
-    word-glow 2.8s ease-in-out 1.2s infinite;
+  text-shadow: 0 0 32px color-mix(in srgb, var(--pink) 45%, transparent);
+  /* Lands once, like a placed block. */
+  animation: word-drop 520ms steps(6, end) 120ms both;
 }
 
 @keyframes word-drop {
@@ -78,15 +77,8 @@
   }
 }
 
-@keyframes word-glow {
-  50% {
-    text-shadow: 0 0 18px color-mix(in srgb, var(--pink) 55%, transparent);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .word,
-  .accent {
+  .brandName {
     animation: none;
   }
 }

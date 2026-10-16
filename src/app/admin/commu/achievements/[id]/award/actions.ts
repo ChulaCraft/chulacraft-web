@@ -21,27 +21,27 @@ function unique(values: string[]) {
 function fail(achievementId: string, code: string, query: URLSearchParams): never {
   query.set("error", code);
   query.delete("preview");
-  redirect(`/admin/achievements/${achievementId}/award?${query}`);
+  redirect(`/admin/commu/achievements/${achievementId}/award?${query}`);
 }
 
 /** Search results are ticked with checkboxes; this adds them to whatever is
  *  already selected rather than replacing it. */
 export async function addPlayers(formData: FormData) {
   const id = awardId(formData);
-  if (!id) redirect("/admin/achievements");
+  if (!id) redirect("/admin/commu/achievements");
   const query = new URLSearchParams();
   const search = String(formData.get("q") ?? "").trim();
   if (search) query.set("q", search);
   const ticked = unique([...selectionIds(String(formData.get("sel") ?? "")), ...formData.getAll("playerId").map(String)]).filter((value) => UUID.test(value));
   if (ticked.length) query.set("sel", selectionParam(ticked));
-  redirect(`/admin/achievements/${id}/award?${query}`);
+  redirect(`/admin/commu/achievements/${id}/award?${query}`);
 }
 
 /** Turns the pasted list into accounts, then shows what matched before
  *  anything is written. */
 export async function previewAward(formData: FormData) {
   const id = awardId(formData);
-  if (!id) redirect("/admin/achievements");
+  if (!id) redirect("/admin/commu/achievements");
 
   const csv = String(formData.get("csv") ?? "");
   const parsed = parseAwardCsv(csv);
@@ -63,12 +63,12 @@ export async function previewAward(formData: FormData) {
   }
   for (const value of parsed.duplicates) preview.append("duplicate", value);
   query.set("preview", preview.toString());
-  redirect(`/admin/achievements/${id}/award?${query}`);
+  redirect(`/admin/commu/achievements/${id}/award?${query}`);
 }
 
 export async function prefillInterested(formData: FormData) {
   const id = awardId(formData);
-  if (!id) redirect("/admin/achievements");
+  if (!id) redirect("/admin/commu/achievements");
 
   const eventRaw = String(formData.get("eventId") ?? "");
   const query = new URLSearchParams();
@@ -78,7 +78,7 @@ export async function prefillInterested(formData: FormData) {
     // Nothing chosen means nothing to prefill from; send the admin back with a
     // code the page turns into copy rather than silently doing nothing.
     query.set("error", "PICK_EVENT");
-    redirect(`/admin/achievements/${id}/award?${query}`);
+    redirect(`/admin/commu/achievements/${id}/award?${query}`);
   }
   query.set("eventId", eventRaw);
 
@@ -86,19 +86,19 @@ export async function prefillInterested(formData: FormData) {
   const { data, error } = await supabase.rpc("admin_list_event_interests", { p_event_id: eventRaw });
   if (error) {
     query.set("error", dbErrorCode(error) ?? "FAILED");
-    redirect(`/admin/achievements/${id}/award?${query}`);
+    redirect(`/admin/commu/achievements/${id}/award?${query}`);
   }
 
   // D7: interest is a maybe. Ticked, not awarded — the confirm step still runs
   // and the admin still decides who actually came.
   const ticked = unique([...selectionIds(String(formData.get("sel") ?? "")), ...(data ?? []).map((row) => row.user_id)]);
   if (ticked.length) query.set("sel", selectionParam(ticked));
-  redirect(`/admin/achievements/${id}/award?${query}`);
+  redirect(`/admin/commu/achievements/${id}/award?${query}`);
 }
 
 export async function confirmAward(formData: FormData) {
   const id = awardId(formData);
-  if (!id) redirect("/admin/achievements");
+  if (!id) redirect("/admin/commu/achievements");
 
   const eventRaw = String(formData.get("eventId") ?? "");
   // Ticked players and the CSV rows that resolved, deduped: found twice is
@@ -107,7 +107,7 @@ export async function confirmAward(formData: FormData) {
     ...selectionIds(String(formData.get("sel") ?? "")),
     ...formData.getAll("matchedId").map(String)
   ]).filter((value) => UUID.test(value));
-  if (ids.length === 0) redirect(`/admin/achievements/${id}/award?error=NO_PLAYERS`);
+  if (ids.length === 0) redirect(`/admin/commu/achievements/${id}/award?error=NO_PLAYERS`);
 
   const raw = String(formData.get("awardedOn") ?? "").trim();
   const supabase = await createClient();
@@ -120,8 +120,8 @@ export async function confirmAward(formData: FormData) {
     p_user_ids: ids
   });
 
-  revalidatePath("/admin/achievements");
-  revalidatePath(`/admin/achievements/${id}`);
-  if (error) redirect(`/admin/achievements/${id}/award?error=${dbErrorCode(error) ?? "FAILED"}`);
-  redirect(`/admin/achievements/${id}/award?done=awarded&count=${ids.length}`);
+  revalidatePath("/admin/commu/achievements");
+  revalidatePath(`/admin/commu/achievements/${id}`);
+  if (error) redirect(`/admin/commu/achievements/${id}/award?error=${dbErrorCode(error) ?? "FAILED"}`);
+  redirect(`/admin/commu/achievements/${id}/award?done=awarded&count=${ids.length}`);
 }

@@ -33,7 +33,7 @@ function form(fields: Record<string, string>) {
 }
 
 const valid = (extra: Record<string, string> = {}) => form({ achievementId: ID, name: "Builder", description: "Broke spawn.", currentImage: CURRENT, status: "published", ...extra });
-const target = (query = "") => `NEXT_REDIRECT:/admin/achievements/${ID}${query}`;
+const target = (query = "") => `NEXT_REDIRECT:/admin/commu/achievements/${ID}${query}`;
 const redirected = async (action: (data: FormData) => Promise<void>, data: FormData) =>
   action(data).then(() => null, (error: Error) => error.message);
 
@@ -50,9 +50,9 @@ describe("admin achievement actions", () => {
 
   it("never calls the database for an id that isn't a UUID", async () => {
     for (const bad of ["", "r1", "0000-0000", "00000000-0000-0000-0000-00000000000z"]) {
-      expect(await redirected(saveAchievement, form({ achievementId: bad, name: "X" }))).toBe("NEXT_REDIRECT:/admin/achievements");
-      expect(await redirected(deleteAchievement, form({ achievementId: bad }))).toBe("NEXT_REDIRECT:/admin/achievements");
-      expect(await redirected(revokeAward, form({ achievementId: bad, awardId: AWARD_ID }))).toBe("NEXT_REDIRECT:/admin/achievements");
+      expect(await redirected(saveAchievement, form({ achievementId: bad, name: "X" }))).toBe("NEXT_REDIRECT:/admin/commu/achievements");
+      expect(await redirected(deleteAchievement, form({ achievementId: bad }))).toBe("NEXT_REDIRECT:/admin/commu/achievements");
+      expect(await redirected(revokeAward, form({ achievementId: bad, awardId: AWARD_ID }))).toBe("NEXT_REDIRECT:/admin/commu/achievements");
     }
     expect(m.rpc).not.toHaveBeenCalled();
     expect(m.upload).not.toHaveBeenCalled();
@@ -148,7 +148,7 @@ describe("admin achievement actions", () => {
     const created = "00000000-0000-0000-0000-0000000000c3";
     m.rpc.mockResolvedValueOnce({ data: created, error: null });
     expect(await redirected(saveAchievement, form({ name: "Miner", status: "draft", currentImage: "" })))
-      .toBe(`NEXT_REDIRECT:/admin/achievements/${created}?done=created`);
+      .toBe(`NEXT_REDIRECT:/admin/commu/achievements/${created}?done=created`);
     expect(m.rpc).toHaveBeenCalledWith("admin_upsert_achievement", expect.objectContaining({ p_id: expect.any(String), p_image_path: "" }));
   });
 
@@ -159,7 +159,7 @@ describe("admin achievement actions", () => {
 
     m.rpc.mockResolvedValueOnce({ error: { message: "FORBIDDEN" } });
     expect(await redirected(revokeAward, form({ achievementId: ID, awardId: AWARD_ID }))).toBe(`${target()}?error=FORBIDDEN`);
-    expect(m.revalidatePath).toHaveBeenCalledWith(`/admin/achievements/${ID}`);
+    expect(m.revalidatePath).toHaveBeenCalledWith(`/admin/commu/achievements/${ID}`);
   });
 
   it("keeps the uploaded image when the save creates the achievement", async () => {
@@ -167,18 +167,18 @@ describe("admin achievement actions", () => {
     m.rpc.mockImplementationOnce(async (...args: unknown[]) => ({ data: (args[1] as Record<string, unknown>).p_id, error: null }));
     const data = form({ name: "Miner", status: "draft" });
     data.set("image", image("image/png"));
-    expect(await redirected(saveAchievement, data)).toMatch(/^NEXT_REDIRECT:\/admin\/achievements\/[0-9a-f-]{36}\?done=created$/);
+    expect(await redirected(saveAchievement, data)).toMatch(/^NEXT_REDIRECT:\/admin\/commu\/achievements\/[0-9a-f-]{36}\?done=created$/);
     expect(m.remove).not.toHaveBeenCalled();
   });
 
   it("deletes the achievement and its image, reporting a failure as an error", async () => {
     m.rpc.mockResolvedValueOnce({ data: [{ removed: 3, image_path: CURRENT }], error: null });
-    expect(await redirected(deleteAchievement, form({ achievementId: ID }))).toBe("NEXT_REDIRECT:/admin/achievements?done=deleted");
+    expect(await redirected(deleteAchievement, form({ achievementId: ID }))).toBe("NEXT_REDIRECT:/admin/commu/achievements?done=deleted");
     expect(m.remove).toHaveBeenCalledExactlyOnceWith([CURRENT]);
 
     m.remove.mockReset();
     m.rpc.mockResolvedValueOnce({ data: null, error: { message: "NOT_FOUND" } });
-    expect(await redirected(deleteAchievement, form({ achievementId: ID }))).toBe("NEXT_REDIRECT:/admin/achievements?error=NOT_FOUND");
+    expect(await redirected(deleteAchievement, form({ achievementId: ID }))).toBe("NEXT_REDIRECT:/admin/commu/achievements?error=NOT_FOUND");
     expect(m.remove).not.toHaveBeenCalled();
   });
 });
