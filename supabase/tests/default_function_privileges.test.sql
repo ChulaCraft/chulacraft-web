@@ -57,6 +57,7 @@ insert into expected values
   ('authenticated', 'admin_search_users(p_query text)'),
   ('authenticated', 'admin_set_role(p_user_id uuid, p_role text)'),
   ('authenticated', 'admin_stats_daily(p_days integer)'),
+  ('authenticated', 'admin_set_event_category(p_id uuid, p_category text)'),
   ('authenticated', 'admin_set_privacy(p_user_id uuid, p_profile text, p_minecraft text, p_achievements text, p_friends text)'),
   ('authenticated', 'admin_update_profile(p_user_id uuid, p_first_name text, p_last_name text, p_nickname text, p_faculty text, p_major text, p_study_level text)'),
   ('authenticated', 'admin_user_profile(p_user_id uuid)'),

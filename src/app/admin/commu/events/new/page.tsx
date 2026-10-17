@@ -13,7 +13,7 @@ export default function NewEventPage() {
     <EventForm
       submitLabel="Create event"
       coverUrl={null}
-      initial={{ name: "", description: "", startsAt: "", endsAt: "", location: "", status: "draft" }}
+      initial={{ name: "", description: "", startsAt: "", endsAt: "", location: "", category: "", status: "draft" }}
     />
   </>;
 }

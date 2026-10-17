@@ -132,6 +132,18 @@ describe("admin event actions", () => {
     expect(m.rpc).toHaveBeenCalledWith("admin_upsert_event", expect.objectContaining({ p_id: expect.any(String), p_image_path: "" }));
   });
 
+  it("saves the category after the event, and clears it when none is picked", async () => {
+    expect(await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", category: "survival" }))).toBe(`${target()}?done=saved`);
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_category", { p_id: ID, p_category: "survival" });
+    await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", category: "" }));
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_category", { p_id: ID, p_category: null });
+  });
+
+  it("drops a category the site doesn't know", async () => {
+    await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", category: "raid" }));
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_category", { p_id: ID, p_category: null });
+  });
+
   it("keeps the uploaded cover when the save creates the event", async () => {
     // The RPC answers with the id it was asked for, so the cover survives.
     m.rpc.mockImplementationOnce(async (...args: unknown[]) => ({ data: (args[1] as Record<string, unknown>).p_id, error: null }));

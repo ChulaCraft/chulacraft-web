@@ -175,14 +175,14 @@ isOneToOne: false
                   ]
                 },"events": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"description": string | null,"ends_at": string | null,"id": string,"image_path": string | null,"location": string | null,"name": string,"starts_at": string,"status": string,"updated_at": string,"event_is_ended": boolean | null
+                    "category": string | null,"created_at": string,"created_by": string | null,"description": string | null,"ends_at": string | null,"id": string,"image_path": string | null,"location": string | null,"name": string,"starts_at": string,"status": string,"updated_at": string,"event_is_ended": boolean | null
                   }
                   ComputedFields: "event_is_ended"
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"image_path"?: string | null,"location"?: string | null,"name": string,"starts_at": string,"status"?: string,"updated_at"?: string
+                    "category"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"image_path"?: string | null,"location"?: string | null,"name": string,"starts_at": string,"status"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"image_path"?: string | null,"location"?: string | null,"name"?: string,"starts_at"?: string,"status"?: string,"updated_at"?: string
+                    "category"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"image_path"?: string | null,"location"?: string | null,"name"?: string,"starts_at"?: string,"status"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -393,7 +393,7 @@ isOneToOne: false
                            },
 "admin_list_events":
 { Args: Record<PropertyKey, never>; Returns: {
-              "award_count": number,"created_at": string,"description": string,"ends_at": string,"id": string,"image_path": string,"location": string,"name": string,"starts_at": string,"status": string,"updated_at": string
+              "award_count": number,"category": string,"created_at": string,"description": string,"ends_at": string,"id": string,"image_path": string,"location": string,"name": string,"starts_at": string,"status": string,"updated_at": string
             }[]
                            },
 "admin_list_players":
@@ -447,6 +447,9 @@ isOneToOne: false
                            },
 "admin_server_console_access":
 { Args: { "p_action": string,"p_jti": string,"p_server": string }; Returns: string
+                           },
+"admin_set_event_category":
+{ Args: { "p_category": string,"p_id": string }; Returns: undefined
                            },
 "admin_set_privacy":
 { Args: { "p_achievements": string,"p_friends": string,"p_minecraft": string,"p_profile": string,"p_user_id": string }; Returns: undefined
@@ -565,12 +568,12 @@ isOneToOne: false
                            },
 "list_past_events":
 { Args: { "p_limit"?: number }; Returns: {
-              "description_excerpt": string,"ends_at": string,"id": string,"image_path": string,"interest_count": number,"location": string,"name": string,"starts_at": string
+              "category": string,"description_excerpt": string,"ends_at": string,"id": string,"image_path": string,"interest_count": number,"location": string,"name": string,"starts_at": string
             }[]
                            },
 "list_upcoming_events":
 { Args: { "p_limit"?: number }; Returns: {
-              "description_excerpt": string,"ends_at": string,"id": string,"image_path": string,"interest_count": number,"location": string,"name": string,"starts_at": string
+              "category": string,"description_excerpt": string,"ends_at": string,"id": string,"image_path": string,"interest_count": number,"location": string,"name": string,"starts_at": string
             }[]
                            },
 "log_account_change":
@@ -640,6 +643,9 @@ isOneToOne: false
                            },
 "staff_can":
 { Args: { "p_area": string }; Returns: boolean
+                           },
+"staff_roles_replace":
+{ Args: { "p_from": string,"p_src": string,"p_to": string }; Returns: string
                            },
 "submit_appeal":
 { Args: { "p_message": string }; Returns: undefined

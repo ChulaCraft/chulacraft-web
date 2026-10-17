@@ -31,7 +31,7 @@
 }
 
 .heroTitle {
-  font: 700 clamp(40px, 6vw, 68px)/1 var(--font-display), monospace;
+  font: 700 clamp(40px, 6vw, 68px)/1 var(--font-display), var(--font-thai), monospace;
 }
 
 .heroIntro {
@@ -70,7 +70,7 @@
 }
 
 .valueTitle {
-  font: 600 26px/1.2 var(--font-display), monospace;
+  font: 600 26px/1.2 var(--font-display), var(--font-thai), monospace;
 }
 
 .community {
@@ -89,7 +89,7 @@
 }
 
 .communityTitle {
-  font: 600 clamp(30px, 4vw, 44px)/1.1 var(--font-display), monospace;
+  font: 600 clamp(30px, 4vw, 44px)/1.1 var(--font-display), var(--font-thai), monospace;
 }
 
 .actions {

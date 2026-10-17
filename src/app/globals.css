@@ -44,7 +44,7 @@ body {
   margin: 0;
   color: var(--text);
   background: var(--bg);
-  font: 16px/1.55 var(--font-body), system-ui, sans-serif;
+  font: 16px/1.55 var(--font-body), var(--font-thai), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -155,19 +155,19 @@ p {
 /* ---------- Type ---------- */
 
 .display {
-  font-family: var(--font-display), monospace;
+  font-family: var(--font-display), var(--font-thai), monospace;
   font-weight: 700;
   line-height: 1.08;
   text-wrap: balance;
 }
 
 .page-title {
-  font: 700 clamp(32px, 5vw, 44px)/1.08 var(--font-display), monospace;
+  font: 700 clamp(32px, 5vw, 44px)/1.08 var(--font-display), var(--font-thai), monospace;
   text-wrap: balance;
 }
 
 .section-title {
-  font: 600 20px/1.2 var(--font-display), monospace;
+  font: 600 20px/1.2 var(--font-display), var(--font-thai), monospace;
 }
 
 .lead {
@@ -627,7 +627,7 @@ select.input {
 }
 
 .dialog-title {
-  font: 600 24px/1.2 var(--font-display), monospace;
+  font: 600 24px/1.2 var(--font-display), var(--font-thai), monospace;
   overflow-wrap: anywhere;
 }
 
@@ -739,7 +739,7 @@ select.input {
 }
 
 .brand span {
-  font: 600 22px/1 var(--font-display), monospace;
+  font: 600 22px/1 var(--font-display), var(--font-thai), monospace;
 }
 
 .main-nav {
@@ -888,7 +888,7 @@ select.input {
   clip-path: var(--pixel-4);
   color: var(--bg);
   background: var(--lavender);
-  font: 700 18px/1 var(--font-display), monospace;
+  font: 700 18px/1 var(--font-display), var(--font-thai), monospace;
   object-fit: cover;
 }
 
@@ -1171,4 +1171,45 @@ select.input {
 
 .tone-danger {
   color: var(--danger);
+}
+
+/* Rendered Markdown (src/lib/markdown.tsx): event details and their preview. */
+.md {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.md > * {
+  margin: 0;
+}
+
+.md h3 {
+  margin-top: 6px;
+  font: 600 19px/1.3 var(--font-display), var(--font-thai), monospace;
+  color: var(--text);
+}
+
+.md ul,
+.md ol {
+  padding-left: 1.4em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.md li::marker {
+  color: var(--pink);
+}
+
+.md code {
+  padding: 1px 6px;
+  font: 500 0.9em var(--font-mono), monospace;
+  background: var(--surface-2);
+}
+
+.md strong {
+  color: var(--text);
 }

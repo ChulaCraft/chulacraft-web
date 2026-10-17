@@ -29,6 +29,7 @@ export function ShieldIcon({ className }: IconProps) {
 const PIXEL_PATHS = {
   check: "M3 8.5 6.5 12 13 4.5",
   clock: "M2 2h12v12H2zM8 4.5v4h3",
+  pin: "M8 15 3.5 9.5A5 5 0 1 1 12.5 9.5zM8 4.5h.01M6.5 6.5h3",
   warning: "M8 1.5 15 14H1zM8 6v3.5M8 11.5v.5",
   info: "M2 2h12v12H2zM8 5v4M8 11v.5",
   retry: "M13 8a5 5 0 1 1-1.5-3.5M13 2v3h-3",

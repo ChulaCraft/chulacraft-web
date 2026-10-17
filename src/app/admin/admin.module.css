@@ -70,7 +70,7 @@
 }
 
 .title {
-  font: 700 clamp(28px, 4vw, 36px)/1.1 var(--font-display), monospace;
+  font: 700 clamp(28px, 4vw, 36px)/1.1 var(--font-display), var(--font-thai), monospace;
   overflow-wrap: anywhere;
 }
 
@@ -87,7 +87,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font: 600 20px/1.2 var(--font-display), monospace;
+  font: 600 20px/1.2 var(--font-display), var(--font-thai), monospace;
 }
 
 .small {
@@ -481,7 +481,7 @@
 }
 
 .groupTitle {
-  font: 600 24px/1.2 var(--font-display), monospace;
+  font: 600 24px/1.2 var(--font-display), var(--font-thai), monospace;
 }
 
 .attention {
@@ -559,7 +559,7 @@
 }
 
 .statValue {
-  font: 700 32px/1.1 var(--font-body), system-ui, sans-serif;
+  font: 700 32px/1.1 var(--font-body), var(--font-thai), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -683,7 +683,7 @@ a.tool:hover {
 }
 
 .listHead h2 {
-  font: 600 20px/1.2 var(--font-display), monospace;
+  font: 600 20px/1.2 var(--font-display), var(--font-thai), monospace;
 }
 
 .newest {
@@ -987,4 +987,11 @@ a.stat:hover .statGo {
 .navSearch {
   margin-left: auto;
   flex: none;
+}
+
+/* Event form: the details as the event page will show them. */
+.mdPreview {
+  padding: 14px 16px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 2px var(--surface-2);
 }

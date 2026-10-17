@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { EventCard } from "@/components/event-card";
+import { EVENT_CATEGORIES } from "@/lib/event-category";
+import { Markdown } from "@/lib/markdown";
 import { PixelIcon } from "@/components/icons";
 import styles from "@/app/admin/admin.module.css";
 import { IMAGE_TYPES } from "@/app/admin/commu/achievements/images";
@@ -15,6 +17,7 @@ export type EventFormValues = {
   startsAt: string;
   endsAt: string;
   location: string;
+  category: string;
   status: string;
 };
 
@@ -143,9 +146,18 @@ export function EventForm({ initial, submitLabel, coverUrl, aside, footer }: {
             <input id={`${prefix}-name`} className="input" name="name" value={values.name} onChange={set("name")} required maxLength={80} />
           </div>
           <div className="field">
-            <label htmlFor={`${prefix}-desc`}>Description <span className="optional">(optional)</span></label>
-            <textarea id={`${prefix}-desc`} className={styles.textarea} name="description" rows={3} value={values.description} onChange={set("description")} maxLength={500} />
+            <label htmlFor={`${prefix}-desc`}>Details <span className="optional">(optional)</span></label>
+            <textarea id={`${prefix}-desc`} className={styles.textarea} name="description" rows={8} value={values.description} onChange={set("description")} maxLength={2000} aria-describedby={`${prefix}-desc-help`} />
+            <p id={`${prefix}-desc-help`} className="field-help">
+              Markdown: <code>## Heading</code>, <code>**bold**</code>, <code>*italic*</code>, <code>- list</code>, <code>1. list</code>, <code>[link](https://…)</code>. A blank line starts a new paragraph. {values.description.length}/2000
+            </p>
           </div>
+          {description && (
+            <div className="field">
+              <span className="label">Details preview</span>
+              <div className={`${styles.mdPreview} md`} aria-live="polite"><Markdown source={description} /></div>
+            </div>
+          )}
           <div className={styles.formRow}>
             <div className="field">
               <label htmlFor={`${prefix}-starts`}>Starts (Bangkok)</label>
@@ -162,10 +174,17 @@ export function EventForm({ initial, submitLabel, coverUrl, aside, footer }: {
             <input id={`${prefix}-location`} className="input" name="location" value={values.location} onChange={set("location")} maxLength={120} placeholder="Spawn, survival world" />
           </div>
           <div className="field">
+            <label htmlFor={`${prefix}-category`}>Category <span className="optional">(optional)</span></label>
+            <select id={`${prefix}-category`} className="input" name="category" value={values.category} onChange={set("category")}>
+              <option value="">None</option>
+              {EVENT_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </div>
+          <div className="field">
             <label htmlFor={`${prefix}-cover`}>Cover</label>
             <input ref={fileRef} id={`${prefix}-cover`} className="input" type="file" name="cover" accept={IMAGE_TYPES.join(",")} onChange={onCover} aria-describedby={`${prefix}-cover-help ${prefix}-cover-note`} />
             <p id={`${prefix}-cover-help`} className="field-help">
-              PNG, JPEG, WebP or GIF. Anything over 500 KB is compressed to WebP for you.{initial.id && " Leave empty to keep the current cover."}
+              Portrait posters (e.g. A4) and wide pictures both show in full, never cropped. PNG, JPEG, WebP or GIF. Anything over 500 KB is compressed to WebP for you.{initial.id && " Leave empty to keep the current cover."}
             </p>
             <div id={`${prefix}-cover-note`} aria-live="polite">
               {busy && <p className="hint">Compressing…</p>}
@@ -206,8 +225,9 @@ export function EventForm({ initial, submitLabel, coverUrl, aside, footer }: {
                 starts_at: startsIso,
                 ends_at: values.endsAt ? toIso(values.endsAt) : null,
                 location: values.location.trim() || null,
+                category: values.category || null,
                 image_path: preview || coverUrl ? "preview" : null,
-                description_excerpt: description ? (description.length > 140 ? `${description.slice(0, 140)}…` : description) : null,
+                description_excerpt: description ? (description.length > 140 ? `${description.slice(0, 140)}…` : description) : null, // card strips the Markdown
                 interest_count: 0
               }}
             />

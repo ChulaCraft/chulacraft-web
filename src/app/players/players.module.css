@@ -62,7 +62,7 @@
 }
 
 .hitName {
-  font: 600 16px/1.25 var(--font-display), monospace;
+  font: 600 16px/1.25 var(--font-display), var(--font-thai), monospace;
   overflow-wrap: anywhere;
 }
 
@@ -100,5 +100,5 @@
   gap: 10px;
   padding-bottom: 10px;
   border-bottom: 2px solid var(--surface-2);
-  font: 600 20px/1.2 var(--font-display), monospace;
+  font: 600 20px/1.2 var(--font-display), var(--font-thai), monospace;
 }

@@ -31,7 +31,7 @@
 }
 
 .title {
-  font: 600 20px/1.3 var(--font-display), monospace;
+  font: 600 20px/1.3 var(--font-display), var(--font-thai), monospace;
 }
 
 /* Admins type plain text; keep their line breaks and never let a long URL

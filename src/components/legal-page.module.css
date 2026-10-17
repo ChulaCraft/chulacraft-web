@@ -12,7 +12,7 @@
 }
 
 .title {
-  font: 700 clamp(34px, 5vw, 52px)/1.05 var(--font-display), monospace;
+  font: 700 clamp(34px, 5vw, 52px)/1.05 var(--font-display), var(--font-thai), monospace;
 }
 
 .meta {
@@ -83,7 +83,7 @@
   align-items: baseline;
   gap: 12px;
   border-top: 2px solid var(--surface-2);
-  font: 600 24px/1.2 var(--font-display), monospace;
+  font: 600 24px/1.2 var(--font-display), var(--font-thai), monospace;
   scroll-margin-top: 24px;
 }
 

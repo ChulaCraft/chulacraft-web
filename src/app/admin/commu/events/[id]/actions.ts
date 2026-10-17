@@ -1,5 +1,6 @@
 "use server";
 
+import { toCategory } from "@/lib/event-category";
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { instant } from "@/lib/bangkok-time";
@@ -35,6 +36,7 @@ export async function saveEvent(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();
   const status = toStatus(String(formData.get("status") ?? "draft"));
+  const category = toCategory(formData.get("category"));
   const startsAt = instant(formData, "startsAt");
   const endsAt = instant(formData, "endsAt");
   const file = formData.get("cover");
@@ -43,7 +45,7 @@ export async function saveEvent(formData: FormData) {
 
   const invalid = imageError(upload);
   if (invalid) finish(eventId, { message: invalid }, "saved");
-  if (!name || name.length > 80 || description.length > 500 || location.length > 120) finish(eventId, { message: "FAILED" }, "saved");
+  if (!name || name.length > 80 || description.length > 2000 || location.length > 120) finish(eventId, { message: "FAILED" }, "saved");
   // The column is not null and ends_at must not precede it (20261006000001:72-74).
   if (!startsAt || (endsAt && endsAt < startsAt)) finish(eventId, { message: "BAD_DATE" }, "saved");
 
@@ -76,6 +78,11 @@ export async function saveEvent(formData: FormData) {
 
   // D5, same as achievements: the database cannot touch Storage.
   if (upload && (error || data !== requestedId)) await supabase.storage.from(BUCKET).remove([key]);
+  // Separate RPC so admin_upsert_event's signature stays put (20261020000001).
+  if (!error && data) {
+    const { error: categoryError } = await supabase.rpc("admin_set_event_category", { p_id: data, p_category: category! });
+    if (categoryError) finish(eventId ?? data, categoryError, "saved");
+  }
   if (!error && previousImage && previousImage !== key) await supabase.storage.from(BUCKET).remove([previousImage]);
   if (error) finish(eventId, error, "saved");
 

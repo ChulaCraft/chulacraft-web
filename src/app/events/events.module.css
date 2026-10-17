@@ -6,7 +6,7 @@
 }
 
 .title {
-  font: 600 24px/1.2 var(--font-display), monospace;
+  font: 600 24px/1.2 var(--font-display), var(--font-thai), monospace;
 }
 
 .grid {
@@ -14,11 +14,24 @@
   padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: 16px;
 }
 
 /* Finished events stay readable but step back from what's coming up. */
 .past {
   opacity: 0.75;
+}
+
+.featured {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
 }

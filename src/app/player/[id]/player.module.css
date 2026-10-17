@@ -24,7 +24,7 @@
 }
 
 .name {
-  font: 600 28px/1.2 var(--font-display), monospace;
+  font: 600 28px/1.2 var(--font-display), var(--font-thai), monospace;
   overflow-wrap: anywhere;
 }
 
@@ -79,7 +79,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font: 600 22px/1.2 var(--font-display), monospace;
+  font: 600 22px/1.2 var(--font-display), var(--font-thai), monospace;
 }
 
 .hidden {

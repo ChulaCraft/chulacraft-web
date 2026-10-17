@@ -48,7 +48,7 @@
   place-items: center;
   clip-path: var(--pixel-4);
   color: var(--bg);
-  font: 700 16px var(--font-display), monospace;
+  font: 700 16px var(--font-display), var(--font-thai), monospace;
 }
 
 [data-kind="done"] .marker {

@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { categoryLabel } from "@/lib/event-category";
+import { Markdown } from "@/lib/markdown";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -21,6 +23,7 @@ type EventDetail = {
   starts_at: string;
   ends_at: string | null;
   location: string | null;
+  category: string | null;
   image_path: string | null;
   interest_count: number;
   me_interested: boolean;
@@ -106,10 +109,14 @@ export default async function EventPage({ params, searchParams }: {
 
         {/* Left: the picture and the story. Right: what, when, and the one action. */}
         <div className={styles.layout}>
+          {/* The whole poster at its own shape; a blurred copy fills the frame
+              when a tall poster is capped to the screen height. */}
           <div className={`pixel-4 ${styles.cover}`}>
-            {event.image_path
-              ? <Image src={eventImageUrl(event.image_path)} alt="" width={960} height={540} sizes="(min-width: 900px) 60vw, 100vw" preload />
-              : <span className={styles.placeholder} aria-hidden="true" />}
+            {event.image_path ? <>
+              <Image className={styles.coverFill} src={eventImageUrl(event.image_path)} alt="" width={64} height={80} aria-hidden="true" />
+              <Image className={styles.coverImage} src={eventImageUrl(event.image_path)} alt={`${event.name} poster`} width={1200} height={1500}
+                sizes="(min-width: 900px) 60vw, 100vw" preload />
+            </> : <span className={styles.placeholder} aria-hidden="true" />}
           </div>
 
           <aside className={`panel ${styles.info}`} aria-labelledby="event-title">
@@ -120,6 +127,7 @@ export default async function EventPage({ params, searchParams }: {
               <dt>Starts</dt><dd><time dateTime={event.starts_at}>{when(event.starts_at)}</time></dd>
               {event.ends_at && <><dt>Ends</dt><dd><time dateTime={event.ends_at}>{ends(event.starts_at, event.ends_at)}</time></dd></>}
               {event.location && <><dt>Where</dt><dd>{event.location}</dd></>}
+              {categoryLabel(event.category) && <><dt>Type</dt><dd>{categoryLabel(event.category)}</dd></>}
               <dt>Interested</dt>
               <dd aria-label={`${event.interest_count} players interested`}>{event.interest_count} {interested ? "player" : "players"}</dd>
             </dl>
@@ -153,7 +161,12 @@ export default async function EventPage({ params, searchParams }: {
           </aside>
 
           <div className={styles.body}>
-            {event.description && <p className={styles.description}>{event.description}</p>}
+            {event.description && (
+              <section className={`panel ${styles.details}`} aria-labelledby="details-title">
+                <h2 id="details-title" className={styles.detailsTitle}>Details</h2>
+                <div className="md"><Markdown source={event.description} /></div>
+              </section>
+            )}
             <p className="muted">
               Questions or last-minute plans? Ask in <a href={discordCommunityUrl} target="_blank" rel="noreferrer">Discord</a>.
             </p>

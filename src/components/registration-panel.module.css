@@ -16,7 +16,7 @@
 }
 
 .title {
-  font: 600 22px/1.2 var(--font-display), monospace;
+  font: 600 22px/1.2 var(--font-display), var(--font-thai), monospace;
 }
 
 .slots {

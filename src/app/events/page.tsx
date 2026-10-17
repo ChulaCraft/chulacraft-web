@@ -30,16 +30,23 @@ export default async function EventsPage() {
         <p className="alert alert-error" role="alert">Events couldn&apos;t be loaded. Please try again in a moment.</p>
       )}
 
-      <section className="stack gap-16" aria-labelledby="upcoming-title">
-        <h2 id="upcoming-title" className={styles.title}>Coming up</h2>
-        {next.length === 0 ? (
-          <p className="muted">
-            Nothing scheduled yet. Dates are posted here and on <a href={discordCommunityUrl} target="_blank" rel="noreferrer">Discord</a>.
-          </p>
-        ) : (
-          <ul className={styles.grid}>{next.map((event) => <EventCard key={event.id} event={event} />)}</ul>
+      {next.length === 0 ? (
+        <section className={`panel ${styles.empty}`} aria-labelledby="upcoming-title">
+          <h2 id="upcoming-title" className={styles.title}>Nothing scheduled yet</h2>
+          <p className="muted">New events are posted here and on Discord first.</p>
+          <a className="btn" href={discordCommunityUrl} target="_blank" rel="noreferrer">Join the Discord</a>
+        </section>
+      ) : <>
+        <section aria-label="Next event">
+          <ul className={styles.featured}><EventCard event={next[0]} featured /></ul>
+        </section>
+        {next.length > 1 && (
+          <section className="stack gap-16" aria-labelledby="upcoming-title">
+            <h2 id="upcoming-title" className={styles.title}>Also coming up</h2>
+            <ul className={styles.grid}>{next.slice(1).map((event) => <EventCard key={event.id} event={event} />)}</ul>
+          </section>
         )}
-      </section>
+      </>}
 
       {done.length > 0 && (
         <section className="stack gap-16" aria-labelledby="past-title">

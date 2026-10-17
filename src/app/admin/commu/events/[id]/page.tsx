@@ -75,6 +75,7 @@ export default async function AdminEventPage({ params, searchParams }: {
         startsAt: bangkokInput(event.starts_at),
         endsAt: event.ends_at ? bangkokInput(event.ends_at) : "",
         location: event.location ?? "",
+        category: event.category ?? "",
         status: event.status
       }}
       footer={

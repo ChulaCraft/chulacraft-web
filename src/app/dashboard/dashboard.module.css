@@ -66,7 +66,7 @@
 }
 
 .displayName {
-  font: 600 24px/1.15 var(--font-display), monospace;
+  font: 600 24px/1.15 var(--font-display), var(--font-thai), monospace;
   overflow-wrap: anywhere;
 }
 
@@ -88,7 +88,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font: 600 22px/1.2 var(--font-display), monospace;
+  font: 600 22px/1.2 var(--font-display), var(--font-thai), monospace;
 }
 
 .smallAlert {
@@ -188,7 +188,7 @@
 }
 
 .socialTitle {
-  font: 600 16px/1.2 var(--font-display), monospace;
+  font: 600 16px/1.2 var(--font-display), var(--font-thai), monospace;
   color: var(--text-2);
 }
 

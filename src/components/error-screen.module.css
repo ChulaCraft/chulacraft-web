@@ -31,11 +31,11 @@
 
 .code {
   color: var(--pink);
-  font: 700 clamp(72px, 14vw, 140px)/0.9 var(--font-display), monospace;
+  font: 700 clamp(72px, 14vw, 140px)/0.9 var(--font-display), var(--font-thai), monospace;
 }
 
 .title {
-  font: 700 clamp(30px, 4.6vw, 44px)/1.1 var(--font-display), monospace;
+  font: 700 clamp(30px, 4.6vw, 44px)/1.1 var(--font-display), var(--font-thai), monospace;
   text-wrap: balance;
 }
 

@@ -23,7 +23,7 @@
 }
 
 .badge-name {
-  font: 600 17px/1.25 var(--font-display), monospace;
+  font: 600 17px/1.25 var(--font-display), var(--font-thai), monospace;
   overflow-wrap: anywhere;
 }
 
