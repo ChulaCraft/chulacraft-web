@@ -486,6 +486,7 @@ nav.hint a {
 
 .alert-success {
   --tone: var(--green);
+  animation: cc-enter 180ms ease-out;
 }
 
 .alert-warning {
@@ -613,6 +614,19 @@ select.input {
   clip-path: var(--pixel-8);
   background: var(--surface);
   box-shadow: inset 0 0 0 2px var(--edge), inset 0 -4px 0 rgba(0, 0, 0, 0.28);
+}
+
+/* State change, not decoration: something just appeared because of what the
+   reader did. The reduced-motion rule below cuts it to nothing. */
+@keyframes cc-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.dialog[open] {
+  animation: cc-enter 180ms ease-out;
 }
 
 .dialog::backdrop {

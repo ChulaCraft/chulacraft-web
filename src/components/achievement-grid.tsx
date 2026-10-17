@@ -24,6 +24,24 @@ export function achievementImage(path: string) {
   return `${base}/storage/v1/object/public/${BUCKET}/${path}`;
 }
 
+export type EventVisit = { name: string; last_on: string; badges: string[] };
+
+/** Events a player earned badges at, newest first, one row per event. Stands
+ *  in for attendance until QR check-in (roadmap Phase 5) records it directly. */
+export function eventHistory(groups: AchievementGroup[]): EventVisit[] {
+  const byEvent = new Map<string, EventVisit>();
+  for (const group of groups) {
+    for (const entry of group.entries) {
+      if (!entry.event_name) continue;
+      const visit = byEvent.get(entry.event_name) ?? { name: entry.event_name, last_on: entry.awarded_on, badges: [] };
+      if (entry.awarded_on > visit.last_on) visit.last_on = entry.awarded_on;
+      if (!visit.badges.includes(group.name)) visit.badges.push(group.name);
+      byEvent.set(entry.event_name, visit);
+    }
+  }
+  return [...byEvent.values()].sort((a, b) => b.last_on.localeCompare(a.last_on));
+}
+
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", dateStyle: "medium" });
 
 /** One card per badge: image, name, how many times it was earned, and the

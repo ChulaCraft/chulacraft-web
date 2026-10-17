@@ -124,3 +124,13 @@ export async function setPrivacyFor(formData: FormData) {
   });
   finish(userId, error, "privacy");
 }
+
+export async function grantBanner(formData: FormData) {
+  const userId = id(formData, "userId");
+  const bannerId = String(formData.get("bannerId") ?? "");
+  if (!userId || !/^[a-z0-9-]{2,32}$/.test(bannerId)) redirect("/admin");
+  const grant = formData.get("grant") === "true";
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_grant_banner", { p_user_id: userId, p_banner_id: bannerId, p_grant: grant });
+  finish(userId, error, grant ? "banner_given" : "banner_taken");
+}

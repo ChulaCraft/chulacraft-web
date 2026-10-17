@@ -995,3 +995,121 @@ a.stat:hover .statGo {
   background: var(--sunken);
   box-shadow: inset 0 0 0 2px var(--surface-2);
 }
+
+/* Player page: unlockable banners with give / take back. */
+.bannerList {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bannerList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 8px 10px;
+  background: var(--sunken);
+}
+
+.bannerList .bannerSwatch {
+  flex: none;
+  width: 96px;
+  height: 28px;
+}
+
+.bannerText {
+  flex: 1 1 160px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* /admin/commu/banners: live preview and the four colour pickers. */
+/* Same 5:1 shape as an uploaded picture, colours or not. */
+section .bannerPreview {
+  height: auto;
+  aspect-ratio: 5 / 1;
+}
+
+.colorRow {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: 10px;
+}
+
+.colorRow legend {
+  margin-bottom: 8px;
+}
+
+.colorField {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.colorField input {
+  width: 44px;
+  height: 44px;
+  padding: 2px;
+  border: 0;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 2px var(--edge);
+  cursor: pointer;
+}
+
+.colorField input:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.colorField span {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Banner style: colours, picture or animated GIF. */
+.styleRow {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.styleRow legend {
+  margin-bottom: 8px;
+}
+
+.styleOption {
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 2px var(--edge);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.styleOption input {
+  margin: 0;
+  accent-color: var(--pink);
+}
+
+.styleOption:has(:checked) {
+  box-shadow: inset 0 0 0 2px var(--pink);
+}
+
+.styleOption:has(:focus-visible) {
+  box-shadow: var(--focus-ring);
+}

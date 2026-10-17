@@ -38,11 +38,12 @@ export default async function AdminEventPage({ params, searchParams }: {
   if (!UUID.test(id)) notFound();
 
   const supabase = await createClient();
-  const [catalog, interests] = await Promise.all([
+  const [catalog, interests, bannerList] = await Promise.all([
     supabase.rpc("admin_list_events"),
     // Admin-only (20261006000002), so this is the only place the names behind
     // the public count are readable. A failure here must not hide the event.
-    supabase.rpc("admin_list_event_interests", { p_event_id: id })
+    supabase.rpc("admin_list_event_interests", { p_event_id: id }),
+    supabase.rpc("admin_list_banners")
   ]);
   const { error: listError } = catalog;
   if (listError) {
@@ -56,6 +57,7 @@ export default async function AdminEventPage({ params, searchParams }: {
   const event = (catalog.data ?? []).find((row) => row.id === id);
   if (!event) notFound();
   const interested = interests.data ?? [];
+  const banners = (bannerList.data ?? []).filter((b) => b.kind === "unlock");
 
   return <>
     <Link href="/admin/commu/events" className="back-link"><PixelIcon name="back" />Events</Link>
@@ -68,6 +70,7 @@ export default async function AdminEventPage({ params, searchParams }: {
     <EventForm
       submitLabel="Save event"
       coverUrl={event.image_path ? publicImageUrl(event.image_path) : null}
+      banners={banners}
       initial={{
         id: event.id,
         name: event.name,
@@ -76,6 +79,7 @@ export default async function AdminEventPage({ params, searchParams }: {
         endsAt: event.ends_at ? bangkokInput(event.ends_at) : "",
         location: event.location ?? "",
         category: event.category ?? "",
+        banner: banners.find((b) => b.event_ids.includes(event.id))?.id ?? "",
         status: event.status
       }}
       footer={

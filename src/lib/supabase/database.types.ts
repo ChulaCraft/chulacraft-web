@@ -111,6 +111,40 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"banner_grants": {
+                  Row: {
+                    "banner_id": string,"created_at": string,"granted_by": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "banner_id": string,"created_at"?: string,"granted_by"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "banner_id"?: string,"created_at"?: string,"granted_by"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "banner_grants_banner_id_fkey"
+      columns: ["banner_id"]
+isOneToOne: false
+      referencedRelation: "banners"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"banners": {
+                  Row: {
+                    "colors": (string)[],"id": string,"image_path": string | null,"kind": string,"name": string,"sort": number,"still_path": string | null,"style": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "colors": (string)[],"id": string,"image_path"?: string | null,"kind": string,"name": string,"sort"?: number,"still_path"?: string | null,"style"?: string
+                  }
+                  Update: {
+                    "colors"?: (string)[],"id"?: string,"image_path"?: string | null,"kind"?: string,"name"?: string,"sort"?: number,"still_path"?: string | null,"style"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"bans": {
                   Row: {
                     "created_at": string,"created_by": string | null,"expires_at": string | null,"id": string,"lifted_at": string | null,"lifted_by": string | null,"public_note": string | null,"reason": string,"revoked_registrations": (string)[],"user_id": string
@@ -175,17 +209,23 @@ isOneToOne: false
                   ]
                 },"events": {
                   Row: {
-                    "category": string | null,"created_at": string,"created_by": string | null,"description": string | null,"ends_at": string | null,"id": string,"image_path": string | null,"location": string | null,"name": string,"starts_at": string,"status": string,"updated_at": string,"event_is_ended": boolean | null
+                    "banner_id": string | null,"category": string | null,"created_at": string,"created_by": string | null,"description": string | null,"ends_at": string | null,"id": string,"image_path": string | null,"location": string | null,"name": string,"starts_at": string,"status": string,"updated_at": string,"event_is_ended": boolean | null
                   }
                   ComputedFields: "event_is_ended"
                   Insert: {
-                    "category"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"image_path"?: string | null,"location"?: string | null,"name": string,"starts_at": string,"status"?: string,"updated_at"?: string
+                    "banner_id"?: string | null,"category"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"image_path"?: string | null,"location"?: string | null,"name": string,"starts_at": string,"status"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "category"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"image_path"?: string | null,"location"?: string | null,"name"?: string,"starts_at"?: string,"status"?: string,"updated_at"?: string
+                    "banner_id"?: string | null,"category"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"image_path"?: string | null,"location"?: string | null,"name"?: string,"starts_at"?: string,"status"?: string,"updated_at"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "events_banner_id_fkey"
+      columns: ["banner_id"]
+isOneToOne: false
+      referencedRelation: "banners"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"friendships": {
                   Row: {
@@ -245,17 +285,23 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "created_at": string,"faculty": string | null,"first_name": string | null,"guest_verified_at": string | null,"guest_verified_by": string | null,"last_name": string | null,"major": string | null,"nickname": string | null,"role": string,"study_level": string | null,"updated_at": string,"user_id": string
+                    "banner_id": string | null,"created_at": string,"faculty": string | null,"first_name": string | null,"guest_verified_at": string | null,"guest_verified_by": string | null,"last_name": string | null,"major": string | null,"nickname": string | null,"role": string,"study_level": string | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"faculty"?: string | null,"first_name"?: string | null,"guest_verified_at"?: string | null,"guest_verified_by"?: string | null,"last_name"?: string | null,"major"?: string | null,"nickname"?: string | null,"role"?: string,"study_level"?: string | null,"updated_at"?: string,"user_id": string
+                    "banner_id"?: string | null,"created_at"?: string,"faculty"?: string | null,"first_name"?: string | null,"guest_verified_at"?: string | null,"guest_verified_by"?: string | null,"last_name"?: string | null,"major"?: string | null,"nickname"?: string | null,"role"?: string,"study_level"?: string | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"faculty"?: string | null,"first_name"?: string | null,"guest_verified_at"?: string | null,"guest_verified_by"?: string | null,"last_name"?: string | null,"major"?: string | null,"nickname"?: string | null,"role"?: string,"study_level"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "banner_id"?: string | null,"created_at"?: string,"faculty"?: string | null,"first_name"?: string | null,"guest_verified_at"?: string | null,"guest_verified_by"?: string | null,"last_name"?: string | null,"major"?: string | null,"nickname"?: string | null,"role"?: string,"study_level"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "profiles_banner_id_fkey"
+      columns: ["banner_id"]
+isOneToOne: false
+      referencedRelation: "banners"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"profiles_major_backup_20261005": {
                   Row: {
@@ -349,6 +395,11 @@ isOneToOne: false
 "admin_delete_announcement":
 { Args: { "p_id": string }; Returns: undefined
                            },
+"admin_delete_banner":
+{ Args: { "p_id": string }; Returns: {
+              "image_path": string,"still_path": string
+            }[]
+                           },
 "admin_delete_event":
 { Args: { "p_id": string }; Returns: {
               "image_path": string,"removed": number
@@ -359,6 +410,9 @@ isOneToOne: false
                            },
 "admin_get_user":
 { Args: { "p_user_id": string }; Returns: Json
+                           },
+"admin_grant_banner":
+{ Args: { "p_banner_id": string,"p_grant": boolean,"p_user_id": string }; Returns: undefined
                            },
 "admin_handle_report":
 { Args: { "p_note"?: string,"p_report_id": string,"p_status": string }; Returns: undefined
@@ -384,6 +438,11 @@ isOneToOne: false
 "admin_list_awards":
 { Args: { "p_achievement_id": string }; Returns: {
               "awarded_by": string,"awarded_on": string,"created_at": string,"display_name": string,"event_id": string,"event_name": string,"id": string,"user_id": string
+            }[]
+                           },
+"admin_list_banners":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "colors": (string)[],"event_ids": (string)[],"id": string,"image_path": string,"kind": string,"name": string,"still_path": string,"style": string
             }[]
                            },
 "admin_list_event_interests":
@@ -440,6 +499,9 @@ isOneToOne: false
 "admin_revoke_award":
 { Args: { "p_award_id": string }; Returns: number
                            },
+"admin_save_banner":
+{ Args: { "p_colors": (string)[],"p_id": string,"p_image_path": string,"p_name": string,"p_still_path": string,"p_style": string }; Returns: string
+                           },
 "admin_search_users":
 { Args: { "p_query": string }; Returns: {
               "chula_email": string,"created_at": string,"discord_username": string,"email": string,"minecraft_usernames": string,"role": string,"user_id": string,"verification_kind": string
@@ -447,6 +509,9 @@ isOneToOne: false
                            },
 "admin_server_console_access":
 { Args: { "p_action": string,"p_jti": string,"p_server": string }; Returns: string
+                           },
+"admin_set_event_banner":
+{ Args: { "p_banner_id": string,"p_id": string }; Returns: undefined
                            },
 "admin_set_event_category":
 { Args: { "p_category": string,"p_id": string }; Returns: undefined
@@ -492,6 +557,11 @@ isOneToOne: false
 "admin_upsert_event":
 { Args: { "p_description": string,"p_ends_at": string,"p_id": string,"p_image_path": string,"p_location": string,"p_name": string,"p_starts_at": string,"p_status": string }; Returns: string
                            },
+"admin_user_banners":
+{ Args: { "p_user_id": string }; Returns: {
+              "colors": (string)[],"event_names": (string)[],"granted": boolean,"id": string,"image_path": string,"kind": string,"name": string,"owned": boolean,"selected": boolean,"still_path": string,"style": string
+            }[]
+                           },
 "admin_user_bans":
 { Args: { "p_user_id": string }; Returns: {
               "active": boolean,"created_at": string,"created_by_name": string,"expires_at": string,"id": string,"lifted_at": string,"lifted_by_name": string,"public_note": string,"reason": string
@@ -510,6 +580,17 @@ isOneToOne: false
                            },
 "are_friends":
 { Args: { "p_a": string,"p_b": string }; Returns: boolean
+                           },
+"banner_list":
+{ Args: { "p_user": string }; Returns: {
+              "colors": (string)[],"event_names": (string)[],"granted": boolean,"id": string,"image_path": string,"kind": string,"name": string,"owned": boolean,"selected": boolean,"still_path": string,"style": string
+            }[]
+                           },
+"banner_of":
+{ Args: { "p_user": string }; Returns: string
+                           },
+"banner_owned":
+{ Args: { "p_banner": string,"p_user": string }; Returns: boolean
                            },
 "block_player":
 { Args: { "p_other": string }; Returns: number
@@ -536,6 +617,11 @@ isOneToOne: false
                            },
 "get_event":
 { Args: { "p_id": string }; Returns: Json
+                           },
+"get_player_banner":
+{ Args: { "p_user_id": string }; Returns: {
+              "colors": (string)[],"image_path": string,"still_path": string,"style": string
+            }[]
                            },
 "get_player_profile":
 { Args: { "p_user_id": string }; Returns: Json
@@ -588,6 +674,11 @@ isOneToOne: false
 "my_ban":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"my_banners":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "colors": (string)[],"event_names": (string)[],"granted": boolean,"id": string,"image_path": string,"kind": string,"name": string,"owned": boolean,"selected": boolean,"still_path": string,"style": string
+            }[]
+                           },
 "my_chula_claim":
 { Args: Record<PropertyKey, never>; Returns: {
               "email": string,"google_sub": string
@@ -634,6 +725,9 @@ isOneToOne: false
                            },
 "set_event_interest":
 { Args: { "p_event_id": string,"p_interested": boolean }; Returns: boolean
+                           },
+"set_my_banner":
+{ Args: { "p_banner_id": string }; Returns: undefined
                            },
 "snapshot_stats_daily":
 { Args: Record<PropertyKey, never>; Returns: undefined

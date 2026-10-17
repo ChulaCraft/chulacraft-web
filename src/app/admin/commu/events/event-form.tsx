@@ -18,6 +18,8 @@ export type EventFormValues = {
   endsAt: string;
   location: string;
   category: string;
+  /** Unlock banner earned by anyone awarded a badge at this event ("" = none). */
+  banner: string;
   status: string;
 };
 
@@ -62,8 +64,10 @@ const toIso = (local: string) => {
 /** The event editor: fields on the left, the homepage card it will become on
  *  the right, updated as the admin types. `aside` is extra server-rendered
  *  content for the right column, `footer` for under the form. */
-export function EventForm({ initial, submitLabel, coverUrl, aside, footer }: {
+export function EventForm({ initial, submitLabel, coverUrl, banners = [], aside, footer }: {
   initial: EventFormValues;
+  /** Unlock banners from admin_list_banners (20261021000001). */
+  banners?: { id: string; name: string }[];
   submitLabel: string;
   coverUrl: string | null;
   aside?: ReactNode;
@@ -180,6 +184,17 @@ export function EventForm({ initial, submitLabel, coverUrl, aside, footer }: {
               {EVENT_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
           </div>
+
+          {banners.length > 0 && (
+            <div className="field">
+              <label htmlFor={`${prefix}-banner`}>Reward banner <span className="optional">(optional)</span></label>
+              <select id={`${prefix}-banner`} className="input" name="banner" value={values.banner} onChange={set("banner")} aria-describedby={`${prefix}-banner-help`}>
+                <option value="">None</option>
+                {banners.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+              <p id={`${prefix}-banner-help`} className="field-help">Everyone given a badge at this event unlocks this profile banner.</p>
+            </div>
+          )}
           <div className="field">
             <label htmlFor={`${prefix}-cover`}>Cover</label>
             <input ref={fileRef} id={`${prefix}-cover`} className="input" type="file" name="cover" accept={IMAGE_TYPES.join(",")} onChange={onCover} aria-describedby={`${prefix}-cover-help ${prefix}-cover-note`} />

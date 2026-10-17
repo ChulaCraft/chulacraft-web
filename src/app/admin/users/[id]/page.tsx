@@ -4,6 +4,7 @@ import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import { ConfirmAction } from "@/components/confirm-action";
 import { PixelIcon } from "@/components/icons";
+import { BannerStrip } from "@/components/profile-banner";
 import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
 import { describeChange } from "@/lib/change-log";
 import { MAX_MINECRAFT_ACCOUNTS, syncBadge, toSyncStatus } from "@/lib/registration";
@@ -14,7 +15,7 @@ import { AboutYouForm } from "@/app/register/details/about-you-form";
 import { STUDY_LEVELS, toStudyLevel } from "@/lib/faculties";
 import { ROLE_LABELS, staffCan } from "@/lib/staff";
 import { LEVEL_OPTIONS, PRIVACY_FIELDS, type Privacy } from "@/lib/privacy";
-import { banUser, liftBan, markGuest, resetChula, saveProfileFor, setPrivacyFor, setRole, setWhitelisted } from "./actions";
+import { banUser, grantBanner, liftBan, markGuest, resetChula, saveProfileFor, setPrivacyFor, setRole, setWhitelisted } from "./actions";
 import { RoleControl } from "./role-control";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -63,6 +64,8 @@ const DONE: Record<string, string> = {
   lifted: "Ban lifted. The accounts it removed are going back on the whitelist.",
   profile: "Profile details saved.",
   privacy: "Privacy settings saved.",
+  banner_given: "Banner given. They can pick it on their profile now.",
+  banner_taken: "Banner taken back. If they were using it, they're back on the default.",
 };
 
 export default async function AdminUserPage({ params, searchParams }: {
@@ -74,12 +77,14 @@ export default async function AdminUserPage({ params, searchParams }: {
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const supabase = await createClient();
-  const [{ data, error }, { data: myRole }, { data: { user: me } }, { data: bans }, { data: support }] = await Promise.all([
+  const [{ data, error }, { data: myRole }, { data: { user: me } }, { data: bans }, { data: support }, { data: banners }] = await Promise.all([
     supabase.rpc("admin_get_user", { p_user_id: id }),
     supabase.rpc("current_app_role"),
     supabase.auth.getUser(),
     supabase.rpc("admin_user_bans", { p_user_id: id }),
     supabase.rpc("admin_user_profile", { p_user_id: id }),
+    // Community area only (event staff too); others get FORBIDDEN and no section.
+    supabase.rpc("admin_user_banners", { p_user_id: id }),
   ]);
   if (error) {
     return <>
@@ -314,6 +319,35 @@ export default async function AdminUserPage({ params, searchParams }: {
             </dl>
           )}
         </section>
+
+        {banners && (
+          <section className="panel" aria-labelledby="banners-title">
+            <h2 id="banners-title" className={styles.sectionTitle}>Banners</h2>
+            <p className="hint">Defaults are free for everyone. These are earned at an event that rewards them, or given here.</p>
+            <ul className={styles.bannerList}>
+              {banners.filter((b) => b.kind === "unlock").map((banner) => (
+                <li key={banner.id}>
+                  <BannerStrip colors={banner.colors} image={banner.image_path} still={banner.still_path} className={styles.bannerSwatch} />
+                  <span className={styles.bannerText}>
+                    <strong>{banner.name}</strong>
+                    <span className="hint">
+                      {banner.granted ? "Given by staff" : banner.owned ? `Earned at ${banner.event_names.join(", ") || "an event"}` : "Locked"}
+                      {banner.selected && " · in use"}
+                    </span>
+                  </span>
+                  {(banner.granted || !banner.owned) && (
+                    <form action={grantBanner}>
+                      <input type="hidden" name="userId" value={id} />
+                      <input type="hidden" name="bannerId" value={banner.id} />
+                      <input type="hidden" name="grant" value={String(!banner.granted)} />
+                      <SubmitButton className={banner.granted ? "btn btn-sm btn-danger-outline" : "btn btn-sm"}>{banner.granted ? "Take back" : "Give"}</SubmitButton>
+                    </form>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section className={`panel ${styles.flush}`} aria-labelledby="mc-title">
           <h2 id="mc-title" className={`${styles.sectionTitle} ${styles.flushTitle}`}>Minecraft accounts</h2>

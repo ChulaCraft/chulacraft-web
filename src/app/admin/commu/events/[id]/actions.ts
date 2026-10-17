@@ -37,6 +37,9 @@ export async function saveEvent(formData: FormData) {
   const location = String(formData.get("location") ?? "").trim();
   const status = toStatus(String(formData.get("status") ?? "draft"));
   const category = toCategory(formData.get("category"));
+  // The RPC checks it names an unlock banner (INVALID); here it only has to look like an id.
+  const bannerRaw = String(formData.get("banner") ?? "");
+  const banner = /^[a-z0-9-]{2,32}$/.test(bannerRaw) ? bannerRaw : null;
   const startsAt = instant(formData, "startsAt");
   const endsAt = instant(formData, "endsAt");
   const file = formData.get("cover");
@@ -82,6 +85,8 @@ export async function saveEvent(formData: FormData) {
   if (!error && data) {
     const { error: categoryError } = await supabase.rpc("admin_set_event_category", { p_id: data, p_category: category! });
     if (categoryError) finish(eventId ?? data, categoryError, "saved");
+    const { error: bannerError } = await supabase.rpc("admin_set_event_banner", { p_id: data, p_banner_id: banner! });
+    if (bannerError) finish(eventId ?? data, bannerError, "saved");
   }
   if (!error && previousImage && previousImage !== key) await supabase.storage.from(BUCKET).remove([previousImage]);
   if (error) finish(eventId, error, "saved");

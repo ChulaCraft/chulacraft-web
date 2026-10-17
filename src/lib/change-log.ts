@@ -24,6 +24,12 @@ export function describeChange(field: string, oldValue: string | null, newValue:
       return newValue ? "gave an achievement" : "took back an achievement";
     case "banned":
       return newValue ? "issued a temporary ban" : "issued a permanent ban";
+    case "banner":
+      return newValue ? `gave the ${newValue} banner` : `took back the ${oldValue} banner`;
+    case "banner_design":
+      return `edited the ${newValue} banner`;
+    case "reward_banner":
+      return newValue ? `set the event's reward banner to ${newValue}` : "removed the event's reward banner";
     case "ban_lifted":
       return "lifted a ban";
     case "ban_expired":

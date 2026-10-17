@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn((to: string) => { throw new Error(`NEXT_REDIRECT:${to}`); })
 }));
 
-import { removeFriend, respondFriendRequest, unblockPlayer, updatePrivacy } from "./actions";
+import { removeFriend, respondFriendRequest, setBanner, unblockPlayer, updatePrivacy } from "./actions";
 
 const OTHER_ID = "00000000-0000-0000-0000-0000000000d1";
 const DASHBOARD = "/dashboard";
@@ -117,5 +117,26 @@ describe("dashboard social actions", () => {
       p_achievements: "private",
       p_friends: "friends"
     });
+  });
+});
+describe("setBanner", () => {
+  beforeEach(() => {
+    m.rpc.mockReset().mockResolvedValue({ error: null });
+    m.revalidatePath.mockReset();
+  });
+
+  it("saves the chosen banner", async () => {
+    expect(await redirected(setBanner, form({ bannerId: "ocean" }))).toBe("NEXT_REDIRECT:/dashboard?saved=banner");
+    expect(m.rpc).toHaveBeenCalledWith("set_my_banner", { p_banner_id: "ocean" });
+  });
+
+  it("rejects a malformed id without calling the database", async () => {
+    expect(await redirected(setBanner, form({ bannerId: "<x>" }))).toBe("NEXT_REDIRECT:/dashboard?edit=banner&bannerError=INVALID");
+    expect(m.rpc).not.toHaveBeenCalled();
+  });
+
+  it("passes the database's refusal back to the picker", async () => {
+    m.rpc.mockResolvedValueOnce({ error: { message: "NOT_OWNED" } });
+    expect(await redirected(setBanner, form({ bannerId: "gold" }))).toBe("NEXT_REDIRECT:/dashboard?edit=banner&bannerError=NOT_OWNED");
   });
 });

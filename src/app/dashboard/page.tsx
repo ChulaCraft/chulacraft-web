@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { AchievementGrid, type AchievementGroup } from "@/components/achievement-grid";
+import { AchievementGrid, eventHistory, type AchievementGroup } from "@/components/achievement-grid";
 import { CopyButton } from "@/components/copy-button";
 import { PixelIcon } from "@/components/icons";
+import { BannerStrip, ProfileBanner } from "@/components/profile-banner";
+import type { Database } from "@/lib/supabase/database.types";
 import { discordAvatar, discordName } from "@/lib/chula";
 import { getSiteUrl } from "@/lib/env";
 import { toStudyLevel } from "@/lib/faculties";
@@ -9,7 +11,7 @@ import { requireVerifiedUser } from "@/lib/verified-user";
 import Link from "next/link";
 import { Fragment } from "react";
 import { AboutYouForm } from "../register/details/about-you-form";
-import { removeFriend, respondFriendRequest, unblockPlayer } from "./actions";
+import { removeFriend, respondFriendRequest, setBanner, unblockPlayer } from "./actions";
 import { BanCard, type MyBan } from "./ban-card";
 import styles from "./dashboard.module.css";
 import { ServiceUnavailable } from "./service-unavailable";
@@ -23,6 +25,20 @@ type Profile = { first_name: string | null; last_name: string | null; nickname: 
  *  jsonb, so the generated types cannot describe it. Names come from the
  *  Discord identity (fallback 'Player') and never from a profile field. */
 type SocialPerson = { user_id: string; display_name: string; avatar_url: string | null; created_at?: string };
+type Banner = Database["public"]["Functions"]["my_banners"]["Returns"][number];
+
+const BANNER_ERRORS: Record<string, string> = {
+  NOT_OWNED: "You haven't unlocked that banner yet.",
+  INVALID: "Pick one of the banners below.",
+  FAILED: "That didn't save. Please try again in a moment."
+};
+
+/** How a locked banner is earned, in the words the picker shows. */
+function unlockHint(banner: Banner) {
+  if (banner.event_names.length > 0) return `Join ${banner.event_names.slice(0, 2).join(" or ")}`;
+  return "Given by staff";
+}
+
 type Social = { incoming: SocialPerson[]; outgoing: SocialPerson[]; friends: SocialPerson[]; blocked: SocialPerson[] };
 
 const SOCIAL_ERRORS: Record<string, string> = {
@@ -47,8 +63,8 @@ function PersonAvatar({ src, name, size = 40 }: { src: string | null; name: stri
     : <span className="avatar" aria-hidden="true" style={{ width: size, height: size }}>{name.charAt(0).toUpperCase()}</span>;
 }
 
-export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; edit?: string; saved?: string; done?: string; appeal?: string; appealError?: string }> }) {
-  const { error: errorCode, edit, saved, done, appeal, appealError } = await searchParams;
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; edit?: string; saved?: string; done?: string; appeal?: string; appealError?: string; bannerError?: string }> }) {
+  const { error: errorCode, edit, saved, done, appeal, appealError, bannerError } = await searchParams;
   const session = await requireVerifiedUser();
   if (!session) return <ServiceUnavailable />;
   const { supabase, user } = session;
@@ -57,10 +73,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   let achievements: AchievementGroup[] = [];
   let social: Social = { incoming: [], outgoing: [], friends: [], blocked: [] };
   let ban: MyBan | null = null;
+  let banners: Banner[] = [];
   let lookupFailed = false;
 
   try {
-    const [profileRow, badges, socialRow, banRow] = await Promise.all([
+    const [profileRow, badges, socialRow, banRow, bannerRows] = await Promise.all([
       supabase.from("profiles").select("first_name, last_name, nickname, study_level, faculty, major").eq("user_id", user.id).maybeSingle(),
       // Published achievements only, and an entry names its event only when
       // that event is published too (20261006000001:438-439).
@@ -68,8 +85,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       // Keyed on the JWT, and a bonus: a failure falls back to empty.
       supabase.rpc("my_social"),
       // Also finishes an expired temp ban, which puts the accounts back.
-      supabase.rpc("my_ban")
+      supabase.rpc("my_ban"),
+      // Cosmetic: a failure falls back to the default strip.
+      supabase.rpc("my_banners")
     ]);
+    banners = bannerRows.data ?? [];
     ban = banRow.data as MyBan | null;
     lookupFailed = Boolean(profileRow.error);
     profile = profileRow.data;
@@ -89,6 +109,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const handle = discordName(user.identities) ?? (typeof meta.user_name === "string" ? meta.user_name : null);
   const avatar = discordAvatar(user.identities);
   const editing = edit === "info";
+  const pickingBanner = edit === "banner";
+  const selectedBanner = banners.find((b) => b.selected);
   const infoRows = [
     ["First name", profile?.first_name],
     ["Last name", profile?.last_name],
@@ -121,24 +143,57 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <Link href="/dashboard" className="link-button">Try again →</Link>
           </section>
         ) : (
+          <>
+          <ProfileBanner
+            name={displayName}
+            avatarUrl={avatar}
+            colors={selectedBanner?.colors}
+            image={selectedBanner?.image_path}
+            still={selectedBanner?.still_path}
+            stats={[
+              { label: "Badges", value: achievements.length },
+              { label: "Events", value: eventHistory(achievements).length },
+              { label: "Friends", value: social.friends.length }
+            ]}
+            // AC 17: view the public page, or copy its address to share.
+            actions={<>
+              {!pickingBanner && <Link className="btn btn-sm" href="/dashboard?edit=banner">Change banner</Link>}
+              <Link className="btn btn-sm" href={profilePath}>View public profile</Link>
+              <CopyButton text={profileUrl} className="btn btn-sm btn-outline" />
+            </>}
+          >
+            {handle && <p className="muted">@{handle}</p>}
+          </ProfileBanner>
+          <div role="status" aria-live="polite">
+            {saved === "banner" && <p className={`alert alert-success ${styles.smallAlert}`}><PixelIcon name="check" />Banner saved.</p>}
+          </div>
+          {pickingBanner && banners.length > 0 && (
+            <section className={`panel ${styles.card}`} aria-labelledby="banner-title">
+              <div className={styles.cardHead}>
+                <h2 id="banner-title" className={styles.cardTitle}>Choose a banner</h2>
+                <Link className="link-button" href="/dashboard">Cancel</Link>
+              </div>
+              {bannerError && <p className={`alert alert-error ${styles.smallAlert}`} role="alert"><PixelIcon name="warning" />{BANNER_ERRORS[bannerError] ?? BANNER_ERRORS.FAILED}</p>}
+              <form action={setBanner} className="stack gap-10">
+                <fieldset className={styles.bannerGrid}>
+                  <legend className="sr-only">Banner</legend>
+                  {banners.map((banner) => (
+                    <label key={banner.id} className={styles.bannerOption} data-locked={!banner.owned || undefined}>
+                      <BannerStrip colors={banner.colors} image={banner.image_path} still={banner.still_path} className={styles.swatch} />
+                      <span className={styles.bannerName}>
+                        <input type="radio" name="bannerId" value={banner.id} defaultChecked={banner.selected} disabled={!banner.owned} />
+                        <strong>{banner.name}</strong>
+                        {!banner.owned && <span className="muted"><PixelIcon name="lock" size={14} /> {unlockHint(banner)}</span>}
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+                <SubmitButton className="btn btn-primary">Save banner</SubmitButton>
+              </form>
+            </section>
+          )}
           <div className={styles.layout}>
             <div className={styles.side}>
-              <section className={`panel ${styles.profile}`} aria-label="Profile">
-                {avatar
-                  // eslint-disable-next-line @next/next/no-img-element -- Discord CDN avatar; next/image adds nothing here
-                  ? <img className={`pixel-4 ${styles.avatar}`} src={avatar} alt="" width={72} height={72} referrerPolicy="no-referrer" />
-                  : <span className={`avatar ${styles.avatar}`} role="img" aria-label="No profile picture">{displayName.charAt(0).toUpperCase()}</span>}
-                <div className={styles.profileText}>
-                  <p className={styles.displayName}>{displayName}</p>
-                  {handle && <p className="muted">@{handle}</p>}
-                </div>
-                {/* AC 17: view the public page, or copy its address to share. */}
-                <div className={styles.profileLinks}>
-                  <Link className="link-button" href={profilePath}>View public profile</Link>
-                  <CopyButton text={profileUrl} className="btn btn-sm btn-outline" />
-                </div>
-              </section>
-
               <section className={`panel ${styles.card}`} aria-labelledby="friends-title">
                 <div className={styles.cardHead}>
                   <h2 id="friends-title" className={styles.cardTitle}>Friends</h2>
@@ -280,6 +335,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               </section>
             </div>
           </div>
+          </>
         )}
       </main>
     </>

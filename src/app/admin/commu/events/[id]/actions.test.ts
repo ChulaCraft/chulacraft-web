@@ -134,14 +134,21 @@ describe("admin event actions", () => {
 
   it("saves the category after the event, and clears it when none is picked", async () => {
     expect(await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", category: "survival" }))).toBe(`${target()}?done=saved`);
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_category", { p_id: ID, p_category: "survival" });
+    expect(m.rpc).toHaveBeenNthCalledWith(m.rpc.mock.calls.length - 1, "admin_set_event_category", { p_id: ID, p_category: "survival" });
     await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", category: "" }));
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_category", { p_id: ID, p_category: null });
+    expect(m.rpc).toHaveBeenNthCalledWith(m.rpc.mock.calls.length - 1, "admin_set_event_category", { p_id: ID, p_category: null });
+  });
+
+  it("saves the reward banner last, and clears it when none or a malformed id is posted", async () => {
+    await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", banner: "nether" }));
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_banner", { p_id: ID, p_banner_id: "nether" });
+    await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", banner: "<x>" }));
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_banner", { p_id: ID, p_banner_id: null });
   });
 
   it("drops a category the site doesn't know", async () => {
     await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", category: "raid" }));
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_category", { p_id: ID, p_category: null });
+    expect(m.rpc).toHaveBeenNthCalledWith(m.rpc.mock.calls.length - 1, "admin_set_event_category", { p_id: ID, p_category: null });
   });
 
   it("keeps the uploaded cover when the save creates the event", async () => {

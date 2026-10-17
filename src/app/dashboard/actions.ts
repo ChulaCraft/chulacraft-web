@@ -104,3 +104,14 @@ export async function submitAppeal(formData: FormData) {
   revalidatePath("/dashboard");
   redirect(`/dashboard?${error ? `appealError=${dbErrorCode(error) ?? "FAILED"}` : "appeal=sent"}`);
 }
+
+// Ownership is the RPC's call (NOT_OWNED); the id only has to look like one.
+export async function setBanner(formData: FormData) {
+  const bannerId = String(formData.get("bannerId") ?? "");
+  if (!/^[a-z0-9-]{2,32}$/.test(bannerId)) redirect("/dashboard?edit=banner&bannerError=INVALID");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_my_banner", { p_banner_id: bannerId });
+  if (error) redirect(`/dashboard?edit=banner&bannerError=${dbErrorCode(error) ?? "FAILED"}`);
+  revalidatePath("/dashboard");
+  redirect("/dashboard?saved=banner");
+}

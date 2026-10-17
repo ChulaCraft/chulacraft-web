@@ -1,0 +1,108 @@
+.banner {
+  --pad: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Four hard colour steps, not a smooth blend: reads as pixel art, needs no
+   image. Colours come from the chosen banner; the fallbacks are Dusk. */
+.strip {
+  --banner-colors: linear-gradient(90deg,
+    var(--b1, #6f5d92) 0 25%, var(--b2, #7a5a8e) 25% 50%,
+    var(--b3, #8a4f78) 50% 75%, var(--b4, #6a3f5f) 75%);
+  height: 120px;
+  background-image: var(--banner-image, none), var(--banner-colors);
+  background-position: center;
+  background-size: cover;
+}
+
+/* An animated banner stands still for anyone who asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .strip {
+    background-image: var(--banner-still, var(--banner-image, none)), var(--banner-colors);
+  }
+}
+
+/* Pictures and GIFs are uploaded at 5:1 (1500x300), so the header keeps that shape
+   instead of cropping it to a thin strip. Swatches keep their own height. */
+.banner .strip[data-image] {
+  height: auto;
+  aspect-ratio: 5 / 1;
+  min-height: 96px;
+}
+
+.body {
+  padding: 0 32px 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px 24px;
+}
+
+.avatar {
+  width: 104px;
+  height: 104px;
+  margin-top: -52px;
+  font-size: 46px;
+  box-shadow: 0 0 0 4px var(--surface);
+}
+
+.text {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 4px;
+}
+
+.name {
+  font: 600 28px/1.15 var(--font-display), var(--font-thai), monospace;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.stats {
+  margin: 0;
+  padding: 20px 32px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 48px;
+  border-top: 2px solid var(--surface-2);
+}
+
+.stats div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.stats dt {
+  color: var(--text-3);
+  font-size: 14px;
+}
+
+.stats dd {
+  margin: 0;
+  font: 700 22px/1.2 var(--font-body), var(--font-thai), sans-serif;
+}
+
+@media (max-width: 560px) {
+  .strip {
+    height: 96px;
+  }
+
+  .body,
+  .stats {
+    padding-inline: 20px;
+  }
+
+  .actions {
+    width: 100%;
+  }
+}
