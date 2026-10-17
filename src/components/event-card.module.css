@@ -103,7 +103,15 @@
   gap: 4px;
 }
 
+.labelRow {
+  align-self: stretch;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px 12px;
+}
+
 .chip {
+  flex: none;
   padding: 2px 8px;
   font: 700 12px/1.4 var(--font-body), var(--font-thai), system-ui, sans-serif;
   color: var(--lavender);
@@ -120,22 +128,32 @@
 
 .name {
   margin: 0;
-  font: 600 20px/1.25 var(--font-display), var(--font-thai), monospace;
+  font: 600 26px/1.25 var(--font-display), var(--font-thai), monospace;
   text-wrap: balance;
+  overflow-wrap: anywhere;
   transition: color 0.15s ease-out;
 }
 
-/* Location, right of the name; wraps under it when the card is narrow. */
+/* Location, top right on the category label's row. */
 .where {
   margin: 0 0 0 auto;
-  max-width: 45%;
+  min-width: 0;
+  max-width: 60%;
   display: flex;
   align-items: flex-start;
   gap: 6px;
   font-weight: 700;
   font-size: 15px;
   color: var(--text);
-  text-align: right;
+}
+
+/* One line, cut with an ellipsis, so a long place never pushes the name down;
+   the full text is in the title tooltip and on the event page. */
+.whereText {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .where svg,
@@ -189,7 +207,7 @@
 
 /* Featured: the next event, picture beside its details on wide screens. */
 .card[data-featured] .name {
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: clamp(28px, 3.4vw, 38px);
 }
 
 .card[data-featured] .excerpt {

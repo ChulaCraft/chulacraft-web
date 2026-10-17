@@ -86,13 +86,17 @@ export function EventCard({ event, coverSrc, featured = false }: { event: Upcomi
             <span className={styles.badgeMonth}>{badge.month}</span>
           </span>
           <div className={styles.headText}>
-            {category && <span className={styles.chip}>{category}</span>}
+            {/* Where sits top right, level with the category label. */}
+            {(category || event.location) && <div className={styles.labelRow}>
+              {category && <span className={styles.chip}>{category}</span>}
+              {event.location && (
+                <p className={styles.where} title={event.location}>
+                  <PixelIcon name="pin" size={16} /><span className="sr-only">Where: </span><span className={styles.whereText}>{event.location}</span>
+                </p>
+              )}
+            </div>}
             <h3 className={styles.name}>{event.name}</h3>
           </div>
-          {/* Where sits beside the name: the first thing to know after what. */}
-          {event.location && (
-            <p className={styles.where}><PixelIcon name="pin" size={16} /><span className="sr-only">Where: </span>{event.location}</p>
-          )}
         </div>
 
         {event.description_excerpt && <p className={styles.excerpt}>{plainText(event.description_excerpt)}</p>}
