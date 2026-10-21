@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/app/page.tsx": {
-    "mtime": 1792557999.5333247,
-    "seen": 1792558079.4545383,
-    "ast_hash": "a94bcd773587982b51b062b8fd75afa0",
+    "mtime": 1792559175.021028,
+    "seen": 1792559241.7113385,
+    "ast_hash": "8a4a298f42f84e05421b194a5298e40f",
     "semantic_hash": ""
   },
   "src/app/register/page.test.tsx": {
@@ -168,9 +168,9 @@
     "semantic_hash": ""
   },
   "src/components/site-footer.tsx": {
-    "mtime": 1792557332.7556,
-    "seen": 1792557425.2953024,
-    "ast_hash": "daf7d6dc0961d193c0986f9ddeb537d0",
+    "mtime": 1792559156.783233,
+    "seen": 1792559241.7139847,
+    "ast_hash": "68eed126ee059b4b859262e9533559bd",
     "semantic_hash": ""
   },
   "src/components/site-header.tsx": {
@@ -1542,9 +1542,9 @@
     "semantic_hash": ""
   },
   "src/app/play-on-view.tsx": {
-    "mtime": 1792557653.3917634,
-    "seen": 1792557776.6712978,
-    "ast_hash": "913e5e6d1a808a50e16d60a39c5fab89",
+    "mtime": 1792558460.154664,
+    "seen": 1792559241.7113433,
+    "ast_hash": "1c81565a5649a748ad9fa546b2847421",
     "semantic_hash": ""
   },
   "src/app/typed-text.tsx": {
@@ -1557,6 +1557,12 @@
     "mtime": 1792557970.1019373,
     "seen": 1792558079.4559836,
     "ast_hash": "0d353318e1353852851badba5bbf3151",
+    "semantic_hash": ""
+  },
+  ".playwright-mcp/page-2026-10-21T05-06-43-951Z.yml": {
+    "mtime": 1792559203.9523618,
+    "seen": 1792559241.7167618,
+    "ast_hash": "1979276d814b7e45a75abf98270f4ee4",
     "semantic_hash": ""
   }
 }

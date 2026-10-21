@@ -1,12 +1,12 @@
 # Graph Report - chulacraft-web  (2026-10-21)
 
 ## Corpus Check
-- 309 files · ~218,128 words
+- 310 files · ~218,210 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 33 file(s) not represented in the graph (top: .css 27, (none) 2, .toml 2)
 
 ## Summary
-- 1261 nodes · 3504 edges · 58 communities (55 shown, 3 thin omitted)
+- 1263 nodes · 3518 edges · 57 communities (55 shown, 2 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 89 edges (avg confidence: 0.9)
 - Token cost: 0 input · 0 output
 
@@ -16,13 +16,13 @@
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- banner-form.tsx
-- error/page.tsx
+- banners/actions.test.ts
+- callback/route.ts
 - minecraft/route.ts
 - package.json
 - player/[id]/page.tsx
 - compilerOptions
-- PixelIcon
+- SubmitButton
 - devDependencies
 - local-mocks.mjs
 - ChulaCraft Web Version 1.0
@@ -34,51 +34,50 @@
 - Chulacraft registration runbook
 - CLAUDE.md
 - supabase/README.md
-- images.ts
-- react
+- commu/events/[id]/actions.test.ts
+- icons.tsx
 - dashboard/page.tsx
 - createClient
-- site-content.ts
+- publicImageUrl
 - announcements/[id]/actions.ts
 - server/page.tsx
 - users/[id]/page.tsx
-- registration-panel.tsx
+- dbErrorCode
 - chula.ts
 - dependencies
 - scripts
 - dashboard/actions.ts
 - PixelIcon
 - reconcile-identities.test.ts
-- admin/settings/page.tsx
-- server.ts
+- admin/page.tsx
+- about-you-form.tsx
 - Phases
-- achievements/[id]/actions.ts
+- images.ts
 - database.types.ts
-- HTTP endpoints
-- allowScripts
+- staff.ts
+- audit/page.tsx
 - players/actions.ts
 - staff-gate.ts
-- verify/page.tsx
+- Tasks
 - team/actions.ts
-- next
-- event-form.tsx
+- site-content.ts
+- command-search.tsx
 - app/events/[id]/page.tsx
-- announcement-banner.tsx
-- SubmitButton
+- achievements/[id]/actions.test.ts
+- commu/events/[id]/actions.ts
 - params.ts
 - audit-page.ts
 - player-table.tsx
 - table-query.ts
 - Review Focus
-- settings/actions.ts
-- middleware.ts
+- server.ts
+- app/players/page.tsx
 - Admin tables: the protocol
-- callback/route.test.ts
 
 ## God Nodes (most connected - your core abstractions)
 1. `createClient()` - 158 edges
 2. `PixelIcon()` - 112 edges
-3. `next` - 105 edges
+3. `next` - 106 edges
 4. `dbErrorCode()` - 52 edges
 5. `SubmitButton()` - 45 edges
 6. `vitest` - 41 edges
@@ -102,111 +101,111 @@
 ## Import Cycles
 - None detected.
 
-## Communities (58 total, 3 thin omitted)
+## Communities (57 total, 2 thin omitted)
 
-### Community 0 - "banner-form.tsx"
-Cohesion: 0.06
-Nodes (43): 1. Announcement images, 2. Gallery, 3. Team page, 4. Site settings, 5. Verify, Already covered (no work), Answers (kaikub, 2026-10-17) and what was built, Decisions (+35 more)
+### Community 0 - "banners/actions.test.ts"
+Cohesion: 0.20
+Nodes (7): sharp, shots, colors, gif(), m, png(), raw()
 
-### Community 1 - "error/page.tsx"
-Cohesion: 0.16
-Nodes (13): AuthErrorPage(), metadata, Error(), metadata, NotFoundPage(), Action, ErrorScreen(), Href (+5 more)
+### Community 1 - "callback/route.ts"
+Cohesion: 0.08
+Nodes (31): @supabase/ssr, signOut(), authErrorResponse(), GET(), { exchangeCodeForSession, getUserIdentities, signOut, reconcileIdentities }, ok, AuthErrorPage(), metadata (+23 more)
 
 ### Community 2 - "minecraft/route.ts"
-Cohesion: 0.23
-Nodes (16): `/api/registration/minecraft` — player's Minecraft accounts, DELETE(), GET(), PATCH(), POST(), Profile, resolveMinecraftProfile(), runtime (+8 more)
+Cohesion: 0.11
+Nodes (29): `/api/registration/minecraft` — player's Minecraft accounts, DELETE(), GET(), PATCH(), POST(), Profile, resolveMinecraftProfile(), runtime (+21 more)
 
 ### Community 3 - "package.json"
-Cohesion: 0.12
-Nodes (17): engines, node, name, overrides, postcss, private, version, @emnapi/core (+9 more)
+Cohesion: 0.10
+Nodes (20): allowScripts, unrs-resolver@1.12.2, engines, node, name, overrides, postcss, private (+12 more)
 
 ### Community 4 - "player/[id]/page.tsx"
-Cohesion: 0.07
-Nodes (40): 1. `eventHistory()` helper + test, 2. `ProfileBanner` component, 3. Public player page (`src/app/player/[id]/page.tsx`), 4. Report dialog, 5. Profile page (`src/app/dashboard/page.tsx`), 6. Motion, 7. Verify, Addendum — profile banners (2026-10-17, kaikub request) (+32 more)
+Cohesion: 0.05
+Nodes (58): 1. `eventHistory()` helper + test, 2. `ProfileBanner` component, 3. Public player page (`src/app/player/[id]/page.tsx`), 4. Report dialog, 5. Profile page (`src/app/dashboard/page.tsx`), 6. Motion, 7. Verify, Addendum — profile banners (2026-10-17, kaikub request) (+50 more)
 
 ### Community 5 - "compilerOptions"
 Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
-### Community 6 - "PixelIcon"
-Cohesion: 0.06
-Nodes (38): AdminAppealsPage(), DONE, ERRORS, metadata, AdminAuditPage(), bangkokDay(), ENTITIES, Entry (+30 more)
+### Community 6 - "SubmitButton"
+Cohesion: 0.09
+Nodes (21): AdminAppealsPage(), metadata, NewAchievementPage(), metadata, GALLERY_DONE, GALLERY_ERRORS, AdminGalleryPage(), metadata (+13 more)
 
 ### Community 7 - "devDependencies"
 Cohesion: 0.18
 Nodes (11): devDependencies, eslint, eslint-config-next, @eslint/js, @playwright/test, @types/node, @types/react, @types/react-dom (+3 more)
 
 ### Community 8 - "local-mocks.mjs"
-Cohesion: 0.07
-Nodes (35): RFC-6455, ACTION_BITS, addEnv(), checkToken(), codes, consoles, DISCORD_USERS, env (+27 more)
+Cohesion: 0.10
+Nodes (25): RFC-6455, ACTION_BITS, addEnv(), checkToken(), codes, consoles, DISCORD_USERS, env (+17 more)
 
 ### Community 9 - "ChulaCraft Web Version 1.0"
 Cohesion: 0.10
 Nodes (19): Architecture, Chula verification (Google), ChulaCraft Web Version 1.0, Commands, Current implementation caveats, Deployment, Discord authentication, Environment (+11 more)
 
 ### Community 10 - "Tables"
-Cohesion: 0.11
-Nodes (16): Accounts and identity, Audit, Content, Database, Minecraft whitelist, Other services that use this database, Player-readable tables, RPC functions (+8 more)
+Cohesion: 0.09
+Nodes (21): `GET /api/dev-login?as=<user>` — local only, `GET /auth/callback?code=…`, HTTP endpoints, Pages, Web API, Accounts and identity, Audit, Content (+13 more)
 
 ### Community 11 - "next"
-Cohesion: 0.08
-Nodes (30): react-dom, @vercel/analytics, builtInGallery, metadata, values, GET(), metadata, RootLayout() (+22 more)
+Cohesion: 0.06
+Nodes (42): Final, Global Constraints, Review Focus, Task 1: Show the Discord name everywhere, Task 2: Hero copy, Task 3: Readable admin stat numbers, Task 4: Move community admin to `/admin/commu/*`, Task 5: Grouped admin nav (+34 more)
 
 ### Community 12 - "vitest"
-Cohesion: 0.14
-Nodes (14): RFC-4180, nextConfig, vitest, GET(), get(), m, rpcArgs(), Cell (+6 more)
+Cohesion: 0.17
+Nodes (13): RFC-4180, vitest, GET(), get(), m, rpcArgs(), form(), interested() (+5 more)
 
 ### Community 13 - "admin/players/page.tsx"
-Cohesion: 0.31
-Nodes (11): 2. Columns declare what they can do, AdminPlayersPage(), metadata, hrefFor(), Ctx, FilterChips(), FilterPanel(), KeepState() (+3 more)
+Cohesion: 0.36
+Nodes (9): AdminPlayersPage(), metadata, hrefFor(), Ctx, FilterChips(), FilterPanel(), KeepState(), keysOf() (+1 more)
 
 ### Community 14 - "dbErrorCode"
-Cohesion: 0.08
-Nodes (43): Pages, Server actions, Web API, decideAppeal(), addPlayers(), awardId(), confirmAward(), fail() (+35 more)
+Cohesion: 0.15
+Nodes (23): addPlayers(), awardId(), confirmAward(), fail(), prefillInterested(), previewAward(), m, unique() (+15 more)
 
 ### Community 15 - "Chulacraft registration runbook"
 Cohesion: 0.22
 Nodes (8): Chulacraft registration runbook, Daily stats, Normal operations, Roles and Chula verification, Safe launch order, Secret incident response, Switching from CU SSO to Google (deploy order), Troubleshooting and recovery
 
-### Community 18 - "images.ts"
-Cohesion: 0.18
-Nodes (11): BUCKET, EXTENSIONS, imageError(), Storage, deleteEvent(), finish(), postedId(), saveEvent() (+3 more)
+### Community 18 - "commu/events/[id]/actions.test.ts"
+Cohesion: 0.33
+Nodes (3): form(), m, valid()
 
-### Community 19 - "react"
-Cohesion: 0.18
-Nodes (16): react, GET(), HeroStage(), HomeHero(), HomePage(), loadUpcomingEvents(), steps(), upcomingEvents (+8 more)
+### Community 19 - "icons.tsx"
+Cohesion: 0.06
+Nodes (45): react, react-dom, AboutPage(), builtInGallery, metadata, values, GET(), HeroStage() (+37 more)
 
 ### Community 20 - "dashboard/page.tsx"
-Cohesion: 0.16
-Nodes (15): APPEAL_ERRORS, BanCard(), date(), MyBan, Banner, BANNER_ERRORS, DashboardPage(), metadata (+7 more)
+Cohesion: 0.15
+Nodes (16): APPEAL_ERRORS, BanCard(), date(), MyBan, Banner, BANNER_ERRORS, DashboardPage(), metadata (+8 more)
 
 ### Community 21 - "createClient"
-Cohesion: 0.31
-Nodes (14): addGalleryImage(), alt(), deleteGalleryGroup(), deleteGalleryImage(), fail(), finish(), moveGalleryGroup(), moveGalleryImage() (+6 more)
+Cohesion: 0.35
+Nodes (14): AdminEventsPage(), metadata, addGalleryImage(), alt(), deleteGalleryGroup(), deleteGalleryImage(), fail(), finish() (+6 more)
 
-### Community 22 - "site-content.ts"
-Cohesion: 0.11
-Nodes (23): AboutPage(), GalleryPage(), metadata, metadata, TeamPage(), GalleryGrid(), Shot, TeamCard() (+15 more)
+### Community 22 - "publicImageUrl"
+Cohesion: 0.32
+Nodes (7): Decisions, publicImageUrl(), AdminAchievementsPage(), metadata, AdminGalleryGroupPage(), AdminTeamGenerationPage(), toCard()
 
 ### Community 23 - "announcements/[id]/actions.ts"
-Cohesion: 0.25
-Nodes (10): uploadPicture(), deleteAnnouncement(), postedId(), refresh(), saveAnnouncement(), SEVERITIES, form(), m (+2 more)
+Cohesion: 0.18
+Nodes (14): IMAGE_TYPES, uploadPicture(), deleteAnnouncement(), postedId(), refresh(), saveAnnouncement(), SEVERITIES, form() (+6 more)
 
 ### Community 24 - "server/page.tsx"
-Cohesion: 0.13
-Nodes (26): ACTIONS, openConsole(), serverAction(), m, redirected(), ConsoleAction, grant(), managerFetch() (+18 more)
+Cohesion: 0.11
+Nodes (30): ACTIONS, openConsole(), serverAction(), m, redirected(), ConsoleAction, grant(), managerFetch() (+22 more)
 
 ### Community 25 - "users/[id]/page.tsx"
-Cohesion: 0.06
-Nodes (51): BAN_DURATIONS, banUser(), finish(), grantBanner(), liftBan(), markGuest(), PRIVACY_LEVELS, resetChula() (+43 more)
+Cohesion: 0.11
+Nodes (29): BAN_DURATIONS, banUser(), finish(), grantBanner(), liftBan(), markGuest(), PRIVACY_LEVELS, resetChula() (+21 more)
 
-### Community 26 - "registration-panel.tsx"
-Cohesion: 0.21
-Nodes (13): checkName(), ConfirmDialog(), NameForm(), submit(), Pending, RegistrationPanel(), add(), confirm() (+5 more)
+### Community 26 - "dbErrorCode"
+Cohesion: 0.15
+Nodes (16): decideAppeal(), DONE, ERRORS, metadata, handleReport(), restoreAccount(), m, redirected() (+8 more)
 
 ### Community 27 - "chula.ts"
-Cohesion: 0.17
-Nodes (21): Task 1: Show the Discord name everywhere, @supabase/supabase-js, unlinkPersonalGoogle(), metadata, Privacy, PRIVACY_ERRORS, SettingsPage(), byAge() (+13 more)
+Cohesion: 0.28
+Nodes (12): @supabase/supabase-js, unlinkPersonalGoogle(), byAge(), classifyIdentities(), identityEmail(), isChulaEmail(), LINK_ERRORS, LinkError (+4 more)
 
 ### Community 28 - "dependencies"
 Cohesion: 0.20
@@ -217,132 +216,132 @@ Cohesion: 0.18
 Nodes (11): scripts, build, db:types, dev, dev:mocks, lint, start, test (+3 more)
 
 ### Community 30 - "dashboard/actions.ts"
-Cohesion: 0.24
-Nodes (13): Moderation, finish(), LEVELS, otherId(), removeFriend(), respondFriendRequest(), setBanner(), allPublic() (+5 more)
+Cohesion: 0.22
+Nodes (15): Server actions, Moderation, finish(), LEVELS, otherId(), removeFriend(), respondFriendRequest(), setBanner() (+7 more)
 
 ### Community 31 - "PixelIcon"
-Cohesion: 0.18
-Nodes (16): AdminLayout(), metadata, myRole, ServiceUnavailable(), AboutYouForm(), Field(), AboutYouPage(), metadata (+8 more)
+Cohesion: 0.14
+Nodes (23): ServiceUnavailable(), AboutYouPage(), metadata, metadata, Privacy, PRIVACY_ERRORS, SettingsPage(), metadata (+15 more)
 
 ### Community 32 - "reconcile-identities.test.ts"
 Cohesion: 0.17
 Nodes (8): admin, cu, discord, gmail, m, query, run(), session
 
-### Community 33 - "admin/settings/page.tsx"
-Cohesion: 0.29
-Nodes (15): AnnouncementPreview(), Saved, GroupPreview(), MemberPreview(), PagePreview(), AdminSettingsPage(), ERRORS, metadata (+7 more)
+### Community 33 - "admin/page.tsx"
+Cohesion: 0.21
+Nodes (14): AdminAnnouncementsPage(), ERRORS, metadata, state(), StatRow(), Stats, timeSince(), Tool (+6 more)
 
-### Community 34 - "server.ts"
-Cohesion: 0.22
-Nodes (13): @supabase/ssr, authErrorResponse(), GET(), BoundedFetchTimeoutError, createBoundedFetch(), getPublicSupabaseEnvironment(), getSecretSupabaseEnvironment(), getSiteUrl() (+5 more)
+### Community 34 - "about-you-form.tsx"
+Cohesion: 0.18
+Nodes (18): AboutYouForm(), onSubmit(), Field(), saveProfile(), SaveProfileState, FACULTIES, facultyRole(), ProfileDetails (+10 more)
 
 ### Community 35 - "Phases"
 Cohesion: 0.15
 Nodes (12): ChulaCraft Web v1.1 — Roadmap Spec, Decisions already made, Deferred (needs Minecraft server endpoint), Global constraints (every phase), Phase 1 — Quick fixes & admin navigation  → `plans/2026-10-16-v1.1-phase1-quick-fixes.md`, Phase 2 — Admin power tools, Phase 3 — Design system & UI redesign, Phase 4 — Content without a developer (+4 more)
 
-### Community 36 - "achievements/[id]/actions.ts"
-Cohesion: 0.17
-Nodes (11): deleteAchievement(), finish(), postedId(), revokeAward(), saveAchievement(), form(), m, valid() (+3 more)
+### Community 36 - "images.ts"
+Cohesion: 0.14
+Nodes (20): deleteAchievement(), finish(), postedId(), revokeAward(), saveAchievement(), AdminAchievementPage(), DONE, ERRORS (+12 more)
 
 ### Community 37 - "database.types.ts"
-Cohesion: 0.13
-Nodes (14): ERRORS, metadata, RemovedRow, RestorePage(), CompositeTypes, Constants, Database, DatabaseWithoutInternals (+6 more)
+Cohesion: 0.20
+Nodes (9): CompositeTypes, Constants, DatabaseWithoutInternals, DefaultSchema, Enums, Json, Tables, TablesInsert (+1 more)
 
-### Community 38 - "HTTP endpoints"
-Cohesion: 0.67
-Nodes (3): `GET /api/dev-login?as=<user>` — local only, `GET /auth/callback?code=…`, HTTP endpoints
+### Community 38 - "staff.ts"
+Cohesion: 0.24
+Nodes (12): AdminNav(), ALL_GROUPS, groupsFor(), AdminLayout(), metadata, CommandSearch(), myRole, Area (+4 more)
+
+### Community 39 - "audit/page.tsx"
+Cohesion: 0.23
+Nodes (9): AdminAuditPage(), bangkokDay(), ENTITIES, Entry, metadata, Params, describeChange(), PRIVACY_FIELDS (+1 more)
 
 ### Community 40 - "players/actions.ts"
-Cohesion: 0.27
-Nodes (11): Task 4: Bulk actions, bulkBan(), bulkMarkGuest(), BulkResult, each(), m, AchievementOption, BulkBar() (+3 more)
+Cohesion: 0.31
+Nodes (10): Task 4: Bulk actions, bulkBan(), bulkMarkGuest(), BulkResult, each(), m, AchievementOption, BulkBar() (+2 more)
 
 ### Community 41 - "staff-gate.ts"
-Cohesion: 0.07
-Nodes (30): Final, Global Constraints, Review Focus, Task 2: Hero copy, Task 3: Readable admin stat numbers, Task 4: Move community admin to `/admin/commu/*`, Task 5: Grouped admin nav, v1.1 Phase 1 — Quick Fixes & Admin Navigation Implementation Plan (+22 more)
+Cohesion: 0.22
+Nodes (9): Layout(), Layout(), Layout(), Layout(), Layout(), Layout(), Layout(), Layout() (+1 more)
 
-### Community 42 - "verify/page.tsx"
-Cohesion: 0.21
-Nodes (12): metadata, { getUser, getUserIdentities, rpc, redirect, reconcileIdentities }, page(), VerifyPage(), GoogleSignInButton(), LinkGoogleButton(), useGoogle(), start() (+4 more)
+### Community 42 - "Tasks"
+Cohesion: 0.18
+Nodes (10): 1. Announcement images, 2. Gallery, 3. Team page, 4. Site settings, 5. Verify, Already covered (no work), Answers (kaikub, 2026-10-17) and what was built, Revision (kaikub, 2026-10-17, same day) (+2 more)
 
 ### Community 43 - "team/actions.ts"
-Cohesion: 0.21
-Nodes (18): deleteTeamGeneration(), deleteTeamMember(), fail(), finish(), moveTeamGeneration(), moveTeamMember(), playerIdFrom(), postedId() (+10 more)
+Cohesion: 0.23
+Nodes (17): deleteTeamGeneration(), deleteTeamMember(), fail(), finish(), moveTeamGeneration(), moveTeamMember(), playerIdFrom(), postedId() (+9 more)
 
-### Community 44 - "next"
-Cohesion: 0.11
-Nodes (27): next, normal(), savePage(), m, run(), AdminPagesPage(), metadata, AdminEditPage() (+19 more)
+### Community 44 - "site-content.ts"
+Cohesion: 0.06
+Nodes (62): AnnouncementPreview(), Saved, GroupPreview(), MemberPreview(), normal(), savePage(), m, run() (+54 more)
 
-### Community 45 - "event-form.tsx"
-Cohesion: 0.21
-Nodes (11): IMAGE_TYPES, EventForm(), onCover(), pickFile(), EventFormValues, LOADED_AT, noSubscribe(), shrink() (+3 more)
+### Community 45 - "command-search.tsx"
+Cohesion: 0.33
+Nodes (5): adminSearch(), day(), SearchHit, m, Item
 
 ### Community 46 - "app/events/[id]/page.tsx"
-Cohesion: 0.07
-Nodes (35): clock(), day(), ends(), ERRORS, EventDetail, EventPage(), generateMetadata(), loadEvent() (+27 more)
+Cohesion: 0.06
+Nodes (44): EventForm(), onCover(), pickFile(), EventFormValues, LOADED_AT, noSubscribe(), shrink(), toIso() (+36 more)
 
-### Community 47 - "announcement-banner.tsx"
-Cohesion: 0.24
-Nodes (8): AnnouncementsPage(), metadata, AnnouncementBanner(), dismissedId(), subscribe(), AnnouncementItem(), Props, SEVERITY
+### Community 47 - "achievements/[id]/actions.test.ts"
+Cohesion: 0.33
+Nodes (3): form(), m, valid()
 
-### Community 48 - "SubmitButton"
-Cohesion: 0.15
-Nodes (23): AdminAchievementPage(), DONE, ERRORS, metadata, publicImageUrl(), AdminAnnouncementPage(), DONE, ERRORS (+15 more)
+### Community 48 - "commu/events/[id]/actions.ts"
+Cohesion: 0.25
+Nodes (11): imageError(), deleteEvent(), finish(), postedId(), saveEvent(), AdminEventPage(), DONE, ERRORS (+3 more)
 
 ### Community 49 - "params.ts"
 Cohesion: 0.23
-Nodes (10): activeView(), BASE, COLUMNS, EMPTY, playersHref(), same(), VIEWS, Filters (+2 more)
+Nodes (10): activeView(), BASE, COLUMNS, EMPTY, PAGE_SIZE, playersHref(), same(), VIEWS (+2 more)
 
 ### Community 50 - "audit-page.ts"
 Cohesion: 0.22
 Nodes (5): @playwright/test, AuditOptions, auditPage(), accessToken, routes
 
 ### Community 51 - "player-table.tsx"
-Cohesion: 0.36
-Nodes (9): Task 3: Players table with filters, sort, infinite scroll, loadPlayers(), PlayerRow, readPlayers(), day(), joined(), kind(), PlayerTable() (+1 more)
+Cohesion: 0.26
+Nodes (12): Task 3: Players table with filters, sort, infinite scroll, loadPlayers(), PlayerRow, readPlayers(), day(), joined(), kind(), PlayerTable() (+4 more)
 
 ### Community 52 - "table-query.ts"
-Cohesion: 0.33
-Nodes (8): Column, isDay(), nextSort(), one(), Option, readTable(), COLUMNS, read()
+Cohesion: 0.29
+Nodes (9): Column, isDay(), nextSort(), one(), Option, RawParams, readTable(), COLUMNS (+1 more)
 
 ### Community 53 - "Review Focus"
 Cohesion: 0.22
 Nodes (8): Final, Global Constraints, Review Focus, Task 1: `admin_list_players` RPC, Task 2: CSV helper + export route, Task 5: Clickable dashboard numbers + real Unverified / Guest cards, Task 6: Daily stats snapshot (for Phase 6 charts), v1.1 Phase 2a — Players Table, Filters, Bulk Actions, CSV, Daily Stats
 
-### Community 54 - "settings/actions.ts"
-Cohesion: 0.36
-Nodes (6): saveSiteSettings(), SWITCHES, m, run(), SETTING_DEFAULTS, SETTING_KEYS
+### Community 54 - "server.ts"
+Cohesion: 0.21
+Nodes (9): saveSiteSettings(), SWITCHES, m, run(), AdminSettingsPage(), ERRORS, metadata, SavedSettings (+1 more)
 
-### Community 55 - "middleware.ts"
-Cohesion: 0.43
-Nodes (6): updateSession(), withCsp(), buildCsp(), config, proxy(), supabaseOrigin()
+### Community 55 - "app/players/page.tsx"
+Cohesion: 0.40
+Nodes (4): Avatar(), metadata, PlayersPage(), SearchHit
 
 ### Community 56 - "Admin tables: the protocol"
-Cohesion: 0.29
-Nodes (6): 1. The URL is the state, 3. Above the table, 4. Every value is a link, 5. One RPC per table, 6. States, Admin tables: the protocol
-
-### Community 57 - "callback/route.test.ts"
-Cohesion: 0.40
-Nodes (3): signOut(), { exchangeCodeForSession, getUserIdentities, signOut, reconcileIdentities }, ok
+Cohesion: 0.25
+Nodes (7): 1. The URL is the state, 2. Columns declare what they can do, 3. Above the table, 4. Every value is a link, 5. One RPC per table, 6. States, Admin tables: the protocol
 
 ## Knowledge Gaps
 - **9 isolated node(s):** `@emnapi/core`, `@emnapi/runtime`, `@types/node`, `@types/react`, `@types/react-dom` (+4 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 436 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `next` to `banner-form.tsx`, `error/page.tsx`, `minecraft/route.ts`, `package.json`, `player/[id]/page.tsx`, `PixelIcon`, `next`, `vitest`, `admin/players/page.tsx`, `dbErrorCode`, `images.ts`, `react`, `dashboard/page.tsx`, `createClient`, `site-content.ts`, `announcements/[id]/actions.ts`, `server/page.tsx`, `users/[id]/page.tsx`, `chula.ts`, `dashboard/actions.ts`, `PixelIcon`, `admin/settings/page.tsx`, `server.ts`, `achievements/[id]/actions.ts`, `database.types.ts`, `players/actions.ts`, `staff-gate.ts`, `verify/page.tsx`, `team/actions.ts`, `event-form.tsx`, `app/events/[id]/page.tsx`, `announcement-banner.tsx`, `SubmitButton`, `player-table.tsx`, `settings/actions.ts`, `middleware.ts`, `callback/route.test.ts`?**
-  _High betweenness centrality (0.228) - this node is a cross-community bridge._
+- **Why does `next` connect `next` to `callback/route.ts`, `minecraft/route.ts`, `package.json`, `player/[id]/page.tsx`, `SubmitButton`, `admin/players/page.tsx`, `dbErrorCode`, `icons.tsx`, `dashboard/page.tsx`, `createClient`, `publicImageUrl`, `announcements/[id]/actions.ts`, `server/page.tsx`, `users/[id]/page.tsx`, `dbErrorCode`, `dashboard/actions.ts`, `PixelIcon`, `admin/page.tsx`, `about-you-form.tsx`, `images.ts`, `staff.ts`, `audit/page.tsx`, `players/actions.ts`, `staff-gate.ts`, `team/actions.ts`, `site-content.ts`, `command-search.tsx`, `app/events/[id]/page.tsx`, `commu/events/[id]/actions.ts`, `player-table.tsx`, `server.ts`, `app/players/page.tsx`?**
+  _High betweenness centrality (0.222) - this node is a cross-community bridge._
 - **What connects `@emnapi/core`, `@emnapi/runtime`, `@types/node` to the rest of the system?**
   _9 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `banner-form.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.061495457721872815 - nodes in this community are weakly interconnected._
-- **Why does `createClient()` connect `users/[id]/page.tsx` to `banner-form.tsx`, `minecraft/route.ts`, `player/[id]/page.tsx`, `PixelIcon`, `next`, `vitest`, `admin/players/page.tsx`, `dbErrorCode`, `images.ts`, `createClient`, `announcements/[id]/actions.ts`, `server/page.tsx`, `chula.ts`, `dashboard/actions.ts`, `PixelIcon`, `admin/settings/page.tsx`, `server.ts`, `achievements/[id]/actions.ts`, `database.types.ts`, `players/actions.ts`, `staff-gate.ts`, `verify/page.tsx`, `team/actions.ts`, `next`, `event-form.tsx`, `app/events/[id]/page.tsx`, `announcement-banner.tsx`, `SubmitButton`, `player-table.tsx`, `settings/actions.ts`, `callback/route.test.ts`?**
+- **Should `callback/route.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.07712765957446809 - nodes in this community are weakly interconnected._
+- **Why does `createClient()` connect `createClient` to `callback/route.ts`, `minecraft/route.ts`, `player/[id]/page.tsx`, `SubmitButton`, `next`, `vitest`, `admin/players/page.tsx`, `dbErrorCode`, `icons.tsx`, `publicImageUrl`, `announcements/[id]/actions.ts`, `server/page.tsx`, `users/[id]/page.tsx`, `dbErrorCode`, `chula.ts`, `dashboard/actions.ts`, `PixelIcon`, `admin/page.tsx`, `images.ts`, `staff.ts`, `audit/page.tsx`, `players/actions.ts`, `staff-gate.ts`, `team/actions.ts`, `site-content.ts`, `command-search.tsx`, `app/events/[id]/page.tsx`, `commu/events/[id]/actions.ts`, `player-table.tsx`, `server.ts`, `app/players/page.tsx`?**
   _High betweenness centrality (0.194) - this node is a cross-community bridge._
+- **Should `minecraft/route.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.11174242424242424 - nodes in this community are weakly interconnected._
+- **Why does `PixelIcon()` connect `PixelIcon` to `minecraft/route.ts`, `player/[id]/page.tsx`, `SubmitButton`, `next`, `admin/players/page.tsx`, `dbErrorCode`, `icons.tsx`, `dashboard/page.tsx`, `createClient`, `publicImageUrl`, `announcements/[id]/actions.ts`, `server/page.tsx`, `users/[id]/page.tsx`, `dbErrorCode`, `admin/page.tsx`, `about-you-form.tsx`, `images.ts`, `staff.ts`, `audit/page.tsx`, `team/actions.ts`, `site-content.ts`, `command-search.tsx`, `app/events/[id]/page.tsx`, `commu/events/[id]/actions.ts`, `player-table.tsx`, `server.ts`, `app/players/page.tsx`?**
+  _High betweenness centrality (0.083) - this node is a cross-community bridge._
 - **Should `package.json` be split into smaller, more focused modules?**
-  _Cohesion score 0.11695906432748537 - nodes in this community are weakly interconnected._
-- **Why does `PixelIcon()` connect `PixelIcon` to `banner-form.tsx`, `player/[id]/page.tsx`, `PixelIcon`, `next`, `admin/players/page.tsx`, `dbErrorCode`, `react`, `dashboard/page.tsx`, `createClient`, `server/page.tsx`, `users/[id]/page.tsx`, `registration-panel.tsx`, `chula.ts`, `admin/settings/page.tsx`, `achievements/[id]/actions.ts`, `database.types.ts`, `staff-gate.ts`, `verify/page.tsx`, `team/actions.ts`, `next`, `event-form.tsx`, `app/events/[id]/page.tsx`, `announcement-banner.tsx`, `SubmitButton`?**
-  _High betweenness centrality (0.084) - this node is a cross-community bridge._
-- **Should `player/[id]/page.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.07184325108853411 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09956709956709957 - nodes in this community are weakly interconnected._

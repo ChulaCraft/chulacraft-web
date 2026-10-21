@@ -130,7 +130,7 @@ export default async function HomePage() {
         <div className={`container ${styles.ctaInner}`}>
           <h2 id="cta-title" className={styles.ctaTitle}><TypedText parts={[{ text: "Ready to build?" }]} /></h2>
           <div className={styles.ctaAfter}>
-            <Link className="btn btn-primary" href="/register">Register</Link>
+            <Link className="btn btn-primary btn-lg" href="/register">Register</Link>
             <RegisterConsent className={styles.ctaConsent} />
           </div>
         </div>

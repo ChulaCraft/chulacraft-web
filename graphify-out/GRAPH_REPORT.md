@@ -1,9 +1,9 @@
 # Graph Report - chulacraft-web  (2026-10-21)
 
 ## Corpus Check
-- 310 files · ~218,210 words
+- 310 files · ~219,233 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 33 file(s) not represented in the graph (top: .css 27, (none) 2, .toml 2)
+- Unclassified: 34 file(s) not represented in the graph (top: .css 27, (none) 2, .toml 2)
 
 ## Summary
 - 1263 nodes · 3518 edges · 57 communities (55 shown, 2 thin omitted)
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f338b1e3`
+- Built from commit: `6d1b9243`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -338,10 +338,10 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `callback/route.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.07712765957446809 - nodes in this community are weakly interconnected._
 - **Why does `createClient()` connect `createClient` to `callback/route.ts`, `minecraft/route.ts`, `player/[id]/page.tsx`, `SubmitButton`, `next`, `vitest`, `admin/players/page.tsx`, `dbErrorCode`, `icons.tsx`, `publicImageUrl`, `announcements/[id]/actions.ts`, `server/page.tsx`, `users/[id]/page.tsx`, `dbErrorCode`, `chula.ts`, `dashboard/actions.ts`, `PixelIcon`, `admin/page.tsx`, `images.ts`, `staff.ts`, `audit/page.tsx`, `players/actions.ts`, `staff-gate.ts`, `team/actions.ts`, `site-content.ts`, `command-search.tsx`, `app/events/[id]/page.tsx`, `commu/events/[id]/actions.ts`, `player-table.tsx`, `server.ts`, `app/players/page.tsx`?**
-  _High betweenness centrality (0.194) - this node is a cross-community bridge._
+  _High betweenness centrality (0.195) - this node is a cross-community bridge._
 - **Should `minecraft/route.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.11174242424242424 - nodes in this community are weakly interconnected._
 - **Why does `PixelIcon()` connect `PixelIcon` to `minecraft/route.ts`, `player/[id]/page.tsx`, `SubmitButton`, `next`, `admin/players/page.tsx`, `dbErrorCode`, `icons.tsx`, `dashboard/page.tsx`, `createClient`, `publicImageUrl`, `announcements/[id]/actions.ts`, `server/page.tsx`, `users/[id]/page.tsx`, `dbErrorCode`, `admin/page.tsx`, `about-you-form.tsx`, `images.ts`, `staff.ts`, `audit/page.tsx`, `team/actions.ts`, `site-content.ts`, `command-search.tsx`, `app/events/[id]/page.tsx`, `commu/events/[id]/actions.ts`, `player-table.tsx`, `server.ts`, `app/players/page.tsx`?**
-  _High betweenness centrality (0.083) - this node is a cross-community bridge._
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
 - **Should `package.json` be split into smaller, more focused modules?**
   _Cohesion score 0.09956709956709957 - nodes in this community are weakly interconnected._

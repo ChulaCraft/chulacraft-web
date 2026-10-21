@@ -82,10 +82,10 @@
 
 /* Every size in the hero is a fraction of one unit, so the name, the line
    above it and the paragraph below always keep the same proportions
-   (about 5 : 1.8 : 1). The column stops where the black does, and sits in
-   the middle of the space above the actions. */
+   (about 5 : 1.8 : 1). The column stops where the black does, and sits at
+   the foot of the card with the actions straight after it. */
 .heroCopy {
-  margin-block: auto;
+  margin-top: auto;
   max-width: min(100%, calc(var(--unit) * 5.6));
   display: flex;
   flex-direction: column;
@@ -227,6 +227,7 @@
 /* The way in sits at the foot of the picture, with what it agrees to. */
 .heroBottom {
   max-width: min(100%, calc(var(--unit) * 5.6));
+  margin-top: calc(var(--unit) * 0.45);
   padding-bottom: clamp(28px, 6svh, 64px);
   display: flex;
   flex-direction: column;
@@ -600,15 +601,16 @@
   background: color-mix(in oklab, color-mix(in oklab, var(--night) 25%, black) 62%, transparent);
 }
 
-/* The question at the top of the picture, the way in at the foot: Register
-   in the middle, what it agrees to tucked in the bottom-right corner. */
+/* The question in the middle of the picture, with Register right under it
+   and what it agrees to below that. */
 .ctaInner {
   min-height: clamp(560px, 82svh, 780px);
   padding-block: clamp(88px, 10vw, 150px) clamp(64px, 8vw, 112px);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 48px;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(28px, 3.5vw, 44px);
 }
 
 .ctaTitle {
@@ -616,7 +618,7 @@
 }
 
 .ctaTitle {
-  font: 700 clamp(40px, 5.4vw, 76px)/1 var(--font-display), monospace;
+  font: 700 clamp(52px, 9vw, 136px)/1 var(--font-display), monospace;
   color: var(--ink);
 }
 
@@ -640,41 +642,18 @@
 }
 
 .ctaAfter {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: end;
-  gap: 16px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
   opacity: 0;
   animation: cta-after 600ms 2.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-.ctaAfter > :global(.btn) {
-  grid-column: 2;
-}
-
 .ctaConsent {
-  grid-column: 3;
-  justify-self: end;
-  max-width: 34ch;
-  text-align: right;
+  max-width: 64ch;
+  text-align: center;
   font-size: 13px;
-}
-
-@media (max-width: 760px) {
-  .ctaAfter {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-
-  .ctaAfter > :global(.btn),
-  .ctaConsent {
-    grid-column: 1;
-  }
-
-  .ctaConsent {
-    justify-self: center;
-    text-align: center;
-  }
 }
 
 @keyframes cta-after {
