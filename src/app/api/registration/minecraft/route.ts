@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { siteSettings } from "@/lib/site-content";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { isValidMinecraftUsername, normalizeMinecraftUsername, REGISTRATION_COLUMNS, registrationError, toRegistrationView, UUID, type RegistrationRow } from "@/lib/registration";
 
@@ -86,6 +87,8 @@ type SaveRpc =
 async function save(request: Request, toRpc: (profile: Profile, id: unknown, userId: string) => SaveRpc | null) {
   const { supabase, user, failure } = await signedIn();
   if (failure) return failure;
+  // The registration RPCs are server-only, so this is the whole gate.
+  if (!(await siteSettings()).registrationOpen) return NextResponse.json({ error: "Registration is closed right now. Watch Discord for when it reopens." }, { status: 403 });
   let allowed: boolean | null;
   try {
     const { data, error } = await supabase.rpc("consume_registration_attempt");

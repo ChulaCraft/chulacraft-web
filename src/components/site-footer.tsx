@@ -9,6 +9,12 @@ export function SiteFooter() {
         <span aria-hidden="true">✦</span>
         <span>Java Edition only</span>
         <span aria-hidden="true">✦</span>
+        <Link href="/gallery">Gallery</Link>
+        <span aria-hidden="true">✦</span>
+        <Link href="/team">Team</Link>
+        <span aria-hidden="true">✦</span>
+        <Link href="/rules">Rules</Link>
+        <span aria-hidden="true">✦</span>
         <Link href="/privacy">Privacy</Link>
         <span aria-hidden="true">✦</span>
         <Link href="/terms">Terms</Link>

@@ -11,6 +11,7 @@ import { unlinkPersonalGoogle, updatePrivacy } from "../dashboard/actions";
 import styles from "../dashboard/dashboard.module.css";
 import { ServiceUnavailable } from "../dashboard/service-unavailable";
 import { SubmitButton } from "@/components/submit-button";
+import { siteSettings } from "@/lib/site-content";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -144,6 +145,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </div>
 
           <div className={styles.wide}>
+            {!(await siteSettings()).registrationOpen && (
+              <div className="alert alert-warning" role="status">
+                <PixelIcon name="warning" />
+                <p className="alert-body"><strong>Registration is closed right now.</strong> You can&apos;t add or change Minecraft names until it reopens; watch Discord for the date.</p>
+              </div>
+            )}
             <RegistrationPanel initialRegistrations={registrations} />
           </div>
         </div>

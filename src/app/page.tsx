@@ -1,15 +1,13 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
-import { DiscordIcon, PixelIcon } from "@/components/icons";
+import { PixelIcon } from "@/components/icons";
 import { CopyButton } from "@/components/copy-button";
-import { serverAddress, ServerStatus } from "@/components/server-address-card";
+import { ServerStatus } from "@/components/server-address-card";
 import { EventCard, UPCOMING_EVENTS_TAG, type UpcomingEvent } from "@/components/event-card";
-import { createBoundedFetch } from "@/lib/bounded-fetch";
-import { getPublicSupabaseEnvironment } from "@/lib/env";
 import { discordCommunityUrl } from "@/lib/site-links";
-import type { Database } from "@/lib/supabase/database.types";
+import { anonClient, siteSettings } from "@/lib/site-content";
+import { HomeHero } from "./home-hero";
 import styles from "./home.module.css";
 
 /** The next published events, cached for a minute.
@@ -27,12 +25,7 @@ import styles from "./home.module.css";
  * make the entry per-visitor, which the count does not need to be. */
 const upcomingEvents = unstable_cache(
   async (): Promise<UpcomingEvent[]> => {
-    const { url, key } = getPublicSupabaseEnvironment();
-    const supabase = createSupabaseClient<Database>(url, key, {
-      global: { fetch: createBoundedFetch() },
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
-    const { data, error } = await supabase.rpc("list_upcoming_events", { p_limit: 4 });
+    const { data, error } = await anonClient().rpc("list_upcoming_events", { p_limit: 4 });
     if (error) throw new Error(error.message);
     return (data ?? []) as UpcomingEvent[];
   },
@@ -51,7 +44,7 @@ async function loadUpcomingEvents() {
   }
 }
 
-const steps = [
+const steps = (serverAddress: string | null) => [
   // Images: re-shoot with `node scripts/capture-join-guide.mjs`.
   { title: "Sign in with Discord", copy: "Press Continue with Discord on the Register page. This creates your ChulaCraft profile.", img: "1-discord.webp", w: 1040, h: 410 },
   { title: "Verify Chula", copy: "Sign in with your @chula.ac.th or @student.chula.ac.th Google account. Pick carefully, it can't be changed later.", img: "2-verify.webp", w: 1080, h: 574 },
@@ -60,43 +53,19 @@ const steps = [
 ];
 
 export default async function HomePage() {
-  const { events } = await loadUpcomingEvents();
+  const [{ events }, settings] = await Promise.all([loadUpcomingEvents(), siteSettings()]);
+  const { serverAddress } = settings;
 
   return (
     <>
       <main>
-        <section className={styles.hero} aria-labelledby="hero-title">
-          <div className={styles.heroFrame}>
-            <Image
-              className={styles.heroImage}
-              src="/images/landingpage-bg.webp"
-              alt="ChulaCraft players outside a Chulalongkorn-inspired Minecraft building"
-              fill
-              preload
-              sizes="(min-width: 1920px) 1920px, 100vw"
-            />
-          </div>
-          <div className={styles.heroTint} aria-hidden="true" />
-          <div className={`container ${styles.heroInner}`}>
-            <p className="eyebrow">Minecraft Java survival server for the Chula community</p>
-            <h1 id="hero-title" className={styles.heroTitle}>
-              <span className={styles.kicker}>Build your world at</span>{" "}
-              <span className={styles.brandName}>ChulaCraft</span>
-            </h1>
-            <p className={styles.heroIntro}>A community-run survival world for the Chula community. Sign in with Discord, verify your Chula account, and start building.</p>
-            <div className={styles.actions}>
-              <Link className="btn btn-primary btn-lg" href="/register">Register <span aria-hidden="true">→</span></Link>
-              <a className="btn btn-lg" href={discordCommunityUrl} target="_blank" rel="noreferrer"><DiscordIcon /> Join Discord</a>
-            </div>
-            <p className={styles.terms}>By registering you agree to our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
-          </div>
-        </section>
+        <HomeHero kicker={settings.homeKicker} intro={settings.homeIntro} />
 
         <div className={`container ${styles.addressWrap}`}>
           <section className={`panel panel-edge ${styles.address}`} aria-labelledby="addr-label">
             <div className={styles.addressText}>
               <h2 id="addr-label" className={styles.addressLabel}>Server address</h2>
-              <ServerStatus />
+              <ServerStatus address={serverAddress} />
               <p className={`mono ${styles.addressValue}`}>{serverAddress ?? "Coming soon"}</p>
               <p className={styles.addressNote}>
                 <PixelIcon name="info" className="tone-amber" />
@@ -131,9 +100,9 @@ export default async function HomePage() {
           <p className="eyebrow">Four steps</p>
           <h2 id="join-title" className={styles.sectionTitle}>How to join</h2>
           <ol className={styles.steps}>
-            {steps.map((s, i) => (
+            {steps(serverAddress).map((s, i, all) => (
               <li key={s.title}>
-                <span className={`pixel-4 ${styles.stepNum}`} data-last={i === steps.length - 1 || undefined} aria-hidden="true">{i + 1}</span>
+                <span className={`pixel-4 ${styles.stepNum}`} data-last={i === all.length - 1 || undefined} aria-hidden="true">{i + 1}</span>
                 <h3>{s.title}</h3>
                 <p>{s.copy}</p>
                 <div className={`pixel-4 ${styles.stepShot}`}>

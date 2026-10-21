@@ -1,10 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const m = vi.hoisted(() => ({
-  rpc: vi.fn<(...args: unknown[]) => Promise<{ data?: unknown; error: { message: string } | null }>>()
+  rpc: vi.fn<(...args: unknown[]) => Promise<{ data?: unknown; error: { message: string } | null }>>(),
+  upload: vi.fn(async () => ({ error: null })),
+  remove: vi.fn(async () => ({ error: null }))
 }));
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ rpc: m.rpc }) }));
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({ rpc: m.rpc, storage: { from: () => ({ upload: m.upload, remove: m.remove }) } })
+}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 // Next's redirect() signals control flow by throwing, so the mock must too.
 vi.mock("next/navigation", () => ({
@@ -32,6 +36,8 @@ const redirected = async (action: (data: FormData) => Promise<void>, data: FormD
 describe("admin announcement actions", () => {
   beforeEach(() => {
     m.rpc.mockReset().mockResolvedValue({ data: ID, error: null });
+    m.upload.mockClear();
+    m.remove.mockClear();
   });
 
   it("never calls the database for an id that isn't a UUID", async () => {
@@ -90,6 +96,34 @@ describe("admin announcement actions", () => {
     data.delete("announcementId");
     m.rpc.mockResolvedValueOnce({ data: null, error: { message: "boom: details" } });
     expect(await redirected(saveAnnouncement, data)).toBe(`${BASE}/new?error=FAILED`);
+  });
+
+  it("swaps the picture and removes the one it replaced", async () => {
+    const data = valid();
+    data.set("image", new File(["x"], "a.png", { type: "image/png" }));
+    m.rpc.mockResolvedValueOnce({ data: ID, error: null }).mockResolvedValueOnce({ data: "announcements/old.png", error: null });
+    expect(await redirected(saveAnnouncement, data)).toBe(`${BASE}/${ID}?done=saved`);
+    const key = (m.upload.mock.calls[0] as unknown[])[0] as string;
+    expect(key).toMatch(/^announcements\/[0-9a-f-]{36}\.png$/);
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_announcement_image", { p_id: ID, p_path: key });
+    expect(m.remove).toHaveBeenCalledWith(["announcements/old.png"]);
+  });
+
+  it("removes the picture when asked, and leaves it alone otherwise", async () => {
+    await redirected(saveAnnouncement, valid());
+    expect(m.rpc).not.toHaveBeenCalledWith("admin_set_announcement_image", expect.anything());
+    m.rpc.mockResolvedValueOnce({ data: ID, error: null }).mockResolvedValueOnce({ data: "announcements/old.png", error: null });
+    await redirected(saveAnnouncement, valid({ removeImage: "on" }));
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_announcement_image", { p_id: ID, p_path: null });
+    expect(m.remove).toHaveBeenCalledWith(["announcements/old.png"]);
+  });
+
+  it("refuses a file that isn't a picture before uploading", async () => {
+    const data = valid();
+    data.set("image", new File(["x"], "a.txt", { type: "text/plain" }));
+    expect(await redirected(saveAnnouncement, data)).toBe(`${BASE}/${ID}?error=BAD_IMAGE_TYPE`);
+    expect(m.upload).not.toHaveBeenCalled();
+    expect(m.rpc).not.toHaveBeenCalled();
   });
 
   it("deletes and returns to the list", async () => {

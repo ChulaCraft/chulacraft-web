@@ -40,3 +40,14 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+.picture {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.picture img {
+  object-fit: contain;
+}

@@ -79,14 +79,14 @@ isOneToOne: false
                   ]
                 },"announcements": {
                   Row: {
-                    "body": string,"created_at": string,"created_by": string | null,"deleted_at": string | null,"discord_message_id": string | null,"discord_revision": number | null,"expires_at": string | null,"id": string,"pinned": boolean,"post_to_discord": boolean,"published_at": string | null,"revision": number,"severity": string,"title": string,"updated_at": string
+                    "body": string,"created_at": string,"created_by": string | null,"deleted_at": string | null,"discord_message_id": string | null,"discord_revision": number | null,"expires_at": string | null,"id": string,"image_path": string | null,"pinned": boolean,"post_to_discord": boolean,"published_at": string | null,"revision": number,"severity": string,"title": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body": string,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"discord_message_id"?: string | null,"discord_revision"?: number | null,"expires_at"?: string | null,"id"?: string,"pinned"?: boolean,"post_to_discord"?: boolean,"published_at"?: string | null,"revision"?: number,"severity"?: string,"title": string,"updated_at"?: string
+                    "body": string,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"discord_message_id"?: string | null,"discord_revision"?: number | null,"expires_at"?: string | null,"id"?: string,"image_path"?: string | null,"pinned"?: boolean,"post_to_discord"?: boolean,"published_at"?: string | null,"revision"?: number,"severity"?: string,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "body"?: string,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"discord_message_id"?: string | null,"discord_revision"?: number | null,"expires_at"?: string | null,"id"?: string,"pinned"?: boolean,"post_to_discord"?: boolean,"published_at"?: string | null,"revision"?: number,"severity"?: string,"title"?: string,"updated_at"?: string
+                    "body"?: string,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"discord_message_id"?: string | null,"discord_revision"?: number | null,"expires_at"?: string | null,"id"?: string,"image_path"?: string | null,"pinned"?: boolean,"post_to_discord"?: boolean,"published_at"?: string | null,"revision"?: number,"severity"?: string,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -241,6 +241,40 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"gallery_groups": {
+                  Row: {
+                    "created_at": string,"description": string,"id": string,"name": string,"sort": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"description"?: string,"id"?: string,"name": string,"sort"?: number
+                  }
+                  Update: {
+                    "created_at"?: string,"description"?: string,"id"?: string,"name"?: string,"sort"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"gallery_images": {
+                  Row: {
+                    "alt": string,"created_at": string,"created_by": string | null,"group_id": string,"id": string,"image_path": string,"sort": number,"wide": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "alt": string,"created_at"?: string,"created_by"?: string | null,"group_id": string,"id"?: string,"image_path": string,"sort"?: number,"wide"?: boolean
+                  }
+                  Update: {
+                    "alt"?: string,"created_at"?: string,"created_by"?: string | null,"group_id"?: string,"id"?: string,"image_path"?: string,"sort"?: number,"wide"?: boolean
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "gallery_images_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "gallery_groups"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"minecraft_ownership_history": {
                   Row: {
                     "discord_user_id": string,"discord_username": string | null,"id": string,"linked_at": string,"minecraft_username": string,"minecraft_uuid": string,"registration_id": string,"transferred_at": string,"transferred_to": string,"user_id": string
@@ -345,6 +379,34 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"site_pages": {
+                  Row: {
+                    "body": string,"slug": string,"updated_at": string,"updated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"slug": string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "body"?: string,"slug"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"site_settings": {
+                  Row: {
+                    "key": string,"updated_at": string,"updated_by": string | null,"value": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "key": string,"updated_at"?: string,"updated_by"?: string | null,"value": string
+                  }
+                  Update: {
+                    "key"?: string,"updated_at"?: string,"updated_by"?: string | null,"value"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"stats_daily": {
                   Row: {
                     "banned": number,"created_at": string,"day": string,"guests": number,"players": number,"unverified": number,"verified": number,"whitelisted": number
@@ -358,6 +420,40 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"team_generations": {
+                  Row: {
+                    "created_at": string,"id": string,"name": string,"sort": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"name": string,"sort"?: number
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"name"?: string,"sort"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"team_members": {
+                  Row: {
+                    "bio": string,"created_at": string,"generation_id": string,"id": string,"image_path": string | null,"kind": string,"link_url": string | null,"name": string,"sort": number,"title": string,"updated_at": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bio"?: string,"created_at"?: string,"generation_id": string,"id"?: string,"image_path"?: string | null,"kind": string,"link_url"?: string | null,"name": string,"sort"?: number,"title"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "bio"?: string,"created_at"?: string,"generation_id"?: string,"id"?: string,"image_path"?: string | null,"kind"?: string,"link_url"?: string | null,"name"?: string,"sort"?: number,"title"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "team_members_generation_id_fkey"
+      columns: ["generation_id"]
+isOneToOne: false
+      referencedRelation: "team_generations"
+      referencedColumns: ["id"]
+    }
                   ]
                 }
           }
@@ -405,6 +501,18 @@ isOneToOne: false
               "image_path": string,"removed": number
             }[]
                            },
+"admin_delete_gallery_group":
+{ Args: { "p_id": string }; Returns: (string)[]
+                           },
+"admin_delete_gallery_image":
+{ Args: { "p_id": string }; Returns: string
+                           },
+"admin_delete_team_generation":
+{ Args: { "p_id": string }; Returns: (string)[]
+                           },
+"admin_delete_team_member":
+{ Args: { "p_id": string }; Returns: string
+                           },
 "admin_display_name":
 { Args: { "p_user_id": string }; Returns: string
                            },
@@ -427,7 +535,7 @@ isOneToOne: false
                            },
 "admin_list_announcements":
 { Args: Record<PropertyKey, never>; Returns: {
-              "body": string,"discord_message_id": string,"expires_at": string,"id": string,"pinned": boolean,"post_to_discord": boolean,"published_at": string,"severity": string,"title": string,"updated_at": string
+              "body": string,"discord_message_id": string,"expires_at": string,"id": string,"image_path": string,"pinned": boolean,"post_to_discord": boolean,"published_at": string,"severity": string,"title": string,"updated_at": string
             }[]
                            },
 "admin_list_appeals":
@@ -468,6 +576,18 @@ isOneToOne: false
 "admin_mark_guest":
 { Args: { "p_user_id": string }; Returns: undefined
                            },
+"admin_move_gallery_group":
+{ Args: { "p_id": string,"p_up": boolean }; Returns: undefined
+                           },
+"admin_move_gallery_image":
+{ Args: { "p_id": string,"p_up": boolean }; Returns: undefined
+                           },
+"admin_move_team_generation":
+{ Args: { "p_id": string,"p_up": boolean }; Returns: undefined
+                           },
+"admin_move_team_member":
+{ Args: { "p_id": string,"p_up": boolean }; Returns: undefined
+                           },
 "admin_newest_players":
 { Args: { "p_limit"?: number }; Returns: {
               "created_at": string,"display_name": string,"handle": string,"user_id": string,"verification_kind": string
@@ -502,6 +622,24 @@ isOneToOne: false
 "admin_save_banner":
 { Args: { "p_colors": (string)[],"p_id": string,"p_image_path": string,"p_name": string,"p_still_path": string,"p_style": string }; Returns: string
                            },
+"admin_save_gallery_group":
+{ Args: { "p_description": string,"p_id": string,"p_name": string }; Returns: string
+                           },
+"admin_save_gallery_image":
+{ Args: { "p_alt": string,"p_group_id": string,"p_id": string,"p_path": string,"p_wide": boolean }; Returns: string
+                           },
+"admin_save_site_page":
+{ Args: { "p_body": string,"p_slug": string }; Returns: undefined
+                           },
+"admin_save_site_settings":
+{ Args: { "p_settings": Json }; Returns: undefined
+                           },
+"admin_save_team_generation":
+{ Args: { "p_id": string,"p_name": string }; Returns: string
+                           },
+"admin_save_team_member":
+{ Args: { "p_bio": string,"p_generation_id": string,"p_id": string,"p_image_path": string,"p_kind": string,"p_link_url": string,"p_name": string,"p_title": string,"p_user_id": string }; Returns: string
+                           },
 "admin_search_users":
 { Args: { "p_query": string }; Returns: {
               "chula_email": string,"created_at": string,"discord_username": string,"email": string,"minecraft_usernames": string,"role": string,"user_id": string,"verification_kind": string
@@ -509,6 +647,9 @@ isOneToOne: false
                            },
 "admin_server_console_access":
 { Args: { "p_action": string,"p_jti": string,"p_server": string }; Returns: string
+                           },
+"admin_set_announcement_image":
+{ Args: { "p_id": string,"p_path": string }; Returns: string
                            },
 "admin_set_event_banner":
 { Args: { "p_banner_id": string,"p_id": string }; Returns: undefined
@@ -626,6 +767,16 @@ isOneToOne: false
 "get_player_profile":
 { Args: { "p_user_id": string }; Returns: Json
                            },
+"get_site_page":
+{ Args: { "p_slug": string }; Returns: {
+              "body": string,"updated_at": string
+            }[]
+                           },
+"get_site_settings":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "key": string,"value": string
+            }[]
+                           },
 "hook_only_discord_signups":
 { Args: { "event": Json }; Returns: Json
                            },
@@ -649,12 +800,32 @@ isOneToOne: false
                            },
 "list_announcements":
 { Args: { "p_limit"?: number }; Returns: {
-              "body": string,"id": string,"pinned": boolean,"published_at": string,"severity": string,"title": string
+              "body": string,"id": string,"image_path": string,"pinned": boolean,"published_at": string,"severity": string,"title": string
+            }[]
+                           },
+"list_gallery":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "alt": string,"group_id": string,"id": string,"image_path": string,"wide": boolean
+            }[]
+                           },
+"list_gallery_groups":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "description": string,"id": string,"name": string
             }[]
                            },
 "list_past_events":
 { Args: { "p_limit"?: number }; Returns: {
               "category": string,"description_excerpt": string,"ends_at": string,"id": string,"image_path": string,"interest_count": number,"location": string,"name": string,"starts_at": string
+            }[]
+                           },
+"list_team":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "bio": string,"generation_id": string,"id": string,"image_path": string,"kind": string,"link_url": string,"name": string,"title": string,"user_id": string
+            }[]
+                           },
+"list_team_generations":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "id": string,"name": string
             }[]
                            },
 "list_upcoming_events":
@@ -729,6 +900,9 @@ isOneToOne: false
 "set_my_banner":
 { Args: { "p_banner_id": string }; Returns: undefined
                            },
+"site_switch_on":
+{ Args: { "p_key": string }; Returns: boolean
+                           },
 "snapshot_stats_daily":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -743,6 +917,9 @@ isOneToOne: false
                            },
 "submit_appeal":
 { Args: { "p_message": string }; Returns: undefined
+                           },
+"swap_order":
+{ Args: { "p_id": string,"p_ids": (string)[],"p_up": boolean }; Returns: (string)[]
                            },
 "unblock_player":
 { Args: { "p_other": string }; Returns: number

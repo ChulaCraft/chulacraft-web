@@ -3,8 +3,7 @@ import { unstable_cache } from "next/cache";
 import { PixelIcon } from "@/components/icons";
 import { CopyButton } from "@/components/copy-button";
 import { pingServer } from "@/lib/server-status";
-
-export const serverAddress = process.env.NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS;
+import { siteSettings } from "@/lib/site-content";
 
 /** 30 s is short enough to feel live and keeps pings to ~2/min whatever the traffic.
  *  Same unstable_cache reasoning as upcomingEvents in src/app/page.tsx. */
@@ -22,19 +21,20 @@ async function StatusBadge({ address }: { address: string }) {
 }
 
 /** Live online/player count. Streams in so a slow or down server never delays the page. */
-export function ServerStatus() {
-  if (!serverAddress) return null;
-  return <Suspense fallback={null}><StatusBadge address={serverAddress} /></Suspense>;
+export function ServerStatus({ address }: { address: string | null }) {
+  if (!address) return null;
+  return <Suspense fallback={null}><StatusBadge address={address} /></Suspense>;
 }
 
 /** Compact address row used inside cards (Welcome, Dashboard). */
-export function ServerAddressRow() {
+export async function ServerAddressRow() {
+  const { serverAddress } = await siteSettings();
   return (
     <div className="address-row">
       <div>
         <span className="mono address-row-value">{serverAddress ?? "Address coming soon"}</span>
         <span className="address-row-note"><PixelIcon name="info" size={14} className="tone-amber" />Java Edition only</span>
-        <ServerStatus />
+        <ServerStatus address={serverAddress} />
       </div>
       {serverAddress && <CopyButton text={serverAddress} className="btn btn-sm btn-outline" />}
     </div>

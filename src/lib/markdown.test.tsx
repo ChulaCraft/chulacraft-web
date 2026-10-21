@@ -22,6 +22,16 @@ describe("Markdown", () => {
     expect(html("## Prizes\n- badge\n- title")).toBe("<h3>Prizes</h3><ul><li>badge</li><li>title</li></ul>");
   });
 
+  it("renders site links in the same tab, and never protocol-relative ones", () => {
+    expect(html("[Terms](/terms) [x](//evil.example)")).toBe('<p><a href="/terms">Terms</a> [x](//evil.example)</p>');
+  });
+
+  it("renders tables, with or without the dashes row", () => {
+    const table = '<div class="md-table"><table><thead><tr><th>Data</th><th>Why</th></tr></thead><tbody><tr><td><strong>ID</strong></td><td>Login</td></tr></tbody></table></div>';
+    expect(html("| Data | Why |\n|---|---|\n| **ID** | Login |")).toBe(table);
+    expect(html("| Data | Why |\n| **ID** | Login |")).toBe(table);
+  });
+
   it("never renders raw HTML or script links", () => {
     expect(html('<img src=x onerror=alert(1)> [x](javascript:alert(1))')).toBe("<p>&lt;img src=x onerror=alert(1)&gt; [x](javascript:alert(1))</p>");
   });

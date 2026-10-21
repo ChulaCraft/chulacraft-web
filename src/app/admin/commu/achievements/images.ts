@@ -43,3 +43,18 @@ export function imageError(file: File | null): string | null {
 export function toStatus(value: string) {
   return value === "published" ? "published" : "draft";
 }
+type Storage = Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>>["storage"];
+
+/** Uploads the file posted as `field` under `prefix/`. `key` is null when no
+ *  file was picked (keep the current picture); `error` is a page error code. */
+export async function uploadPicture(storage: Storage, formData: FormData, field: string, prefix: string) {
+  const file = formData.get(field);
+  // An untouched file input still posts an empty File.
+  const upload = file instanceof File && file.size > 0 ? file : null;
+  const invalid = imageError(upload);
+  if (invalid) return { key: null, error: invalid };
+  if (!upload) return { key: null, error: null };
+  const key = imageKey(prefix, upload.type);
+  const { error } = await storage.from(BUCKET).upload(key, upload, { contentType: upload.type });
+  return error ? { key: null, error: "UPLOAD_FAILED" } : { key, error: null };
+}

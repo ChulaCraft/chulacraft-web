@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { SEVERITY } from "@/lib/announcement-severity";
+import { publicImageUrl } from "@/app/admin/commu/achievements/images";
+import { AnnouncementItem } from "@/components/announcement-item";
 import styles from "./announcements.module.css";
 
 export const metadata: Metadata = { title: "Announcements" };
@@ -26,22 +27,10 @@ export default async function AnnouncementsPage() {
         <p className="muted">Nothing to announce right now.</p>
       ) : (
         <ul className={styles.list}>
-          {rows.map((row) => {
-            const severity = SEVERITY[row.severity] ?? SEVERITY.info;
-            return (
-              <li key={row.id} id={row.id} className={`panel ${styles.item}`}>
-                <p className={styles.meta}>
-                  <span className={`badge badge-${severity.badge}`}>{severity.label}</span>
-                  {row.pinned && <span className="badge badge-muted">Pinned</span>}
-                  <time className="hint" dateTime={row.published_at}>
-                    {new Date(row.published_at).toLocaleString("en-GB", { timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short" })}
-                  </time>
-                </p>
-                <h2 className={styles.title}>{row.title}</h2>
-                <p className={styles.body}>{row.body}</p>
-              </li>
-            );
-          })}
+          {rows.map((row) => (
+            <AnnouncementItem key={row.id} id={row.id} title={row.title} body={row.body} severity={row.severity} pinned={row.pinned}
+              publishedAt={row.published_at} imageSrc={row.image_path ? publicImageUrl(row.image_path) : null} />
+          ))}
         </ul>
       )}
     </main>

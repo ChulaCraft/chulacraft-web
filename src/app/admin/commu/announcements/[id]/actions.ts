@@ -6,6 +6,7 @@ import { instant } from "@/lib/bangkok-time";
 import { dbErrorCode } from "@/lib/db-error";
 import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
+import { BUCKET, uploadPicture } from "@/app/admin/commu/achievements/images";
 
 const BASE = "/admin/commu/announcements";
 const SEVERITIES = ["info", "warning", "maintenance"];
@@ -44,6 +45,8 @@ export async function saveAnnouncement(formData: FormData) {
   if (publishedAt && expiresAt && expiresAt <= publishedAt) fail("BAD_DATE");
 
   const supabase = await createClient();
+  const picture = await uploadPicture(supabase.storage, formData, "image", "announcements");
+  if (picture.error) fail(picture.error);
   const { data, error } = await supabase.rpc("admin_upsert_announcement", {
     p_id: id ?? crypto.randomUUID(),
     p_title: title,
@@ -55,7 +58,20 @@ export async function saveAnnouncement(formData: FormData) {
     p_expires_at: expiresAt!,
     p_post_to_discord: formData.get("postToDiscord") === "on"
   });
-  if (error || !data) fail(dbErrorCode(error) ?? "FAILED");
+  if (error || !data) {
+    if (picture.key) await supabase.storage.from(BUCKET).remove([picture.key]);
+    fail(dbErrorCode(error) ?? "FAILED");
+  }
+
+  // The database cannot touch Storage, so the replaced picture comes back here to remove.
+  if (picture.key || formData.get("removeImage") === "on") {
+    // The generated type does not mark p_path as nullable; null removes the picture.
+    const { data: old, error: imageError } = await supabase.rpc("admin_set_announcement_image", { p_id: data!, p_path: picture.key as string });
+    const stale = imageError ? picture.key : old;
+    if (stale) await supabase.storage.from(BUCKET).remove([stale]);
+    // The announcement itself saved, so land on its page either way.
+    if (imageError) redirect(`${BASE}/${data}?error=${dbErrorCode(imageError) ?? "UPLOAD_FAILED"}`);
+  }
 
   refresh();
   redirect(`${BASE}/${data}?done=${id ? "saved" : "created"}`);

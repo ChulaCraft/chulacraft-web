@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConfirmAction } from "@/components/confirm-action";
@@ -8,7 +9,9 @@ import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
 import { deleteAnnouncement, saveAnnouncement } from "./actions";
+import { AnnouncementPreview } from "./announcement-preview";
 import { SubmitButton } from "@/components/submit-button";
+import { IMAGE_TYPES, publicImageUrl } from "@/app/admin/commu/achievements/images";
 
 export const metadata: Metadata = { title: "Announcement" };
 
@@ -16,6 +19,9 @@ const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to change announcements.",
   NOT_FOUND: "That announcement no longer exists.",
   BAD_DATE: "The expiry has to be after the publish time.",
+  BAD_IMAGE_TYPE: "That file isn't a PNG, JPEG, WebP or GIF image.",
+  IMAGE_TOO_LARGE: "That picture is bigger than 2 MB. Please upload a smaller one.",
+  UPLOAD_FAILED: "The picture couldn't be saved. Try again.",
   FAILED: "The change couldn't be saved. Check the fields and try again."
 };
 
@@ -61,7 +67,8 @@ export default async function AdminAnnouncementPage({ params, searchParams }: {
       {done && DONE[done] && <p className="alert alert-success" role="status"><PixelIcon name="check" />{DONE[done]}</p>}
     </div>
 
-    <form action={saveAnnouncement} className={`panel ${styles.catalogForm}`} aria-labelledby="form-title">
+    <div className={styles.editorGrid}>
+    <form id="announcement-form" action={saveAnnouncement} className={`panel ${styles.catalogForm}`} aria-labelledby="form-title">
       <h1 id="form-title" className={styles.sectionTitle}>{row ? row.title : "New announcement"}</h1>
       {row && <input type="hidden" name="announcementId" value={row.id} />}
 
@@ -73,6 +80,18 @@ export default async function AdminAnnouncementPage({ params, searchParams }: {
         <label htmlFor="a-body">Message</label>
         <textarea id="a-body" className={styles.textarea} name="body" rows={6} defaultValue={row?.body} required maxLength={2000} aria-describedby="a-body-help" />
         <p id="a-body-help" className="field-help">Plain text; line breaks are kept. Discord shows it as written, with mentions switched off.</p>
+      </div>
+      <div className="field">
+        <label htmlFor="a-image">Picture <span className="optional">(optional)</span></label>
+        {row?.image_path && <Image className={styles.previewImage} src={publicImageUrl(row.image_path)} alt="Current picture" width={320} height={180} />}
+        <input id="a-image" className="input" type="file" name="image" accept={IMAGE_TYPES.join(",")} aria-describedby="a-image-help" />
+        <p id="a-image-help" className="field-help">Shown above the message on the Announcements page. PNG, JPEG, WebP or GIF, up to 2 MB.{row?.image_path && " Leave empty to keep the current one."}</p>
+        {row?.image_path && (
+          <label className={styles.tick}>
+            <input type="checkbox" name="removeImage" />
+            <span><strong>Remove picture</strong></span>
+          </label>
+        )}
       </div>
       <div className={styles.formRow}>
         <div className="field">
@@ -121,6 +140,13 @@ export default async function AdminAnnouncementPage({ params, searchParams }: {
         {!row && <Link href="/admin/commu/announcements" className="btn">Cancel</Link>}
       </div>
     </form>
+    <div className={styles.previewColumn}>
+      <AnnouncementPreview formId="announcement-form" saved={{
+        title: row?.title ?? "", body: row?.body ?? "", severity: row?.severity ?? "info", pinned: row?.pinned ?? false,
+        published: !row || !!publishedAt, publishedAt: publishedAt ?? null, imageSrc: row?.image_path ? publicImageUrl(row.image_path) : null
+      }} />
+    </div>
+    </div>
 
     {row && (
       <section className={`panel ${styles.actionsCard}`} aria-labelledby="danger-title">

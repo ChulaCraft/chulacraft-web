@@ -1,16 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ getUser: vi.fn(), order: vi.fn(), rpc: vi.fn() }));
+const m = vi.hoisted(() => ({ getUser: vi.fn(), order: vi.fn(), rpc: vi.fn(), userRpc: vi.fn(), open: true }));
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => {
     const query = { select: () => query, eq: () => query, order: m.order };
-    return { auth: { getUser: m.getUser }, from: () => query };
+    return { auth: { getUser: m.getUser }, from: () => query, rpc: m.userRpc };
   },
   createAdminClient: () => ({ rpc: m.rpc })
 }));
 
-import { DELETE, GET } from "./route";
+vi.mock("@/lib/site-content", () => ({ siteSettings: async () => ({ registrationOpen: m.open }) }));
+
+import { DELETE, GET, PATCH, POST } from "./route";
 
 const del = (body: unknown) => DELETE(new Request("https://example.test", { method: "DELETE", body: JSON.stringify(body) }));
 
@@ -19,6 +21,17 @@ describe("Minecraft registration API", () => {
     m.getUser.mockReset().mockResolvedValue({ data: { user: { id: "u1" } } });
     m.order.mockReset();
     m.rpc.mockReset();
+    m.userRpc.mockReset();
+    m.open = true;
+  });
+
+  it("refuses adds and changes while registration is closed, before any database call", async () => {
+    m.open = false;
+    const body = JSON.stringify({ minecraftUsername: "Steve" });
+    expect((await POST(new Request("https://example.test", { method: "POST", body }))).status).toBe(403);
+    expect((await PATCH(new Request("https://example.test", { method: "PATCH", body }))).status).toBe(403);
+    expect(m.userRpc).not.toHaveBeenCalled();
+    expect(m.rpc).not.toHaveBeenCalled();
   });
 
   it("requires a working, signed-in session", async () => {

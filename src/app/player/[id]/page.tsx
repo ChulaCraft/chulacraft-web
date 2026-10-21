@@ -10,6 +10,7 @@ import { blockPlayer, removeFriend, respondFriendRequest, sendFriendRequest } fr
 import { ReportDialog } from "./report-dialog";
 import styles from "./player.module.css";
 import { SubmitButton } from "@/components/submit-button";
+import { siteSettings } from "@/lib/site-content";
 
 /** player_card() in supabase/migrations/20261007000001_social.sql builds this
  *  jsonb, so the generated types cannot describe it. Every section is optional:
@@ -73,6 +74,7 @@ const ERRORS: Record<string, string> = {
   INVALID_TARGET: "You can't do that to yourself.",
   INVALID: "Pick what happened and describe it in at least 10 characters. Links must start with https://.",
   ALREADY_REPORTED: "You already reported this player. An admin will look at it.",
+  REPORTS_CLOSED: "Reports are switched off right now. Message an admin on Discord instead.",
   RATE_LIMITED: "You've sent 5 reports today. Try again tomorrow, or message an admin on Discord.",
   FAILED: "That didn't save. Please try again in a moment."
 };
@@ -184,7 +186,7 @@ export default async function PlayerPage({ params, searchParams }: {
                 </form>
               )}
               {/* Reporting stays available when blocked: harassment is often why. */}
-              <ReportDialog playerId={id} playerName={card.display_name} />
+              {(await siteSettings()).reportsOpen && <ReportDialog playerId={id} playerName={card.display_name} />}
             </>}
           >
             {names.length > 0 && (

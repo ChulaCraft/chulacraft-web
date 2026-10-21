@@ -341,3 +341,8 @@
 .terms a {
   color: inherit;
 }
+
+/* Admin settings preview: the same hero, shorter. */
+.hero[data-preview] {
+  min-height: 420px;
+}

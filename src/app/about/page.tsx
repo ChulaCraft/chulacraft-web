@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { DiscordIcon } from "@/components/icons";
 import { discordCommunityUrl } from "@/lib/site-links";
+import { gallery } from "@/lib/site-content";
+import { publicImageUrl } from "@/app/admin/commu/achievements/images";
 import styles from "./about.module.css";
 
 export const metadata: Metadata = {
@@ -16,13 +18,19 @@ const values = [
   { title: "Values", copy: "Respect, teamwork, creativity, and keeping the adventure fun for everyone.", icon: "M2 2h3v1h2v-1h3v1h1v3h-1v1h-1v1h-1v1h-1v1h-2v-1h-1v-1h-1v-1h-1v-1h-1v-3h1z" },
 ];
 
-const gallery = [
+/** Shown until staff add pictures at /admin/commu/gallery, and if that list can't load. */
+const builtInGallery = [
   { src: "/images/collection/beta/firstEnderdragonBeat.webp", alt: "Players celebrating the server's first Ender Dragon kill", wide: true },
   { src: "/images/collection/current/nice.webp", alt: "A player build on the ChulaCraft world" },
   { src: "/images/collection/beta/2026-08-03_18.57.27.webp", alt: "Another player build on the ChulaCraft world" },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  // A taste of the gallery (the last three in admin order); the rest lives at /gallery.
+  const stored = await gallery().then((d) => d.images, () => []);
+  const shots = stored.length
+    ? stored.slice(-3).reverse().map((g, i) => ({ src: publicImageUrl(g.image_path), alt: g.alt, wide: i === 0 }))
+    : builtInGallery;
   return (
     <>
       <main>
@@ -59,10 +67,11 @@ export default function AboutPage() {
             <div className={styles.actions}>
               <a className="btn btn-primary btn-lg" href={discordCommunityUrl} target="_blank" rel="noreferrer"><DiscordIcon /> Join Discord</a>
               <Link className="btn btn-lg" href="/register">Register</Link>
+              <Link className="btn btn-lg" href="/gallery">See the gallery</Link>
             </div>
           </div>
           <div className={styles.gallery}>
-            {gallery.map((g) => (
+            {shots.map((g) => (
               <div key={g.src} className={`pixel-8 ${styles.shot}`} data-wide={g.wide || undefined}>
                 <Image src={g.src} alt={g.alt} fill sizes="(min-width: 800px) 380px, 100vw" />
               </div>

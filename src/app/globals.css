@@ -1227,3 +1227,40 @@ select.input {
 .md strong {
   color: var(--text);
 }
+
+.md-table {
+  overflow-x: auto;
+}
+
+.md-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.md-table th,
+.md-table td {
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--surface-2);
+  text-align: left;
+  vertical-align: top;
+}
+
+/* Admin live previews (src/components/form-preview.tsx). */
+.preview-frame {
+  position: relative;
+  padding: 28px 16px 16px;
+  border: 2px dashed var(--edge);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.preview-label {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  margin: 0;
+  color: var(--text-3);
+  font: 500 11px/1.4 var(--font-mono), monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
