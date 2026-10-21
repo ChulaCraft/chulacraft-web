@@ -2,12 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { PixelIcon } from "@/components/icons";
+import { RegisterConsent } from "@/components/register-consent";
 import { CopyButton } from "@/components/copy-button";
 import { ServerStatus } from "@/components/server-address-card";
 import { EventCard, UPCOMING_EVENTS_TAG, type UpcomingEvent } from "@/components/event-card";
 import { discordCommunityUrl } from "@/lib/site-links";
 import { anonClient, siteSettings } from "@/lib/site-content";
 import { HomeHero } from "./home-hero";
+import { PlayOnView } from "./play-on-view";
+import { TypedText } from "./typed-text";
 import styles from "./home.module.css";
 
 /** The next published events, cached for a minute.
@@ -46,10 +49,10 @@ async function loadUpcomingEvents() {
 
 const steps = (serverAddress: string | null) => [
   // Images: re-shoot with `node scripts/capture-join-guide.mjs`.
-  { title: "Sign in with Discord", copy: "Press Continue with Discord on the Register page. This creates your ChulaCraft profile.", img: "1-discord.webp", w: 1040, h: 410 },
+  { title: "Sign in with Discord", copy: "Press Continue with Discord on the Register page. This creates your ChulaCraft profile.", img: "1-discord.webp", w: 1040, h: 426 },
   { title: "Verify Chula", copy: "Sign in with your @chula.ac.th or @student.chula.ac.th Google account. Pick carefully, it can't be changed later.", img: "2-verify.webp", w: 1080, h: 574 },
-  { title: "Add your Minecraft name", copy: "Type your Java Edition username on your profile. Up to 5 usernames go on the whitelist.", img: "3-minecraft.webp", w: 1180, h: 722 },
-  { title: "Join", copy: `In Minecraft Java Edition, open Multiplayer → Add Server and enter ${serverAddress ?? "the server address"}.`, img: "4-join.webp", w: 1180, h: 260 },
+  { title: "Add your Minecraft name", copy: "Type your Java Edition username in Settings. Up to 5 usernames go on the whitelist.", img: "3-minecraft.webp", w: 1180, h: 610 },
+  { title: "Join", copy: `In Minecraft Java Edition, open Multiplayer → Add Server and enter ${serverAddress ?? "the server address"}.`, img: "4-join.webp", w: 1280, h: 388 },
 ];
 
 export default async function HomePage() {
@@ -57,76 +60,81 @@ export default async function HomePage() {
   const { serverAddress } = settings;
 
   return (
-    <>
-      <main>
-        <HomeHero kicker={settings.homeKicker} intro={settings.homeIntro} />
+    <main className={styles.main}>
+      <HomeHero kicker={settings.homeKicker} intro={settings.homeIntro} />
 
-        <div className={`container ${styles.addressWrap}`}>
-          <section className={`panel panel-edge ${styles.address}`} aria-labelledby="addr-label">
-            <div className={styles.addressText}>
-              <h2 id="addr-label" className={styles.addressLabel}>Server address</h2>
-              <ServerStatus address={serverAddress} />
-              <p className={`mono ${styles.addressValue}`}>{serverAddress ?? "Coming soon"}</p>
-              <p className={styles.addressNote}>
-                <PixelIcon name="info" className="tone-amber" />
-                <span><strong>Java Edition only.</strong> Bedrock and console can&apos;t connect.</span>
-              </p>
-            </div>
-            {serverAddress && <CopyButton text={serverAddress} />}
-          </section>
-        </div>
-
-        <section className={`container ${styles.section}`} aria-labelledby="events-title">
-          <p className="eyebrow">Upcoming events</p>
-          <div className={styles.sectionHead}>
-            <h2 id="events-title" className={styles.sectionTitle}>Play together at a community event</h2>
-            <Link className="link-button" href="/events">All events <PixelIcon name="arrow" size={14} /></Link>
+      {/* The server band: what every visitor came for, set as one line across
+          the page rather than a card. scripts/capture-join-guide.mjs shoots
+          this region by its name. */}
+      <section className={styles.band} aria-labelledby="addr-label">
+        <div className={`container ${styles.address}`}>
+          <h2 id="addr-label" className={styles.addressLabel}>Server address</h2>
+          <p className={`mono ${styles.addressValue}`}>{serverAddress ?? "Coming soon"}</p>
+          <div className={styles.addressSide}>
+            <ServerStatus address={serverAddress} />
+            {serverAddress && <CopyButton text={serverAddress} className="btn btn-outline" />}
           </div>
-          {events.length === 0 ? (
-            <div className={`panel ${styles.eventsEmpty}`}>
-              <p className={styles.eventsEmptyTitle}>No events scheduled yet</p>
-              <p className="muted">
-                Dates get posted here and on <a href={discordCommunityUrl} target="_blank" rel="noreferrer">Discord</a>. Turn on notifications so you hear when the next one is announced.
-              </p>
-            </div>
-          ) : (
-            <ul className={styles.features}>
-              {events.map((event) => <EventCard key={event.id} event={event} />)}
-            </ul>
-          )}
-        </section>
+          <p className={styles.addressNote}>
+            <PixelIcon name="info" className="tone-amber" />
+            <span><strong>Java Edition only.</strong> Bedrock and console can&apos;t connect.</span>
+          </p>
+        </div>
+      </section>
 
-        <section className={`container ${styles.section}`} aria-labelledby="join-title">
-          <p className="eyebrow">Four steps</p>
+      {/* Statement on the left, its evidence on the right. */}
+      <section className={`container ${styles.section} ${styles.split}`} aria-labelledby="events-title">
+        <div className={styles.statement}>
+          <h2 id="events-title" className={styles.sectionTitle}>Upcoming events</h2>
+          <p className={styles.sectionLead}>Build nights, contests and survival runs, planned together on Discord.</p>
+          <Link className="link-button" href="/events">See all events <PixelIcon name="arrow" size={14} /></Link>
+        </div>
+        {events.length === 0 ? (
+          <div className={styles.eventsEmpty}>
+            <p className={styles.eventsEmptyTitle}>No events scheduled yet.</p>
+            <p className="muted">
+              Dates get posted here and on <a href={discordCommunityUrl} target="_blank" rel="noreferrer">Discord</a>. Turn on notifications so you hear when the next one is announced.
+            </p>
+          </div>
+        ) : (
+          <ul className={styles.features}>
+            {events.map((event) => <EventCard key={event.id} event={event} />)}
+          </ul>
+        )}
+      </section>
+
+      <section id="join" className={`container ${styles.section}`} aria-labelledby="join-title">
+        <div className={styles.joinHead}>
           <h2 id="join-title" className={styles.sectionTitle}>How to join</h2>
-          <ol className={styles.steps}>
-            {steps(serverAddress).map((s, i, all) => (
-              <li key={s.title}>
-                <span className={`pixel-4 ${styles.stepNum}`} data-last={i === all.length - 1 || undefined} aria-hidden="true">{i + 1}</span>
+          <p className={styles.sectionLead}>Four steps, about five minutes.</p>
+        </div>
+        <ol className={styles.steps}>
+          {steps(serverAddress).map((s, i) => (
+            <li key={s.title} className={styles.step}>
+              <span className={styles.stepNum} aria-hidden="true">{i + 1}</span>
+              <div className={styles.stepText}>
                 <h3>{s.title}</h3>
                 <p>{s.copy}</p>
-                <div className={`pixel-4 ${styles.stepShot}`}>
-                  <Image src={`/images/guide/${s.img}`} alt="" width={s.w} height={s.h} sizes="(min-width: 1200px) 280px, (min-width: 520px) 45vw, 90vw" />
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
+              </div>
+              <div className={styles.stepShot}>
+                <Image src={`/images/guide/${s.img}`} alt="" width={s.w} height={s.h} sizes="(min-width: 1000px) 520px, 90vw" />
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
 
-        <section className={`container ${styles.section} ${styles.ctaSection}`} aria-labelledby="cta-title">
-          <div className={`pixel-8 ${styles.cta}`}>
-            <div className={styles.ctaText}>
-              <h2 id="cta-title" className="display">Ready to build?</h2>
-              <p>Registering takes a few minutes. Questions first? Ask in our Discord.</p>
-              <p className={styles.terms}>By registering you agree to our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
-            </div>
-            <div className={styles.actions}>
-              <Link className={`btn btn-lg ${styles.ctaPrimary}`} href="/register">Register <span aria-hidden="true">→</span></Link>
-              <a className={`btn btn-lg ${styles.ctaSecondary}`} href={discordCommunityUrl} target="_blank" rel="noreferrer">Join Discord</a>
-            </div>
+      {/* The close: the question types itself out once it's on screen, then
+          the one way in appears with what registering agrees to. */}
+      <PlayOnView className={styles.cta} aria-labelledby="cta-title">
+        <Image className={styles.ctaPhoto} src="/images/collection/current/nice.webp" alt="" fill sizes="100vw" />
+        <div className={`container ${styles.ctaInner}`}>
+          <h2 id="cta-title" className={styles.ctaTitle}><TypedText parts={[{ text: "Ready to build?" }]} /></h2>
+          <div className={styles.ctaAfter}>
+            <Link className="btn btn-primary" href="/register">Register</Link>
+            <RegisterConsent className={styles.ctaConsent} />
           </div>
-        </section>
-      </main>
-    </>
+        </div>
+      </PlayOnView>
+    </main>
   );
 }

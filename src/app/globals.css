@@ -1,42 +1,74 @@
 :root {
-  --bg: #201a2b;
-  --surface: #2a2238;
-  --surface-2: #352b47;
-  --surface-hover: #41355a;
-  --sunken: #18131f;
-  --edge: #4a3d60;
-  --edge-strong: #8b6aae;
-  --text: #f7f1fc;
-  --text-2: #cbbedb;
-  --text-3: #a596b8;
-  --pink: #ff6fae;
-  --pink-hover: #ff8cbe;
-  --pink-soft: #ffd6e7;
-  --lavender: #c3a6ff;
-  --green: #9bd29d;
-  --amber: #f5c46b;
-  --danger: #ff7f91;
-  --danger-bg: #3a2232;
-  --content-width: 1200px;
+  /* Night-world palette. Night is the ground and Moon every word and line;
+     every neutral below is Moon mixed into Night. Then the lit colours, each
+     with one job: Sakura is the action colour, Leaf means "good" (online,
+     verified, done), Amber means "heads up", Violet means "info", Sky is the
+     button you're pointing at, and Coral is reserved for errors and
+     destructive actions. Categories and steps
+     borrow the same set, so the page gets its colour without a new hue. */
+  --night: #110c1b;
+  --moon: #f2ecf7;
+  --sakura: #ff6aa2;
+  --leaf: #5cd68b;
+  --amber: #ffb547;
+  --violet: #9d86ff;
+  --coral: #ff5d5d;
+  --sky: #6cc4ff;
+
+  --bg: var(--night);
+  --sunken: color-mix(in oklab, var(--night) 70%, black);
+  --surface: color-mix(in oklab, var(--moon) 4%, var(--night));
+  --surface-2: color-mix(in oklab, var(--moon) 8%, var(--night));
+  --surface-hover: color-mix(in oklab, var(--moon) 12%, var(--night));
+  --edge: color-mix(in oklab, var(--moon) 12%, var(--night));
+  --edge-strong: color-mix(in oklab, var(--moon) 26%, var(--night));
+  --text: var(--moon);
+  --text-2: color-mix(in oklab, var(--moon) 74%, var(--night));
+  --text-3: color-mix(in oklab, var(--moon) 58%, var(--night));
+  --ink: var(--moon);
+  --on-accent: var(--night);
+  --pink: var(--sakura);
+  --pink-hover: color-mix(in oklab, var(--sakura) 78%, var(--moon));
+  --pink-soft: color-mix(in oklab, var(--sakura) 16%, var(--night));
+  --pink-ink: color-mix(in oklab, var(--sakura) 85%, var(--moon));
+  --lavender: var(--violet);
+  --green: var(--leaf);
+  --danger: var(--coral);
+  --danger-hover: color-mix(in oklab, var(--coral) 78%, var(--moon));
+  --danger-bg: color-mix(in oklab, var(--coral) 16%, var(--night));
+  --content-width: 1240px;
   --gutter: clamp(16px, 4vw, 32px);
-  --focus-ring: inset 0 0 0 2px var(--text), inset 0 0 0 4px var(--bg);
-  --bevel-panel: inset 0 2px 0 rgba(255, 255, 255, 0.06), inset 0 -4px 0 rgba(0, 0, 0, 0.28);
-  --pixel-4: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px));
-  --pixel-8: polygon(0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px));
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --shadow-lift: 0 18px 40px -16px color-mix(in oklab, var(--night) 70%, transparent);
+  /* Height of the sticky header; sticky panels and anchor jumps clear it. */
+  --header-h: 72px;
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--pink);
+  /* Hairline edge for surfaces that draw their border as a shadow; it must
+     stay a real shadow, since rules list it after other shadows. */
+  --bevel-panel: inset 0 0 0 1px var(--edge);
+  /* The old pixel-cut corners, now rounded. Kept as clip-paths so every
+     component that used them picks up the new shape without changes. */
+  --pixel-4: inset(0 round var(--radius-sm));
+  --pixel-8: inset(0 round var(--radius));
 }
 
+/* No visible scrollbars anywhere: the page, side panels, tables and the
+   nav strip all still scroll by wheel, touch and keyboard. */
 * {
   box-sizing: border-box;
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 html {
-  scrollbar-width: none;
+  scroll-padding-top: calc(var(--header-h) + 16px);
   min-width: 320px;
   background: var(--bg);
-}
-
-html::-webkit-scrollbar {
-  display: none;
 }
 
 body {
@@ -44,12 +76,12 @@ body {
   margin: 0;
   color: var(--text);
   background: var(--bg);
-  font: 16px/1.55 var(--font-body), var(--font-thai), system-ui, sans-serif;
+  font: 16px/1.65 var(--font-body), Georgia, serif;
   -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: var(--pink-soft);
+  color: var(--pink-ink);
   text-underline-offset: 3px;
 }
 
@@ -91,7 +123,7 @@ p {
 }
 
 ::selection {
-  color: var(--bg);
+  color: var(--ink);
   background: var(--pink-soft);
 }
 
@@ -154,23 +186,27 @@ p {
 
 /* ---------- Type ---------- */
 
+/* Pixelify is the Minecraft voice: brand, hero and page titles. Everything
+   else is set in Trirong, a serif, so the reading text feels considered. */
 .display {
-  font-family: var(--font-display), var(--font-thai), monospace;
+  font-family: var(--font-display), var(--font-body), monospace;
   font-weight: 700;
   line-height: 1.08;
   text-wrap: balance;
 }
 
 .page-title {
-  font: 700 clamp(32px, 5vw, 44px)/1.08 var(--font-display), var(--font-thai), monospace;
+  font: 700 clamp(30px, 4.4vw, 42px)/1.1 var(--font-display), var(--font-body), monospace;
+  color: var(--ink);
   text-wrap: balance;
 }
 
 .section-title {
-  font: 600 20px/1.2 var(--font-display), var(--font-thai), monospace;
+  font: 600 20px/1.3 var(--font-body), Georgia, serif;
 }
 
 .lead {
+  max-width: 62ch;
   color: var(--text-2);
   font-size: 17px;
   text-wrap: pretty;
@@ -198,25 +234,29 @@ nav.hint a {
   overflow-wrap: anywhere;
 }
 
+/* The one pixel left on plain pages: a single 8px Chula-pink block above a title. */
 .kicker {
   display: block;
-  width: 24px;
-  height: 4px;
+  width: 8px;
+  height: 8px;
   background: var(--pink);
+  box-shadow: 10px 0 0 var(--pink-soft);
 }
 
 .eyebrow {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--pink-soft);
-  font-weight: 700;
+  color: var(--pink-ink);
+  font-weight: 600;
   font-size: 15px;
 }
 
 .eyebrow::before {
-  content: "✦";
-  color: var(--pink);
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--pink);
 }
 
 /* ---------- Pixel shapes ---------- */
@@ -232,51 +272,38 @@ nav.hint a {
 /* ---------- Buttons ---------- */
 
 .btn {
-  /* Chunky arcade press: the button sits on a 4px bottom bevel, lifts on hover
-     and sinks into itself when pressed. The bevel shrinks as it lifts, so the
-     block looks thinner and taller the way a real arcade button does, and the
-     drop-shadow keeps its footprint on the page while it hovers.
-     Hover is a true colour inversion, not a slight lighten: the button swaps to
-     a bright fill with dark ink, so the state change is unmissable. */
-  --bevel: 4px;
-  --lift: 0px;
-  --press: 0px;
-  --bevel-color: rgba(0, 0, 0, 0.3);
-  --top-light: rgba(255, 255, 255, 0.08);
-  /* Hover palette. Each variant overrides these two, nothing else. */
-  --hover-fill: var(--pink-soft);
-  --hover-ink: var(--bg);
-  min-height: 48px;
+  min-height: 46px;
   padding: 0 20px;
-  border: 0;
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  clip-path: var(--pixel-4);
-  color: var(--text);
-  background: var(--surface-2);
-  box-shadow: inset 0 calc(-1 * var(--bevel)) 0 var(--bevel-color), inset 0 2px 0 var(--top-light);
-  font-weight: 700;
+  color: var(--ink);
+  background: var(--surface);
+  font-weight: 600;
   font-size: 16px;
+  line-height: 1;
   text-decoration: none;
   white-space: nowrap;
-  translate: 0 calc(var(--press) - var(--lift));
-  /* drop-shadow follows the clip-path, so the shadow is the same pixel shape. */
-  filter: drop-shadow(0 calc(var(--lift) + var(--press)) 0 rgba(0, 0, 0, 0.38));
-  transition:
-    translate 90ms steps(3, end),
-    box-shadow 90ms steps(3, end),
-    filter 90ms steps(3, end),
-    background-color 140ms ease,
-    color 140ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.btn:hover {
-  color: var(--hover-ink);
-  background: var(--hover-fill);
-  --lift: 3px;
-  --bevel: 1px;
+/* Every button answers the pointer the same way: it empties to a Sky
+   outline, its label turns Sky, and it grows a touch. Pressing holds it. */
+.btn:is(:hover, :active):not(:disabled, [aria-disabled="true"], [aria-busy="true"]) {
+  --btn-hot: var(--sky);
+  color: var(--btn-hot);
+  border-color: var(--btn-hot);
+  background: color-mix(in srgb, var(--btn-hot) 8%, transparent);
+  box-shadow: inset 0 0 0 1px var(--btn-hot), 0 0 22px -8px var(--btn-hot);
+  transform: scale(1.05);
+}
+
+/* Destructive buttons keep their warning colour when pointed at. */
+.btn:is(.btn-danger, .btn-danger-outline):is(:hover, :active):not(:disabled, [aria-disabled="true"], [aria-busy="true"]) {
+  --btn-hot: var(--danger);
 }
 
 .btn:focus-visible {
@@ -284,20 +311,11 @@ nav.hint a {
   box-shadow: var(--focus-ring);
 }
 
-.btn:active:not(:disabled):not([aria-disabled="true"]) {
-  --lift: 0px;
-  --press: 4px;
-  --bevel: 1px;
-}
-
 .btn:disabled,
 .btn[aria-disabled="true"] {
   color: var(--text-3);
+  border-color: var(--edge);
   background: var(--surface-2);
-  box-shadow: inset 0 calc(-1 * var(--bevel)) 0 var(--bevel-color), inset 0 2px 0 var(--top-light);
-  --bevel: 4px;
-  --lift: 0px;
-  --press: 0px;
 }
 
 .btn svg {
@@ -327,83 +345,57 @@ nav.hint a {
   height: 6px;
   margin: auto;
   translate: -12px 0;
-  background: var(--text);
-  box-shadow: 12px 0 0 var(--text), 24px 0 0 var(--text);
+  --dot: var(--text);
+  background: var(--dot);
+  box-shadow: 12px 0 0 var(--dot), 24px 0 0 var(--dot);
   animation: busy-dots 900ms steps(1, end) infinite;
 }
 
+.btn-primary[aria-busy="true"]::after,
+.btn-danger[aria-busy="true"]::after {
+  --dot: var(--on-accent);
+}
+
 @keyframes busy-dots {
-  0% { opacity: 1; box-shadow: 12px 0 0 var(--text-3), 24px 0 0 var(--text-3); }
-  33% { box-shadow: 12px 0 0 var(--text), 24px 0 0 var(--text-3); }
-  66% { box-shadow: 12px 0 0 var(--text), 24px 0 0 var(--text); }
+  0% { opacity: 1; box-shadow: 12px 0 0 transparent, 24px 0 0 transparent; }
+  33% { box-shadow: 12px 0 0 var(--dot), 24px 0 0 transparent; }
+  66% { box-shadow: 12px 0 0 var(--dot), 24px 0 0 var(--dot); }
 }
 
 .btn-primary {
-  color: var(--bg);
+  color: var(--on-accent);
+  border-color: var(--pink);
   background: var(--pink);
-  --bevel-color: rgba(0, 0, 0, 0.22);
-  --top-light: rgba(255, 255, 255, 0.35);
-  --hover-fill: var(--lavender);
-  --hover-ink: var(--bg);
 }
-
 
 .btn-outline {
-  color: var(--pink-soft);
+  color: var(--pink-ink);
+  border-color: var(--pink);
   background: transparent;
-  box-shadow: inset 0 0 0 2px var(--pink);
-  --bevel-color: transparent;
-  --top-light: transparent;
-  --hover-fill: var(--pink);
-  --hover-ink: var(--bg);
 }
-
 
 .btn-danger {
-  color: var(--bg);
+  color: var(--on-accent);
+  border-color: var(--danger);
   background: var(--danger);
-  --bevel-color: rgba(0, 0, 0, 0.22);
-  --top-light: transparent;
-  --hover-fill: var(--amber);
-  --hover-ink: var(--bg);
 }
-
 
 .btn-danger-outline {
   color: var(--danger);
+  border-color: var(--danger);
   background: transparent;
-  box-shadow: inset 0 0 0 2px var(--danger);
-  --bevel-color: transparent;
-  --top-light: transparent;
-  --hover-fill: var(--danger);
-  --hover-ink: var(--bg);
 }
 
-
 .btn-sm {
-  min-height: 44px;
+  min-height: 40px;
   padding: 0 14px;
   font-size: 15px;
 }
 
 .btn-lg {
-  min-height: 56px;
-  padding: 0 24px;
+  min-height: 54px;
+  padding: 0 26px;
   font-size: 17px;
-}
-
-/* The press is motion the user didn't ask for; keep the colour change only. */
-@media (prefers-reduced-motion: reduce) {
-  .btn,
-  .btn:hover,
-  .btn:active:not(:disabled):not([aria-disabled="true"]) {
-    translate: none;
-    filter: none;
-    transition: color 140ms ease, background-color 140ms ease;
-    --lift: 0px;
-    --press: 0px;
-    --bevel: 4px;
-  }
 }
 
 .link-button {
@@ -415,10 +407,15 @@ nav.hint a {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: var(--pink-soft);
+  color: var(--pink-ink);
   background: none;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
+  text-decoration: none;
+}
+
+.link-button:hover {
+  color: var(--pink-hover);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -435,31 +432,34 @@ nav.hint a {
   align-items: center;
   gap: 6px;
   min-height: 44px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
   text-decoration: none;
 }
 
 /* ---------- Surfaces ---------- */
 
+/* Cards sit on the paper with a hairline edge; no drop shadow at rest, so a
+   shadow only ever means "this lifts because you can open it". */
 .panel {
   padding: var(--pad, 24px);
-  clip-path: var(--pixel-8);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: var(--bevel-panel);
 }
 
 .panel-edge {
-  box-shadow: var(--bevel-panel), inset 0 0 0 2px var(--edge);
+  border-color: var(--edge-strong);
 }
 
 .alert {
   --tone: var(--lavender);
-  padding: 16px 18px;
+  padding: 14px 16px;
   display: flex;
   gap: 12px;
-  background: color-mix(in srgb, var(--tone) 12%, transparent);
-  box-shadow: inset 4px 0 0 var(--tone);
+  border: 1px solid color-mix(in srgb, var(--tone) 28%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--tone) 8%, var(--surface));
 }
 
 .alert > svg {
@@ -497,12 +497,13 @@ nav.hint a {
   --tone: var(--text-2);
   width: fit-content;
   padding: 3px 10px;
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   color: var(--tone);
-  background: color-mix(in srgb, var(--tone) 14%, transparent);
-  font-weight: 700;
+  background: color-mix(in srgb, var(--tone) 11%, var(--surface));
+  font-weight: 600;
   font-size: 13px;
   white-space: nowrap;
 }
@@ -535,7 +536,8 @@ nav.hint a {
 
 .chip {
   padding: 4px 10px;
-  background: var(--bg);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
   font: 500 14px/1.4 var(--font-mono), monospace;
 }
 
@@ -549,7 +551,7 @@ nav.hint a {
 
 .field > label,
 .label {
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
 }
 
@@ -560,33 +562,37 @@ nav.hint a {
 
 .input {
   width: 100%;
-  height: 48px;
+  height: 46px;
   padding: 0 14px;
-  border: 0;
-  border-radius: 0;
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--radius-sm);
   outline: none;
   color: var(--text);
   background: var(--sunken);
-  box-shadow: inset 0 0 0 2px var(--edge-strong);
   font-size: 16px;
 }
 
+.input:hover {
+  border-color: var(--text-3);
+}
+
 .input:focus {
-  box-shadow: inset 0 0 0 3px var(--pink);
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pink) 22%, transparent);
 }
 
 .input[aria-invalid="true"] {
-  box-shadow: inset 0 0 0 2px var(--danger);
+  border-color: var(--danger);
 }
 
 .input[aria-invalid="true"]:focus {
-  box-shadow: inset 0 0 0 3px var(--danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 22%, transparent);
 }
 
 select.input {
   padding-right: 40px;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%23cbbedb' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%23c0b3d2' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
 }
@@ -596,7 +602,7 @@ select.input {
   gap: 6px;
   color: var(--danger);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .field-help {
@@ -609,11 +615,11 @@ select.input {
 .dialog {
   width: min(480px, calc(100% - 32px));
   padding: 0;
-  border: 0;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-lg);
   color: var(--text);
-  clip-path: var(--pixel-8);
   background: var(--surface);
-  box-shadow: inset 0 0 0 2px var(--edge), inset 0 -4px 0 rgba(0, 0, 0, 0.28);
+  box-shadow: 0 24px 60px -20px var(--night);
 }
 
 /* State change, not decoration: something just appeared because of what the
@@ -630,7 +636,7 @@ select.input {
 }
 
 .dialog::backdrop {
-  background: rgba(14, 10, 20, 0.8);
+  background: color-mix(in oklab, var(--night) 78%, transparent);
 }
 
 .dialog-body {
@@ -641,7 +647,7 @@ select.input {
 }
 
 .dialog-title {
-  font: 600 24px/1.2 var(--font-display), var(--font-thai), monospace;
+  font: 700 22px/1.25 var(--font-body), Georgia, serif;
   overflow-wrap: anywhere;
 }
 
@@ -659,37 +665,31 @@ select.input {
 
 /* ---------- Header ---------- */
 
+/* One row: brand, the site's sections, account. Sticky on every page. On
+   the landing page the hero hides it at first and slides it in as the
+   banner shrinks (HeroStage sets --header-in from 0 to 1 on <html>). */
 .site-header {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 30;
-  border-bottom: 2px solid var(--surface-2);
-  background: var(--bg);
+  border-bottom: 1px solid var(--edge);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: saturate(1.4) blur(14px);
 }
 
-/* Landing page only: the header floats over the hero, out of flow, see-through
-   at the top and solid once the reader scrolls (site-nav.tsx toggles .is-shown).
-   It is never hidden, so the nav and menu are reachable on first view. */
-.site-header-overlay {
+:root[data-hero] .site-header {
   position: fixed;
   inset-inline: 0;
-  top: 0;
-  border-bottom-color: transparent;
-  background: linear-gradient(180deg, rgba(32, 26, 43, 0.85), rgba(32, 26, 43, 0));
-  /* Size the gradient to the border box: otherwise it tiles into the transparent
-     bottom border and repeats its dark top edge as a hard line. */
-  background-origin: border-box;
-  transition: background-color 200ms ease, border-color 200ms ease;
+  translate: 0 calc(-100% * (1 - var(--header-in, 1)));
+  opacity: var(--header-in, 1);
 }
 
-.site-header-overlay.is-shown {
-  border-bottom-color: var(--surface-2);
-  background: var(--bg);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .site-header-overlay {
-    transition: none;
-  }
+/* Tabbing into the hidden header, or an open dropdown, brings it back.
+   :focus-visible rather than :focus-within, so a mouse click on "Home"
+   (which leaves focus on that link) doesn't pin the header open. */
+:root[data-hero] .site-header:has(:focus-visible, details[open]) {
+  translate: 0 0;
+  opacity: 1;
 }
 
 /* Pinned announcement, full width under the header; its text lines up with
@@ -698,6 +698,8 @@ select.input {
   align-items: center;
   padding-block: 6px;
   padding-inline: max(var(--gutter), calc((100% - var(--content-width)) / 2 + var(--gutter)));
+  border-width: 0 0 1px;
+  border-radius: 0;
 }
 
 .announcement-banner > svg {
@@ -727,72 +729,161 @@ select.input {
 }
 
 .header-inner {
-  height: 68px;
+  min-height: 68px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: clamp(12px, 2.4vw, 28px);
 }
 
 .brand {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 10px;
   min-height: 44px;
-  color: var(--text);
+  color: var(--ink);
   text-decoration: none;
 }
 
 .brand:hover {
-  color: var(--text);
+  color: var(--ink);
 }
 
 .brand img {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
 }
 
 .brand span {
-  font: 600 22px/1 var(--font-display), var(--font-thai), monospace;
+  font: 700 23px/1 var(--font-display), monospace;
 }
 
+/* The site's sections, between the brand and the account. */
 .main-nav {
+  flex: 1 1 auto;
+  align-self: stretch;
+  min-width: 0;
   display: flex;
+  align-items: stretch;
   gap: 2px;
 }
 
-.main-nav a {
+.main-nav > a,
+.nav-menu > summary {
   position: relative;
-  padding: 10px 12px;
+  flex: none;
+  min-height: 44px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
   color: var(--text-2);
-  font-weight: 700;
+  font-weight: 500;
   font-size: 15px;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .main-nav a:hover {
-  color: var(--text);
+  color: var(--ink);
 }
 
 .main-nav a[aria-current="page"] {
-  color: var(--text);
+  color: var(--pink-ink);
+  font-weight: 600;
 }
 
-.main-nav a[aria-current="page"]::after {
+.main-nav > a[aria-current="page"]::after,
+.nav-menu[data-current] > summary::after {
   content: "";
   position: absolute;
   left: 12px;
   right: 12px;
   bottom: 0;
   height: 3px;
+  border-radius: 3px 3px 0 0;
   background: var(--pink);
+}
+
+/* A group of sections: the name opens a small panel of its pages. */
+.nav-menu {
+  position: relative;
+  display: flex;
+}
+
+.nav-menu > summary {
+  gap: 6px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.nav-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-menu > summary:hover,
+.nav-menu[open] > summary {
+  color: var(--ink);
+}
+
+.nav-menu[data-current] > summary {
+  color: var(--pink-ink);
+  font-weight: 600;
+}
+
+.nav-menu > summary svg {
+  color: var(--text-3);
+  transition: rotate 160ms ease;
+}
+
+.nav-menu[open] > summary svg {
+  rotate: 180deg;
+}
+
+.nav-menu-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 200px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  animation: menu-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: top left;
+}
+
+.nav-menu-panel a {
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  color: var(--text);
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-menu-panel a:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.nav-menu-panel a[aria-current="page"] {
+  color: var(--pink-ink);
+  background: var(--pink-soft);
+  font-weight: 600;
 }
 
 .header-actions {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .menu {
@@ -802,10 +893,11 @@ select.input {
 .menu > summary {
   min-height: 44px;
   padding: 4px 10px 4px 4px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
   list-style: none;
   cursor: pointer;
@@ -819,17 +911,25 @@ select.input {
   background: var(--surface-2);
 }
 
+.menu > summary > span {
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .menu-panel {
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
-  min-width: 220px;
+  min-width: 230px;
   padding: 8px;
   display: flex;
   flex-direction: column;
-  clip-path: var(--pixel-8);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: inset 0 0 0 2px var(--edge), inset 0 -4px 0 rgba(0, 0, 0, 0.28);
+  box-shadow: var(--shadow-lift);
 }
 
 /* Drops in from the avatar: a short fade and slide, nothing that delays use. */
@@ -876,12 +976,13 @@ select.input {
   min-height: 44px;
   padding: 0 10px;
   border: 0;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   gap: 10px;
   color: var(--text);
   background: none;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 15px;
   text-align: left;
   text-decoration: none;
@@ -893,16 +994,17 @@ select.input {
   background: var(--surface-2);
 }
 
+/* Avatars keep a squared, block-like corner: a small nod to the game. */
 .avatar {
   width: 36px;
   height: 36px;
   flex: none;
   display: grid;
   place-items: center;
-  clip-path: var(--pixel-4);
-  color: var(--bg);
+  border-radius: 8px;
+  color: var(--on-accent);
   background: var(--lavender);
-  font: 700 18px/1 var(--font-display), var(--font-thai), monospace;
+  font: 700 18px/1 var(--font-display), monospace;
   object-fit: cover;
 }
 
@@ -912,14 +1014,15 @@ select.input {
 }
 
 .mobile-menu > summary {
+  min-width: 44px;
   min-height: 44px;
-  padding: 0 14px;
+  padding: 0 12px;
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   gap: 8px;
-  clip-path: var(--pixel-4);
-  background: var(--surface-2);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
   list-style: none;
   cursor: pointer;
@@ -943,9 +1046,9 @@ select.input {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  border-bottom: 2px solid var(--surface-2);
-  background: var(--bg);
-  box-shadow: 0 24px 40px rgba(10, 6, 16, 0.5);
+  border-bottom: 1px solid var(--edge);
+  background: var(--surface);
+  box-shadow: 0 24px 40px -16px var(--night);
 }
 
 .mobile-menu nav > a,
@@ -958,15 +1061,42 @@ select.input {
   gap: 10px;
   color: var(--text);
   background: none;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 17px;
   text-align: left;
   text-decoration: none;
 }
 
-.mobile-menu nav > a[aria-current="page"]::before {
-  content: "✦";
-  color: var(--pink);
+/* Phones: each section group under a small heading. */
+.mobile-group {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--edge);
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-group > p {
+  padding: 0 4px 2px;
+  color: var(--text-3);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mobile-group > a {
+  min-height: 44px;
+  padding: 0 4px 0 14px;
+  display: flex;
+  align-items: center;
+  color: var(--text);
+  font-size: 17px;
+  text-decoration: none;
+}
+
+.mobile-group > a[aria-current="page"],
+.mobile-menu nav > a[aria-current="page"] {
+  color: var(--pink-ink);
+  font-weight: 600;
 }
 
 .mobile-user {
@@ -975,8 +1105,8 @@ select.input {
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 2px solid var(--surface-2);
-  font-weight: 700;
+  border-bottom: 1px solid var(--edge);
+  font-weight: 600;
 }
 
 .mobile-cta {
@@ -988,12 +1118,34 @@ select.input {
 
 .mobile-signout {
   margin-top: 6px;
-  border-top: 2px solid var(--surface-2) !important;
+  border-top: 1px solid var(--edge) !important;
   color: var(--text-2) !important;
 }
 
+/* Phones: brand and menu on one line, the sections as a swipeable strip
+   under them. */
 @media (max-width: 800px) {
-  .main-nav,
+  /* Phones: the two-row header would eat too much of the screen, so it
+     scrolls away with the page instead of sticking. */
+  :root {
+    --header-h: 0px;
+  }
+
+  .site-header {
+    position: relative;
+  }
+
+  .header-inner {
+    flex-wrap: wrap;
+    padding-top: 10px;
+    row-gap: 4px;
+  }
+
+  /* The sections move into the Menu panel on phones. */
+  .main-nav {
+    display: none;
+  }
+
   .header-actions {
     display: none;
   }
@@ -1005,42 +1157,77 @@ select.input {
 
 /* ---------- Footer ---------- */
 
+/* One row and the small print: brand, links, Discord. */
 .site-footer {
-  border-top: 2px solid var(--surface-2);
+  border-top: 1px solid var(--edge);
+  color: var(--text-2);
   background: var(--sunken);
 }
 
-.site-footer > div {
-  padding-block: 24px;
+.footer-row {
+  padding-block: 28px 20px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 14px;
-  color: var(--text-2);
-  font-size: 14px;
+  gap: 16px 32px;
 }
 
-.site-footer a {
-  color: var(--text-2);
-  /* Footer links are standalone targets, not links inside a sentence, so they
-     get the full 44px touch height. */
+.footer-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 22px;
+}
+
+.footer-links a,
+.footer-discord {
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 15px;
+  text-decoration: none;
 }
 
-.site-footer a:hover {
-  color: var(--pink-soft);
+.footer-links a:hover,
+.footer-discord:hover {
+  color: var(--pink-ink);
 }
 
-.site-footer [aria-hidden="true"] {
-  color: var(--edge-strong);
+.footer-discord {
+  margin-left: auto;
+}
+
+.footer-discord svg {
+  width: 18px;
+  height: 18px;
+}
+
+.footer-bottom {
+  padding-block: 14px 22px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 20px;
+  /* A hairline inset to the text column, not the container's gutters. */
+  background: linear-gradient(var(--edge), var(--edge)) top center / calc(100% - 2 * var(--gutter)) 1px no-repeat;
+  color: var(--text-3);
+  font-size: 14px;
 }
 
 .site-footer .dev-link {
   margin-inline: 6px;
+  color: var(--text-2);
+}
+
+@media (max-width: 700px) {
+  .footer-discord {
+    margin-left: 0;
+  }
 }
 
 /* ---------- Misc ---------- */
@@ -1052,8 +1239,9 @@ select.input {
   top: 8px;
   left: 8px;
   padding: 10px 16px;
+  border-radius: var(--radius-sm);
   background: var(--pink);
-  color: var(--bg);
+  color: var(--on-accent);
   font-weight: 700;
   translate: 0 -200%;
 }
@@ -1101,10 +1289,30 @@ select.input {
   }
 }
 
+/* ---------- Register agreement ---------- */
+
+/* What pressing Register agrees to (src/components/register-consent.tsx):
+   small but readable, with each document one click away. */
+.consent {
+  max-width: 62ch;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.consent a {
+  color: var(--pink-ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* ---------- Server address row ---------- */
 
 .address-row {
   padding: 14px 16px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-sm);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1154,6 +1362,7 @@ select.input {
 .step-progress > div span {
   width: 28px;
   height: 8px;
+  border-radius: 2px;
   background: var(--edge);
 }
 
@@ -1166,12 +1375,12 @@ select.input {
 }
 
 .dialog[data-danger] {
-  box-shadow: inset 0 0 0 2px var(--danger), inset 0 -4px 0 rgba(0, 0, 0, 0.28);
+  border-color: var(--danger);
 }
 
 .dialog-banner {
   padding: 12px 28px;
-  color: var(--bg);
+  color: var(--on-accent);
   background: var(--danger);
   font-weight: 700;
   font-size: 14px;
@@ -1202,7 +1411,7 @@ select.input {
 
 .md h3 {
   margin-top: 6px;
-  font: 600 19px/1.3 var(--font-display), var(--font-thai), monospace;
+  font: 700 19px/1.35 var(--font-body), Georgia, serif;
   color: var(--text);
 }
 
@@ -1240,7 +1449,7 @@ select.input {
 .md-table th,
 .md-table td {
   padding: 8px 10px;
-  border-bottom: 2px solid var(--surface-2);
+  border-bottom: 1px solid var(--edge);
   text-align: left;
   vertical-align: top;
 }
@@ -1249,7 +1458,8 @@ select.input {
 .preview-frame {
   position: relative;
   padding: 28px 16px 16px;
-  border: 2px dashed var(--edge);
+  border: 2px dashed var(--edge-strong);
+  border-radius: var(--radius);
   background: var(--bg);
   overflow: hidden;
 }
@@ -1263,4 +1473,32 @@ select.input {
   font: 500 11px/1.4 var(--font-mono), monospace;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* Category chips: the hero, the events filter and empty search results. */
+.cat-chip {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--edge-strong);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  background: var(--surface);
+  font-weight: 500;
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.cat-chip:hover {
+  color: var(--pink-ink);
+  border-color: var(--pink);
+}
+
+.cat-chip[aria-current="page"] {
+  color: var(--on-accent);
+  border-color: var(--pink);
+  background: var(--pink);
 }

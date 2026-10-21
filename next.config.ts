@@ -6,6 +6,10 @@ const storage = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL("/storage/v1/obje
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // `next dev` only trusts localhost. Extra hostnames for opening the dev
+  // server remotely (e.g. a Tailscale Serve name) come from the local env file,
+  // comma-separated, so no personal hostname is committed.
+  allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS?.split(",").map((h) => h.trim()).filter(Boolean),
   turbopack: { root: fileURLToPath(new URL(".", import.meta.url)) },
   experimental: {
     // Achievement and event images arrive as multipart form data on a server

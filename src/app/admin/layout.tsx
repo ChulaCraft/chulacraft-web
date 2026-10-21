@@ -17,9 +17,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!isStaff(role)) notFound();
 
   return (
-    <main className={`container ${styles.main}`}>
-      <AdminNav role={role} />
-      {children}
+    <main className={`container ${styles.shell}`}>
+      <aside className={styles.sidebar}><AdminNav role={role} /></aside>
+      <div className={styles.main}>{children}</div>
     </main>
   );
 }

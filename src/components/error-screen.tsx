@@ -13,7 +13,6 @@ export function ErrorScreen({ code, title, body, primary, secondary, help }: {
     <>
       <main className={styles.main}>
         <Image className={styles.bg} src="/images/collection/current/2026-08-12_20.42.49.webp" alt="" fill sizes="100vw" />
-        <div className={styles.tint} aria-hidden="true" />
         <div className={`container ${styles.inner}`}>
           <p className={styles.code} aria-hidden="true">{code}</p>
           <h1 className={styles.title}>{title}</h1>

@@ -5,11 +5,14 @@
 }
 
 /* Four hard colour steps, not a smooth blend: reads as pixel art, needs no
-   image. Colours come from the chosen banner; the fallbacks are Dusk. */
+   image. Colours come from the chosen banner; the fallbacks step from Night
+   up to Sakura, so an unset banner stays inside the four-colour palette. */
 .strip {
   --banner-colors: linear-gradient(90deg,
-    var(--b1, #6f5d92) 0 25%, var(--b2, #7a5a8e) 25% 50%,
-    var(--b3, #8a4f78) 50% 75%, var(--b4, #6a3f5f) 75%);
+    var(--b1, color-mix(in oklab, var(--sakura) 14%, var(--night))) 0 25%,
+    var(--b2, color-mix(in oklab, var(--sakura) 26%, var(--night))) 25% 50%,
+    var(--b3, color-mix(in oklab, var(--sakura) 40%, var(--night))) 50% 75%,
+    var(--b4, color-mix(in oklab, var(--sakura) 56%, var(--night))) 75%);
   height: 120px;
   background-image: var(--banner-image, none), var(--banner-colors);
   background-position: center;
@@ -57,7 +60,7 @@
 }
 
 .name {
-  font: 600 28px/1.15 var(--font-display), var(--font-thai), monospace;
+  font: 600 28px/1.15 var(--font-display), monospace;
   overflow-wrap: anywhere;
 }
 
@@ -74,7 +77,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px 48px;
-  border-top: 2px solid var(--surface-2);
+  border-top: 1px solid var(--edge);
 }
 
 .stats div {
@@ -89,7 +92,7 @@
 
 .stats dd {
   margin: 0;
-  font: 700 22px/1.2 var(--font-body), var(--font-thai), sans-serif;
+  font: 700 22px/1.2 var(--font-body), sans-serif;
 }
 
 @media (max-width: 560px) {

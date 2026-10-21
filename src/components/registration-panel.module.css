@@ -16,7 +16,7 @@
 }
 
 .title {
-  font: 600 22px/1.2 var(--font-display), var(--font-thai), monospace;
+  font: 700 22px/1.3 var(--font-body), Georgia, serif;
 }
 
 .slots {
@@ -91,7 +91,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: inset 0 0 0 2px var(--edge);
+  box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .list {
@@ -104,7 +104,7 @@
 
 .list > li {
   padding: 16px 0;
-  border-top: 2px solid var(--surface-2);
+  border-top: 1px solid var(--edge);
 }
 
 .row {
@@ -183,7 +183,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  border-top: 2px solid var(--surface-2);
+  border-top: 1px solid var(--edge);
   color: var(--text-3);
   font-size: 14px;
 }

@@ -23,12 +23,12 @@
 }
 
 .badge-name {
-  font: 600 17px/1.25 var(--font-display), var(--font-thai), monospace;
+  font: 700 17px/1.3 var(--font-body), Georgia, serif;
   overflow-wrap: anywhere;
 }
 
 .badge-count {
-  color: var(--pink-soft);
+  color: var(--pink-ink);
   font: 600 15px/1.4 var(--font-mono), monospace;
 }
 

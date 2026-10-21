@@ -1,6 +1,6 @@
-import { NavLinks } from "@/components/site-nav";
 import { staffCan, type Area } from "@/lib/staff";
 import styles from "./admin.module.css";
+import { AdminNavGroup } from "./admin-nav-group";
 import { CommandSearch } from "./search/command-search";
 
 const ALL_GROUPS: { label: string; area: Area; links: { label: string; href: string; exact?: boolean; area?: Area }[] }[] = [
@@ -19,16 +19,11 @@ function groupsFor(role: string | null) {
 export function AdminNav({ role }: { role: string | null }) {
   const GROUPS = groupsFor(role);
   return (
-    <nav className={`${styles.subnav} ${styles.adminNav}`} aria-label="Admin sections">
-      {GROUPS.map((g) => (
-        <div key={g.label} role="group" aria-label={g.label} className={styles.subnavGroup}>
-          <span className={styles.subnavLabel} aria-hidden="true">{g.label}</span>
-          <div className={styles.subnavLinks}><NavLinks links={g.links} /></div>
-        </div>
-      ))}
+    <nav className={styles.adminNav} aria-label="Admin sections">
       <div className={styles.navSearch}>
         <CommandSearch pages={GROUPS.flatMap((g) => g.links.map((l) => ({ label: l.label, href: l.href, group: g.label })))} />
       </div>
+      {GROUPS.map((g) => <AdminNavGroup key={g.label} label={g.label} links={g.links} />)}
     </nav>
   );
 }

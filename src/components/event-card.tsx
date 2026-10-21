@@ -88,7 +88,7 @@ export function EventCard({ event, coverSrc, featured = false }: { event: Upcomi
           <div className={styles.headText}>
             {/* Where sits top right, level with the category label. */}
             {(category || event.location) && <div className={styles.labelRow}>
-              {category && <span className={styles.chip}>{category}</span>}
+              {category && <span className={styles.chip} data-cat={event.category}>{category}</span>}
               {event.location && (
                 <p className={styles.where} title={event.location}>
                   <PixelIcon name="pin" size={16} /><span className="sr-only">Where: </span><span className={styles.whereText}>{event.location}</span>

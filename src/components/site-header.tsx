@@ -7,7 +7,7 @@ import { isStaff } from "@/lib/staff";
 import { discordCommunityUrl } from "@/lib/site-links";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
-import { HeaderShell, NavLinks } from "./site-nav";
+import { HeaderShell, MainNav, NavLinks, type NavItem } from "./site-nav";
 
 function Avatar({ src, name, size = 36 }: { src: string | null; name: string; size?: number }) {
   return src
@@ -42,18 +42,27 @@ export async function SiteHeader() {
   const name = discordName(user?.identities) ?? (typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "Player");
   const avatar = discordAvatar(user?.identities);
 
-  const links = [{ label: "Home", href: "/" }, { label: "Events", href: "/events" }, { label: "News", href: "/announcements" }];
-  // D1: search and profiles are signed-in only, so the entry point is hidden
-  // rather than linked-and-redirected for a logged-out visitor. Profile and
-  // Settings live in the account menu, not here.
-  if (user) links.push({ label: "Players", href: "/players" });
-  links.push({ label: "About", href: "/about" });
-  if (isAdmin) links.push({ label: "Admin", href: "/admin" });
-  const navLinks = <NavLinks links={links} />;
+  // The site's sections, grouped so the bar stays short: what's happening,
+  // how to play, who runs it. Players stays signed-in only (D1: search and
+  // profiles are hidden rather than linked-and-redirected for a logged-out
+  // visitor). Profile and Settings live in the account menu, not here.
+  const community = [
+    { label: "Events", href: "/events" },
+    { label: "News", href: "/announcements" },
+    { label: "Gallery", href: "/gallery" },
+  ];
+  if (user) community.push({ label: "Players", href: "/players" });
+  const nav: NavItem[] = [
+    { label: "Home", href: "/" },
+    { label: "Community", items: community },
+    { label: "Play", items: [{ label: "How to join", href: "/#join" }, { label: "Server rules", href: "/rules" }] },
+    { label: "About", items: [{ label: "About ChulaCraft", href: "/about" }, { label: "Team", href: "/team" }] },
+  ];
+  if (isAdmin) nav.push({ label: "Admin", href: "/admin" });
 
   return <><HeaderShell><div className="container header-inner">
     <Brand />
-    <nav className="main-nav" aria-label="Main">{navLinks}</nav>
+    <nav className="main-nav" aria-label="Main"><MainNav items={nav} /></nav>
     <div className="header-actions">
       {user ? (
         <details className="menu">
@@ -82,10 +91,16 @@ export async function SiteHeader() {
         <span className="menu-label-closed">Menu</span>
         <span className="menu-label-open">Close</span>
       </summary>
-      <nav id="mobile-menu" aria-label="Main">
+      <nav id="mobile-menu" aria-label="Menu">
         {user && <div className="mobile-user"><Avatar src={avatar} name={name} size={40} /><span>{name}</span></div>}
-        {navLinks}
         {user && <NavLinks links={[{ label: "Profile", href: "/dashboard" }, { label: "Settings", href: "/settings" }]} />}
+        {/* Phones: the same groups, each under its own heading. */}
+        {nav.map((item) => "href" in item
+          ? <NavLinks key={item.label} links={[item]} />
+          : <div key={item.label} className="mobile-group">
+              <p>{item.label}</p>
+              <NavLinks links={item.items} />
+            </div>)}
         {user
           ? <SignOutButton className="mobile-signout" />
           : <div className="mobile-cta">
@@ -94,7 +109,8 @@ export async function SiteHeader() {
             </div>}
       </nav>
     </details>
-  </div></HeaderShell>
+  </div>
+  </HeaderShell>
   {banner && <AnnouncementBanner id={banner.id} title={banner.title} severity={banner.severity} />}
   </>;
 }

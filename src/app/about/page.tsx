@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { RegisterConsent } from "@/components/register-consent";
 import { DiscordIcon } from "@/components/icons";
 import { discordCommunityUrl } from "@/lib/site-links";
 import { gallery } from "@/lib/site-content";
@@ -36,7 +37,6 @@ export default async function AboutPage() {
       <main>
         <section className={styles.hero} aria-labelledby="about-title">
           <Image className={styles.heroImage} src="/images/collection/current/2026-08-23_17.58.05.webp" alt="" fill preload sizes="100vw" />
-          <div className={styles.heroTint} aria-hidden="true" />
           <div className={`container ${styles.heroInner}`}>
             <span className="kicker" aria-hidden="true" />
             <h1 id="about-title" className={styles.heroTitle}>About ChulaCraft</h1>
@@ -69,6 +69,7 @@ export default async function AboutPage() {
               <Link className="btn btn-lg" href="/register">Register</Link>
               <Link className="btn btn-lg" href="/gallery">See the gallery</Link>
             </div>
+            <RegisterConsent />
           </div>
           <div className={styles.gallery}>
             {shots.map((g) => (
