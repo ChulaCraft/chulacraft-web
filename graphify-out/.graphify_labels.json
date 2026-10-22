@@ -1,19 +1,14 @@
 {
   "3": "package.json",
-  "4": "player/[id]/page.tsx",
   "5": "compilerOptions",
   "7": "devDependencies",
   "8": "local-mocks.mjs",
   "9": "ChulaCraft Web Version 1.0",
-  "10": "Tables",
   "15": "Chulacraft registration runbook",
   "16": "CLAUDE.md",
   "17": "supabase/README.md",
-  "21": "createClient",
   "24": "server/page.tsx",
-  "25": "users/[id]/page.tsx",
   "28": "dependencies",
   "29": "scripts",
-  "35": "Phases",
-  "46": "app/events/[id]/page.tsx"
+  "35": "Phases"
 }

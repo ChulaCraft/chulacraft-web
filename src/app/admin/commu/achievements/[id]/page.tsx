@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
 import { when } from "@/app/admin/overview";
 import { publicImageUrl } from "../images";
+import { MetaFields } from "../meta-fields";
 import { deleteAchievement, revokeAward, saveAchievement } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -20,6 +21,8 @@ const ERRORS: Record<string, string> = {
   BAD_IMAGE_TYPE: "That file isn't a PNG, JPEG, WebP or GIF image.",
   IMAGE_TOO_LARGE: "That image is bigger than 2 MB. Please upload a smaller one.",
   UPLOAD_FAILED: "The image couldn't be uploaded. Nothing was changed.",
+  INVALID: "Pick one of the listed tiers. The rest of the achievement was saved.",
+  ROLE_NOT_ALLOWED: "That Discord role isn't on the list admins allow. The rest of the achievement was saved; pick another role or none.",
   FAILED: "The change couldn't be saved. Please try again."
 };
 
@@ -38,9 +41,10 @@ export default async function AdminAchievementPage({ params, searchParams }: {
   if (!UUID.test(id)) notFound();
 
   const supabase = await createClient();
-  const [{ data: catalog, error: listError }, { data: awards }] = await Promise.all([
+  const [{ data: catalog, error: listError }, { data: awards }, { data: roles }] = await Promise.all([
     supabase.rpc("admin_list_achievements"),
-    supabase.rpc("admin_list_awards", { p_achievement_id: id })
+    supabase.rpc("admin_list_awards", { p_achievement_id: id }),
+    supabase.rpc("admin_list_discord_roles")
   ]);
   if (listError) {
     return <section className={`panel ${styles.errorCard}`} role="alert">
@@ -89,6 +93,7 @@ export default async function AdminAchievementPage({ params, searchParams }: {
               <option value="published">Published — players see it</option>
             </select>
           </div>
+          <MetaFields idPrefix="a" roles={roles} tier={achievement.tier} roleId={achievement.discord_role_id} />
 
           <div className={styles.formButtons}>
             <SubmitButton className="btn btn-primary">Save achievement</SubmitButton>

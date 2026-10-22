@@ -38,6 +38,9 @@ export async function saveAchievement(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const status = toStatus(String(formData.get("status") ?? "draft"));
+  // The RPC checks both (INVALID, ROLE_NOT_ALLOWED); blank role clears it.
+  const tier = String(formData.get("tier") ?? "common");
+  const role = String(formData.get("discordRoleId") ?? "").trim();
   const file = formData.get("image");
   // An untouched file input still posts an empty File; that means "keep the current image".
   const upload = file instanceof File && file.size > 0 ? file : null;
@@ -75,6 +78,14 @@ export async function saveAchievement(formData: FormData) {
   // replaced goes once the new path is the live one.
   if (upload && (error || data !== requestedId)) await supabase.storage.from(BUCKET).remove([key]);
   if (!error && previousImage && previousImage !== key) await supabase.storage.from(BUCKET).remove([previousImage]);
+  // After the image cleanup, so a refused tier or role can't strand the old
+  // image. Separate RPC so admin_upsert_achievement's signature stays put
+  // (20261026000001).
+  if (!error && data) {
+    // The generated type does not mark the optional role as nullable.
+    const { error: metaError } = await supabase.rpc("admin_set_achievement_meta", { p_id: data, p_tier: tier, p_discord_role_id: (role || null)! });
+    if (metaError) finish(achievementId ?? data, metaError, "saved");
+  }
   if (error) finish(achievementId, error, "saved");
 
   if (!achievementId && data) {

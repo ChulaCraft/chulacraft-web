@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
+import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
 import { saveAchievement } from "../[id]/actions";
+import { MetaFields } from "../meta-fields";
 import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "New achievement" };
 
 /** Creating is the edit form with nothing filled in; saveAchievement mints the
  *  id when none is posted. */
-export default function NewAchievementPage() {
+export default async function NewAchievementPage() {
+  const supabase = await createClient();
+  const { data: roles } = await supabase.rpc("admin_list_discord_roles");
   return <>
     <Link href="/admin/commu/achievements" className="back-link"><PixelIcon name="back" />Achievements</Link>
     <h1 className={styles.title}>New achievement</h1>
@@ -35,6 +39,7 @@ export default function NewAchievementPage() {
           <option value="published">Published — players see it</option>
         </select>
       </div>
+      <MetaFields idPrefix="n" roles={roles} tier="common" roleId={null} />
       <div className={styles.formButtons}>
         <SubmitButton className="btn btn-primary">Create achievement</SubmitButton>
         <Link href="/admin/commu/achievements" className="btn">Cancel</Link>

@@ -38,12 +38,13 @@ export default async function AdminEventPage({ params, searchParams }: {
   if (!UUID.test(id)) notFound();
 
   const supabase = await createClient();
-  const [catalog, interests, bannerList] = await Promise.all([
+  const [catalog, interests, bannerList, reminderList] = await Promise.all([
     supabase.rpc("admin_list_events"),
     // Admin-only (20261006000002), so this is the only place the names behind
     // the public count are readable. A failure here must not hide the event.
     supabase.rpc("admin_list_event_interests", { p_event_id: id }),
-    supabase.rpc("admin_list_banners")
+    supabase.rpc("admin_list_banners"),
+    supabase.rpc("admin_event_reminders", { p_id: id })
   ]);
   const { error: listError } = catalog;
   if (listError) {
@@ -57,6 +58,7 @@ export default async function AdminEventPage({ params, searchParams }: {
   const event = (catalog.data ?? []).find((row) => row.id === id);
   if (!event) notFound();
   const interested = interests.data ?? [];
+  const reminderStates = reminderList.data ?? [];
   const banners = (bannerList.data ?? []).filter((b) => b.kind === "unlock");
 
   return <>
@@ -71,6 +73,7 @@ export default async function AdminEventPage({ params, searchParams }: {
       submitLabel="Save event"
       coverUrl={event.image_path ? publicImageUrl(event.image_path) : null}
       banners={banners}
+      reminderStates={reminderStates}
       initial={{
         id: event.id,
         name: event.name,
@@ -80,6 +83,7 @@ export default async function AdminEventPage({ params, searchParams }: {
         location: event.location ?? "",
         category: event.category ?? "",
         banner: banners.find((b) => b.event_ids.includes(event.id))?.id ?? "",
+        reminders: reminderStates.map((r) => r.offset_minutes),
         status: event.status
       }}
       footer={
@@ -100,6 +104,13 @@ export default async function AdminEventPage({ params, searchParams }: {
         </section>
       }
       aside={<>
+        <section className="panel stack gap-10" aria-labelledby="event-checkin-title">
+          <h2 id="event-checkin-title" className={styles.sectionTitle}>Check-in</h2>
+          <p className="hint">Show the event QR, scan players and award attendees.</p>
+          {/* A plain <a> loads a new document, so the check-in route's camera=(self) Permissions-Policy applies. */}
+          <a href={`/admin/commu/events/${event.id}/check-in`} className="btn">Open check-in</a>
+        </section>
+
         <section className="panel stack gap-16" aria-labelledby="event-stats-title">
           <h2 id="event-stats-title" className={styles.sectionTitle}>Saved event</h2>
           <dl className={styles.facts}>

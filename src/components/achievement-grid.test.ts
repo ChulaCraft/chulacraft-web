@@ -1,30 +1,38 @@
 import { describe, expect, it } from "vitest";
-import { eventHistory, type AchievementGroup } from "./achievement-grid";
+import { showcase, type AchievementGroup } from "./achievement-grid";
 
 const group = (name: string, entries: AchievementGroup["entries"]): AchievementGroup => ({
   achievement_id: name, name, description: null, image_path: "x.png", count: entries.length,
-  first_on: entries[0].awarded_on, last_on: entries[entries.length - 1].awarded_on, entries
+  first_on: entries[0].awarded_on, last_on: entries[entries.length - 1].awarded_on, entries,
+  tier: "common", showcase_position: null
 });
 
-describe("eventHistory", () => {
-  it("lists each event once, newest first, with the badges earned there", () => {
+const badge = (name: string, tier: string, last_on: string, showcase_position: number | null = null): AchievementGroup => ({
+  ...group(name, [{ awarded_on: last_on, event_name: null }]), tier, showcase_position
+});
+
+describe("showcase", () => {
+  it("shows the player's picks in their order", () => {
+    const groups = [badge("A", "legendary", "2026-10-01"), badge("B", "common", "2026-09-01", 2), badge("C", "rare", "2026-08-01", 1)];
+    expect(showcase(groups).map((g) => g.name)).toEqual(["C", "B"]);
+  });
+
+  it("falls back to the highest tier, then the newest", () => {
     const groups = [
-      group("Builder", [{ awarded_on: "2026-09-01", event_name: "Build Jam" }, { awarded_on: "2026-10-01", event_name: "Halloween" }]),
-      group("Winner", [{ awarded_on: "2026-09-02", event_name: "Build Jam" }]),
-      group("Veteran", [{ awarded_on: "2026-08-01", event_name: null }])
+      badge("Old rare", "rare", "2026-01-01"),
+      badge("Common", "common", "2026-10-01"),
+      badge("Epic", "epic", "2026-02-01"),
+      badge("New rare", "rare", "2026-09-01"),
+      badge("Unknown", "mythic", "2026-10-05")
     ];
-    expect(eventHistory(groups)).toEqual([
-      { name: "Halloween", last_on: "2026-10-01", badges: ["Builder"] },
-      { name: "Build Jam", last_on: "2026-09-02", badges: ["Builder", "Winner"] }
-    ]);
+    expect(showcase(groups).map((g) => g.name)).toEqual(["Epic", "New rare", "Old rare"]);
   });
 
-  it("lists a badge earned twice at one event once", () => {
-    const groups = [group("Fisher", [{ awarded_on: "2026-09-01", event_name: "Fish Off" }, { awarded_on: "2026-09-03", event_name: "Fish Off" }])];
-    expect(eventHistory(groups)).toEqual([{ name: "Fish Off", last_on: "2026-09-03", badges: ["Fisher"] }]);
+  it("returns fewer than three when the player has fewer", () => {
+    expect(showcase([badge("Only", "common", "2026-10-01")]).map((g) => g.name)).toEqual(["Only"]);
   });
 
-  it("is empty without event badges", () => {
-    expect(eventHistory([])).toEqual([]);
+  it("is empty without badges", () => {
+    expect(showcase([])).toEqual([]);
   });
 });

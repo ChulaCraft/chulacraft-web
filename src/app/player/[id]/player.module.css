@@ -110,51 +110,6 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.events {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.events li {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  padding: 10px 12px;
-  border: 1px solid var(--edge);
-  border-radius: var(--radius);
-  background: var(--sunken);
-}
-
-.eventDate {
-  flex: none;
-  min-width: 96px;
-  color: var(--text-2);
-  font: 500 14px/1.4 var(--font-mono), monospace;
-}
-
-.eventText {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  overflow-wrap: anywhere;
-}
-
-.eventText :global(.muted) {
-  font-size: 14px;
-}
-
-@media (max-width: 480px) {
-  .events li {
-    flex-direction: column;
-    gap: 4px;
-  }
-}
-
 /* Report dialog: one card per reason, every option visible, one tap. */
 .reasons {
   margin: 0;

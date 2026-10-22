@@ -6,6 +6,7 @@ import { discordAvatar, discordName } from "@/lib/chula";
 import { isStaff } from "@/lib/staff";
 import { discordCommunityUrl } from "@/lib/site-links";
 import { createClient } from "@/lib/supabase/server";
+import { NotificationBell } from "./notification-bell";
 import { SignOutButton } from "./sign-out-button";
 import { HeaderShell, MainNav, NavLinks, type NavItem } from "./site-nav";
 
@@ -29,13 +30,15 @@ export async function SiteHeader() {
   ]);
 
   let isAdmin = false;
+  let unread = 0;
   if (user) {
-    try {
-      const { data } = await supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle();
-      isAdmin = isStaff(data?.role);
-    } catch {
-      // The /admin layout re-checks the role, so hiding the link is only cosmetic.
-    }
+    // Independent lookups; a failure in either just hides its bit of chrome.
+    const [role, count] = await Promise.all([
+      supabase.from("profiles").select("role").eq("user_id", user.id).maybeSingle().then(({ data }) => data?.role, () => null),
+      supabase.rpc("my_unread_notifications").then(({ data }) => data ?? 0, () => 0),
+    ]);
+    isAdmin = isStaff(role); // The /admin layout re-checks the role, so hiding the link is only cosmetic.
+    unread = count;
   }
 
   const meta = user?.user_metadata ?? {};
@@ -64,7 +67,8 @@ export async function SiteHeader() {
     <Brand />
     <nav className="main-nav" aria-label="Main"><MainNav items={nav} /></nav>
     <div className="header-actions">
-      {user ? (
+      {user ? <>
+        <NotificationBell count={unread} />
         <details className="menu">
           <summary aria-label={`Account menu for ${name}`}>
             <Avatar src={avatar} name={name} />
@@ -79,7 +83,7 @@ export async function SiteHeader() {
             <SignOutButton />
           </div>
         </details>
-      ) : <>
+      </> : <>
         <a className="btn btn-sm" href={discordCommunityUrl} target="_blank" rel="noreferrer"><DiscordIcon /> Join Discord</a>
         <Link className="btn btn-sm btn-primary" href="/register">Sign in</Link>
       </>}
@@ -93,6 +97,7 @@ export async function SiteHeader() {
       </summary>
       <nav id="mobile-menu" aria-label="Menu">
         {user && <div className="mobile-user"><Avatar src={avatar} name={name} size={40} /><span>{name}</span></div>}
+        {user && <NotificationBell count={unread} inline />}
         {user && <NavLinks links={[{ label: "Profile", href: "/dashboard" }, { label: "Settings", href: "/settings" }]} />}
         {/* Phones: the same groups, each under its own heading. */}
         {nav.map((item) => "href" in item

@@ -36,6 +36,13 @@
   --danger: var(--coral);
   --danger-hover: color-mix(in oklab, var(--coral) 78%, var(--moon));
   --danger-bg: color-mix(in oklab, var(--coral) 16%, var(--night));
+  /* Badge rarity: the card frame and the tier chip's fill. Each sits on a
+     panel and holds --tier-ink text; src/lib/contrast.test.ts checks both. */
+  --tier-common: color-mix(in oklab, var(--moon) 62%, var(--night));
+  --tier-rare: var(--sky);
+  --tier-epic: var(--violet);
+  --tier-legendary: var(--amber);
+  --tier-ink: var(--night);
   --content-width: 1240px;
   --gutter: clamp(16px, 4vw, 32px);
   --radius-sm: 8px;

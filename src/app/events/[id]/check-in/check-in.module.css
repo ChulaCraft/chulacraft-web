@@ -1,0 +1,28 @@
+.main {
+  padding-block: clamp(28px, 5vw, 56px) 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Thai event names have no spaces to break on. */
+.title {
+  font-size: clamp(24px, 5vw, 32px);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.form {
+  display: flex;
+}
+
+.form :global(.btn) {
+  flex: 1;
+  justify-content: center;
+}

@@ -63,19 +63,45 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"achievements": {
+                },"achievement_showcase": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"description": string | null,"id": string,"image_path": string,"name": string,"status": string,"updated_at": string
+                    "achievement_id": string,"position": number,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"description"?: string | null,"id"?: string,"image_path": string,"name": string,"status"?: string,"updated_at"?: string
+                    "achievement_id": string,"position": number,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"description"?: string | null,"id"?: string,"image_path"?: string,"name"?: string,"status"?: string,"updated_at"?: string
+                    "achievement_id"?: string,"position"?: number,"user_id"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "achievement_showcase_achievement_id_fkey"
+      columns: ["achievement_id"]
+isOneToOne: false
+      referencedRelation: "achievements"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"achievements": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"description": string | null,"discord_role_id": string | null,"id": string,"image_path": string,"name": string,"status": string,"tier": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"description"?: string | null,"discord_role_id"?: string | null,"id"?: string,"image_path": string,"name": string,"status"?: string,"tier"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"description"?: string | null,"discord_role_id"?: string | null,"id"?: string,"image_path"?: string,"name"?: string,"status"?: string,"tier"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "achievements_discord_role_id_fkey"
+      columns: ["discord_role_id"]
+isOneToOne: false
+      referencedRelation: "discord_assignable_roles"
+      referencedColumns: ["role_id"]
+    }
                   ]
                 },"announcements": {
                   Row: {
@@ -187,6 +213,74 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"discord_assignable_roles": {
+                  Row: {
+                    "added_by": string | null,"created_at": string,"label": string,"role_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "added_by"?: string | null,"created_at"?: string,"label": string,"role_id": string
+                  }
+                  Update: {
+                    "added_by"?: string | null,"created_at"?: string,"label"?: string,"role_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"discord_role_state": {
+                  Row: {
+                    "attempts": number,"discord_id": string,"last_error": string | null,"retry_after": string | null,"role_id": string,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempts"?: number,"discord_id": string,"last_error"?: string | null,"retry_after"?: string | null,"role_id": string,"status": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "attempts"?: number,"discord_id"?: string,"last_error"?: string | null,"retry_after"?: string | null,"role_id"?: string,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"event_attendance": {
+                  Row: {
+                    "created_at": string,"event_id": string,"method": string,"recorded_by": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"event_id": string,"method": string,"recorded_by"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"event_id"?: string,"method"?: string,"recorded_by"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "event_attendance_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"event_checkin_secrets": {
+                  Row: {
+                    "event_id": string,"rotated_at": string | null,"secret": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "event_id": string,"rotated_at"?: string | null,"secret"?: string
+                  }
+                  Update: {
+                    "event_id"?: string,"rotated_at"?: string | null,"secret"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "event_checkin_secrets_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: true
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"event_interests": {
                   Row: {
                     "created_at": string,"event_id": string,"user_id": string
@@ -207,11 +301,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"event_reminders": {
+                  Row: {
+                    "event_id": string,"notified_at": string | null,"offset_minutes": number,"sent_at": string | null,"skipped_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "event_id": string,"notified_at"?: string | null,"offset_minutes": number,"sent_at"?: string | null,"skipped_at"?: string | null
+                  }
+                  Update: {
+                    "event_id"?: string,"notified_at"?: string | null,"offset_minutes"?: number,"sent_at"?: string | null,"skipped_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "event_reminders_event_id_fkey"
+      columns: ["event_id"]
+isOneToOne: false
+      referencedRelation: "events"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"events": {
                   Row: {
-                    "banner_id": string | null,"category": string | null,"created_at": string,"created_by": string | null,"description": string | null,"ends_at": string | null,"id": string,"image_path": string | null,"location": string | null,"name": string,"starts_at": string,"status": string,"updated_at": string,"event_is_ended": boolean | null
+                    "banner_id": string | null,"category": string | null,"created_at": string,"created_by": string | null,"description": string | null,"ends_at": string | null,"id": string,"image_path": string | null,"location": string | null,"name": string,"starts_at": string,"status": string,"updated_at": string,"checkin_open": boolean | null,"event_is_ended": boolean | null
                   }
-                  ComputedFields: "event_is_ended"
+                  ComputedFields: "checkin_open" | "event_is_ended"
                   Insert: {
                     "banner_id"?: string | null,"category"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"ends_at"?: string | null,"id"?: string,"image_path"?: string | null,"location"?: string | null,"name": string,"starts_at": string,"status"?: string,"updated_at"?: string
                   }
@@ -299,6 +413,34 @@ isOneToOne: false
                   }
                   Update: {
                     "created_at"?: string,"desired_whitelisted"?: boolean,"discord_user_id"?: string,"discord_username"?: string | null,"id"?: string,"is_active"?: boolean,"last_sync_error_at"?: string | null,"last_sync_error_code"?: string | null,"minecraft_username"?: string,"minecraft_username_key"?: string,"minecraft_uuid"?: string,"next_sync_at"?: string,"revoked_at"?: string | null,"sync_attempts"?: number,"sync_failing_since"?: string | null,"sync_status"?: string,"updated_at"?: string,"user_id"?: string,"whitelisted_at"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"notifications": {
+                  Row: {
+                    "created_at": string,"id": string,"kind": string,"payload": NonNullable<Json>,"read_at": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"kind": string,"payload"?: NonNullable<Json>,"read_at"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"kind"?: string,"payload"?: NonNullable<Json>,"read_at"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"player_checkin_codes": {
+                  Row: {
+                    "code": string,"created_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "code": string,"created_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "code"?: string,"created_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -477,8 +619,21 @@ isOneToOne: false
 "admin_award":
 { Args: { "p_achievement_id": string,"p_awarded_on": string,"p_event_id": string,"p_user_ids": (string)[] }; Returns: number
                            },
+"admin_award_attendees":
+{ Args: { "p_achievement_id": string,"p_event_id": string }; Returns: number
+                           },
 "admin_ban_user":
 { Args: { "p_expires_at"?: string,"p_public_note"?: string,"p_reason": string,"p_user_id": string }; Returns: string
+                           },
+"admin_check_in_player":
+{ Args: { "p_code": string,"p_event_id": string }; Returns: {
+              "avatar_url": string,"display_name": string,"status": string,"user_id": string
+            }[]
+                           },
+"admin_checkin_token":
+{ Args: { "p_event_id": string }; Returns: {
+              "expires_at": string,"token": string
+            }[]
                            },
 "admin_decide_appeal":
 { Args: { "p_accept": boolean,"p_appeal_id": string,"p_response": string }; Returns: undefined
@@ -495,6 +650,9 @@ isOneToOne: false
 { Args: { "p_id": string }; Returns: {
               "image_path": string,"still_path": string
             }[]
+                           },
+"admin_delete_discord_role":
+{ Args: { "p_role_id": string }; Returns: undefined
                            },
 "admin_delete_event":
 { Args: { "p_id": string }; Returns: {
@@ -516,6 +674,11 @@ isOneToOne: false
 "admin_display_name":
 { Args: { "p_user_id": string }; Returns: string
                            },
+"admin_event_reminders":
+{ Args: { "p_id": string }; Returns: {
+              "offset_minutes": number,"sent_at": string,"skipped_at": string
+            }[]
+                           },
 "admin_get_user":
 { Args: { "p_user_id": string }; Returns: Json
                            },
@@ -530,7 +693,7 @@ isOneToOne: false
                            },
 "admin_list_achievements":
 { Args: Record<PropertyKey, never>; Returns: {
-              "award_count": number,"created_at": string,"description": string,"id": string,"image_path": string,"name": string,"status": string,"updated_at": string
+              "award_count": number,"created_at": string,"description": string,"discord_role_id": string,"id": string,"image_path": string,"name": string,"status": string,"tier": string,"updated_at": string
             }[]
                            },
 "admin_list_announcements":
@@ -543,6 +706,11 @@ isOneToOne: false
               "admin_response": string,"ban_id": string,"banned_at": string,"banned_by_name": string,"created_at": string,"decided_at": string,"decided_by_name": string,"expires_at": string,"id": string,"message": string,"public_note": string,"reason": string,"status": string,"user_id": string,"user_name": string
             }[]
                            },
+"admin_list_attendance":
+{ Args: { "p_event_id": string }; Returns: {
+              "avatar_url": string,"created_at": string,"display_name": string,"method": string,"recorded_by_name": string,"user_id": string
+            }[]
+                           },
 "admin_list_awards":
 { Args: { "p_achievement_id": string }; Returns: {
               "awarded_by": string,"awarded_on": string,"created_at": string,"display_name": string,"event_id": string,"event_name": string,"id": string,"user_id": string
@@ -551,6 +719,11 @@ isOneToOne: false
 "admin_list_banners":
 { Args: Record<PropertyKey, never>; Returns: {
               "colors": (string)[],"event_ids": (string)[],"id": string,"image_path": string,"kind": string,"name": string,"still_path": string,"style": string
+            }[]
+                           },
+"admin_list_discord_roles":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"label": string,"role_id": string
             }[]
                            },
 "admin_list_event_interests":
@@ -603,6 +776,9 @@ isOneToOne: false
               "actor_name": string,"created_at": string,"entity": string,"field": string,"new_value": string,"old_value": string,"target_name": string,"target_user_id": string
             }[]
                            },
+"admin_remove_attendance":
+{ Args: { "p_event_id": string,"p_user_id": string }; Returns: undefined
+                           },
 "admin_removed_accounts":
 { Args: Record<PropertyKey, never>; Returns: {
               "discord_username": string,"id": string,"is_active": boolean,"minecraft_username": string,"removed_at": string,"removed_by": string,"user_id": string
@@ -619,8 +795,14 @@ isOneToOne: false
 "admin_revoke_award":
 { Args: { "p_award_id": string }; Returns: number
                            },
+"admin_rotate_checkin_secret":
+{ Args: { "p_event_id": string }; Returns: undefined
+                           },
 "admin_save_banner":
 { Args: { "p_colors": (string)[],"p_id": string,"p_image_path": string,"p_name": string,"p_still_path": string,"p_style": string }; Returns: string
+                           },
+"admin_save_discord_role":
+{ Args: { "p_label": string,"p_role_id": string }; Returns: undefined
                            },
 "admin_save_gallery_group":
 { Args: { "p_description": string,"p_id": string,"p_name": string }; Returns: string
@@ -648,6 +830,9 @@ isOneToOne: false
 "admin_server_console_access":
 { Args: { "p_action": string,"p_jti": string,"p_server": string }; Returns: string
                            },
+"admin_set_achievement_meta":
+{ Args: { "p_discord_role_id": string,"p_id": string,"p_tier": string }; Returns: undefined
+                           },
 "admin_set_announcement_image":
 { Args: { "p_id": string,"p_path": string }; Returns: string
                            },
@@ -656,6 +841,9 @@ isOneToOne: false
                            },
 "admin_set_event_category":
 { Args: { "p_category": string,"p_id": string }; Returns: undefined
+                           },
+"admin_set_event_reminders":
+{ Args: { "p_id": string,"p_offsets": (number)[] }; Returns: undefined
                            },
 "admin_set_privacy":
 { Args: { "p_achievements": string,"p_friends": string,"p_minecraft": string,"p_profile": string,"p_user_id": string }; Returns: undefined
@@ -744,8 +932,26 @@ isOneToOne: false
               "created": boolean,"desired_whitelisted": boolean,"id": string,"minecraft_username": string,"sync_status": string,"updated_at": string
             }[]
                            },
+"check_in":
+{ Args: { "p_event_id": string,"p_token": string }; Returns: string
+                           },
+"checkin_mac":
+{ Args: { "p_event_id": string,"p_message": string }; Returns: string
+                           },
+"checkin_open":
+{ Args: { "p_event": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']> }; Returns: boolean
+                           },
+"checkin_proof":
+{ Args: { "p_event_id": string,"p_token": string }; Returns: string
+                           },
+"checkin_verify":
+{ Args: { "p_event_id": string,"p_token": string }; Returns: boolean
+                           },
 "claim_chula":
 { Args: { "p_email": string,"p_google_sub": string,"p_user_id": string }; Returns: undefined
+                           },
+"cleanup_notifications":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "consume_registration_attempt":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -753,8 +959,43 @@ isOneToOne: false
 "current_app_role":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"discord_role_desired":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "discord_id": string,"role_id": string
+            }[]
+                           },
+"discord_role_queue":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "discord_id": string,"op": string,"role_id": string
+            }[]
+                           },
+"discord_role_queue_done":
+{ Args: { "p_items": Json }; Returns: number
+                           },
+"event_attendance_backfill":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"event_history":
+{ Args: { "p_user_id": string }; Returns: Json
+                           },
 "event_is_ended":
 { Args: { "p_event": Omit<Database["public"]['Tables']["events"]['Row'], Database["public"]['Tables']["events"]['ComputedFields']> }; Returns: boolean
+                           },
+"event_reminder_sent":
+{ Args: { "p_event_id": string,"p_offset_minutes": number }; Returns: boolean
+                           },
+"event_reminders_due":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "event_id": string,"offset_minutes": number
+            }[]
+                           },
+"event_reminders_notify":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"event_reminders_queue":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "event_id": string,"interested_discord_ids": (string)[],"location": string,"name": string,"offset_minutes": number,"starts_at": string
+            }[]
                            },
 "get_event":
 { Args: { "p_id": string }; Returns: Json
@@ -763,6 +1004,9 @@ isOneToOne: false
 { Args: { "p_user_id": string }; Returns: {
               "colors": (string)[],"image_path": string,"still_path": string,"style": string
             }[]
+                           },
+"get_player_event_history":
+{ Args: { "p_user_id": string }; Returns: Json
                            },
 "get_player_profile":
 { Args: { "p_user_id": string }; Returns: Json
@@ -839,6 +1083,9 @@ isOneToOne: false
 "log_identity_change":
 { Args: { "p_field": string,"p_identity_id": string,"p_new": string,"p_old": string,"p_user_id": string }; Returns: undefined
                            },
+"mark_my_notifications_read":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "my_achievements":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -850,9 +1097,20 @@ isOneToOne: false
               "colors": (string)[],"event_names": (string)[],"granted": boolean,"id": string,"image_path": string,"kind": string,"name": string,"owned": boolean,"selected": boolean,"still_path": string,"style": string
             }[]
                            },
+"my_checkin_code":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
 "my_chula_claim":
 { Args: Record<PropertyKey, never>; Returns: {
               "email": string,"google_sub": string
+            }[]
+                           },
+"my_event_history":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"my_notifications":
+{ Args: { "p_limit"?: number }; Returns: {
+              "created_at": string,"id": string,"kind": string,"payload": Json,"read_at": string
             }[]
                            },
 "my_privacy":
@@ -860,6 +1118,9 @@ isOneToOne: false
                            },
 "my_social":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"my_unread_notifications":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "player_avatar":
 { Args: { "p_user": string }; Returns: string
@@ -899,6 +1160,9 @@ isOneToOne: false
                            },
 "set_my_banner":
 { Args: { "p_banner_id": string }; Returns: undefined
+                           },
+"set_my_showcase":
+{ Args: { "p_achievement_ids": (string)[] }; Returns: undefined
                            },
 "site_switch_on":
 { Args: { "p_key": string }; Returns: boolean

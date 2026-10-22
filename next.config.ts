@@ -50,6 +50,11 @@ const nextConfig: NextConfig = {
         { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" }
         // Content-Security-Policy is built per request in src/proxy.ts so it can carry a nonce.
       ]
+    }, {
+      // The staff scanner needs the camera. Listed after the catch-all because
+      // the last matching key wins, so the whole value is restated here.
+      source: "/admin/commu/events/:id/check-in",
+      headers: [{ key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" }]
     }];
   }
 };

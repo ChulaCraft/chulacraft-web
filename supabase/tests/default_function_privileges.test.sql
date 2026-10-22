@@ -125,7 +125,34 @@ insert into expected values
   ('authenticated', 'set_sync_failing_since()'),
   ('authenticated', 'set_updated_at()'),
   ('authenticated', 'unblock_player(p_other uuid)'),
-  ('authenticated', 'update_privacy(p_profile text, p_minecraft text, p_achievements text, p_friends text)');
+  ('authenticated', 'update_privacy(p_profile text, p_minecraft text, p_achievements text, p_friends text)'),
+  -- 20261026000001_achievement_rarity.sql
+  ('authenticated', 'admin_list_discord_roles()'),
+  ('authenticated', 'admin_save_discord_role(p_role_id text, p_label text)'),
+  ('authenticated', 'admin_delete_discord_role(p_role_id text)'),
+  ('authenticated', 'admin_set_achievement_meta(p_id uuid, p_tier text, p_discord_role_id text)'),
+  ('authenticated', 'set_my_showcase(p_achievement_ids uuid[])'),
+  -- 20261027000001_event_attendance.sql. checkin_proof is anon on purpose: the
+  -- QR route handler trades a token for a proof before the player signs in.
+  ('anon', 'checkin_proof(p_event_id uuid, p_token text)'),
+  ('authenticated', 'checkin_proof(p_event_id uuid, p_token text)'),
+  ('authenticated', 'check_in(p_event_id uuid, p_token text)'),
+  ('authenticated', 'my_checkin_code()'),
+  ('authenticated', 'my_event_history()'),
+  ('authenticated', 'get_player_event_history(p_user_id uuid)'),
+  ('authenticated', 'admin_checkin_token(p_event_id uuid)'),
+  ('authenticated', 'admin_rotate_checkin_secret(p_event_id uuid)'),
+  ('authenticated', 'admin_check_in_player(p_event_id uuid, p_code text)'),
+  ('authenticated', 'admin_list_attendance(p_event_id uuid)'),
+  ('authenticated', 'admin_remove_attendance(p_event_id uuid, p_user_id uuid)'),
+  ('authenticated', 'admin_award_attendees(p_event_id uuid, p_achievement_id uuid)'),
+  -- 20261028000001_event_reminders.sql
+  ('authenticated', 'admin_set_event_reminders(p_id uuid, p_offsets integer[])'),
+  ('authenticated', 'admin_event_reminders(p_id uuid)'),
+  -- 20261029000001_notifications.sql
+  ('authenticated', 'my_unread_notifications()'),
+  ('authenticated', 'my_notifications(p_limit integer)'),
+  ('authenticated', 'mark_my_notifications_read()');
 
 -- Everything the two roles can execute right now, one row per role/function.
 -- A function both roles hold must appear twice, so the roles are unnested

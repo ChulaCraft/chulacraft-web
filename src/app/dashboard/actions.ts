@@ -115,3 +115,17 @@ export async function setBanner(formData: FormData) {
   revalidatePath("/dashboard");
   redirect("/dashboard?saved=banner");
 }
+
+// Up to three picks, in the order posted. Ownership is the RPC's call
+// (NOT_OWNED); here the ids only have to look like ids. Nothing ticked clears
+// the showcase, which then falls back to the top badges.
+export async function setShowcase(formData: FormData) {
+  const ids = [...new Set(formData.getAll("achievementId").map(String))];
+  if (ids.length > 3 || !ids.every((id) => UUID.test(id))) redirect("/dashboard?showcaseError=INVALID#showcase");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_my_showcase", { p_achievement_ids: ids });
+  if (error) redirect(`/dashboard?showcaseError=${dbErrorCode(error) ?? "FAILED"}#showcase`);
+  revalidatePath("/dashboard");
+  revalidatePath("/player/[id]", "page");
+  redirect("/dashboard?saved=showcase#showcase");
+}

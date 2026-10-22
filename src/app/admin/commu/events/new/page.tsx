@@ -17,7 +17,7 @@ export default async function NewEventPage() {
       submitLabel="Create event"
       coverUrl={null}
       banners={(data ?? []).filter((b) => b.kind === "unlock")}
-      initial={{ name: "", description: "", startsAt: "", endsAt: "", location: "", category: "", banner: "", status: "draft" }}
+      initial={{ name: "", description: "", startsAt: "", endsAt: "", location: "", category: "", banner: "", reminders: [], status: "draft" }}
     />
   </>;
 }

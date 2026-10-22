@@ -40,6 +40,7 @@ export async function saveEvent(formData: FormData) {
   // The RPC checks it names an unlock banner (INVALID); here it only has to look like an id.
   const bannerRaw = String(formData.get("banner") ?? "");
   const banner = /^[a-z0-9-]{2,32}$/.test(bannerRaw) ? bannerRaw : null;
+  const offsets = formData.getAll("reminders").map(Number).filter(Number.isInteger);
   const startsAt = instant(formData, "startsAt");
   const endsAt = instant(formData, "endsAt");
   const file = formData.get("cover");
@@ -87,6 +88,9 @@ export async function saveEvent(formData: FormData) {
     if (categoryError) finish(eventId ?? data, categoryError, "saved");
     const { error: bannerError } = await supabase.rpc("admin_set_event_banner", { p_id: data, p_banner_id: banner! });
     if (bannerError) finish(eventId ?? data, bannerError, "saved");
+    // After the upsert, which re-arms offsets when starts_at moved.
+    const { error: reminderError } = await supabase.rpc("admin_set_event_reminders", { p_id: data, p_offsets: offsets });
+    if (reminderError) finish(eventId ?? data, reminderError, "saved");
   }
   if (!error && previousImage && previousImage !== key) await supabase.storage.from(BUCKET).remove([previousImage]);
   if (error) finish(eventId, error, "saved");

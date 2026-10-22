@@ -11,5 +11,7 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email: USERS[as], password: "dev-password" });
   if (error) return NextResponse.json({ error: error.message, hint: "Run supabase/dev-seed.sql and restart local Supabase" }, { status: 500 });
-  return NextResponse.redirect(new URL(as === "admin" || as === "owner" ? "/admin" : "/welcome", request.url));
+  // Relative Location: behind a proxy such as Tailscale Serve, request.url says
+  // localhost:3000, so an absolute redirect would leave the device's origin.
+  return new NextResponse(null, { status: 307, headers: { Location: as === "admin" || as === "owner" ? "/admin" : "/welcome" } });
 }

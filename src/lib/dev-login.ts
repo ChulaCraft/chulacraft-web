@@ -6,6 +6,7 @@ export const DEV_LOGIN_ENABLED =
 // Users from supabase/dev-seed.sql, one per role plus one not yet Chula-verified.
 export const DEV_USERS = {
   unverified: "unverified@dev.local",
+  verified: "verified@dev.local",
   guest: "guest@dev.local",
   admin: "admin@dev.local",
   owner: "owner@dev.local",

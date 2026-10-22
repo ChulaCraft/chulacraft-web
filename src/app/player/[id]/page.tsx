@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { AchievementGrid, eventHistory, type AchievementGroup } from "@/components/achievement-grid";
+import { AchievementGrid, EventHistory, showcase, ShowcaseRow, toEventHistory, type AchievementGroup } from "@/components/achievement-grid";
 import { PixelIcon } from "@/components/icons";
 import { ProfileBanner } from "@/components/profile-banner";
 import { UUID } from "@/lib/registration";
@@ -65,8 +65,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: card.display_name };
 }
 
-const eventDay = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", dateStyle: "medium" });
-
 const ERRORS: Record<string, string> = {
   NOT_FOUND: "That player is no longer available.",
   ALREADY_FRIENDS: "You are already friends with this player.",
@@ -98,10 +96,13 @@ export default async function PlayerPage({ params, searchParams }: {
   }
   if (!signedIn) redirect("/register");
 
-  const [card, banner] = await Promise.all([
+  const [card, banner, events] = await Promise.all([
     loadCard(id),
     // Cosmetic: a failure falls back to the default strip.
-    supabase.rpc("get_player_banner", { p_user_id: id }).maybeSingle().then(({ data }) => data, () => null)
+    supabase.rpc("get_player_banner", { p_user_id: id }).maybeSingle().then(({ data }) => data, () => null),
+    // Attendance, behind the same achievements privacy as the badges; a
+    // failure (or a block, NOT_FOUND) reads as no events.
+    supabase.rpc("get_player_event_history", { p_user_id: id }).then(({ data }) => toEventHistory(data), () => [])
   ]);
   // A blocked profile and an unknown one are both NOT_FOUND (AC 18).
   if (!card) notFound();
@@ -112,7 +113,6 @@ export default async function PlayerPage({ params, searchParams }: {
   const names = card.minecraft_names ?? [];
   const friends = card.friends ?? [];
   const badges = card.achievements ?? [];
-  const events = eventHistory(badges);
 
   return (
     <>
@@ -208,6 +208,15 @@ export default async function PlayerPage({ params, searchParams }: {
             </section>
           ) : !blocked && (
             <div className={styles.sections}>
+              {/* Only when achievements are visible: player_card leaves the key
+                  out entirely when privacy hides them. */}
+              {badges.length > 0 && (
+                <section className={`panel ${styles.card}`} aria-labelledby="showcase-title">
+                  <h2 id="showcase-title" className={styles.cardTitle}>Showcase</h2>
+                  <ShowcaseRow groups={showcase(badges)} label={`${card.display_name}'s showcase`} />
+                </section>
+              )}
+
               <section className={`panel ${styles.card}`} aria-labelledby="badges-title">
                 <h2 id="badges-title" className={styles.cardTitle}>Achievements</h2>
                 <AchievementGrid groups={badges} />
@@ -215,21 +224,7 @@ export default async function PlayerPage({ params, searchParams }: {
 
               <section className={`panel ${styles.card}`} aria-labelledby="events-title">
                 <h2 id="events-title" className={styles.cardTitle}>Event history</h2>
-                {events.length === 0 ? (
-                  <p className="muted">No events yet.</p>
-                ) : (
-                  <ol className={styles.events}>
-                    {events.map((event) => (
-                      <li key={event.name}>
-                        <time dateTime={event.last_on} className={styles.eventDate}>{eventDay(event.last_on)}</time>
-                        <span className={styles.eventText}>
-                          <strong>{event.name}</strong>
-                          <span className="muted">{event.badges.join(", ")}</span>
-                        </span>
-                      </li>
-                    ))}
-                  </ol>
-                )}
+                <EventHistory events={events} />
               </section>
 
               <section className={`panel ${styles.card}`} aria-labelledby="friends-title">

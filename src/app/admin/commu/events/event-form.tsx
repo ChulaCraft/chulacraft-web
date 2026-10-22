@@ -10,7 +10,7 @@ import styles from "@/app/admin/admin.module.css";
 import { IMAGE_TYPES } from "@/app/admin/commu/achievements/images";
 import { saveEvent } from "./[id]/actions";
 
-export type EventFormValues = {
+type EventFormValues = {
   id?: string;
   name: string;
   description: string;
@@ -20,8 +20,21 @@ export type EventFormValues = {
   category: string;
   /** Unlock banner earned by anyone awarded a badge at this event ("" = none). */
   banner: string;
+  /** Reminder offsets in minutes before the start (ticked presets). */
+  reminders: number[];
   status: string;
 };
+
+/** The offsets admin_set_event_reminders accepts (20261028000001). */
+const REMINDER_PRESETS = [
+  { minutes: 10080, label: "1 week before" },
+  { minutes: 1440, label: "1 day before" },
+  { minutes: 180, label: "3 hours before" },
+  { minutes: 60, label: "1 hour before" },
+  { minutes: 15, label: "15 minutes before" }
+];
+
+type ReminderState = { offset_minutes: number; sent_at: string | null; skipped_at: string | null };
 
 /** Covers are shown at card size, so ~500 KB is plenty and keeps the free-tier
  *  Storage quota from filling up. Anything bigger is re-encoded. */
@@ -64,8 +77,10 @@ const toIso = (local: string) => {
 /** The event editor: fields on the left, the homepage card it will become on
  *  the right, updated as the admin types. `aside` is extra server-rendered
  *  content for the right column, `footer` for under the form. */
-export function EventForm({ initial, submitLabel, coverUrl, banners = [], aside, footer }: {
+export function EventForm({ initial, submitLabel, coverUrl, banners = [], reminderStates = [], aside, footer }: {
   initial: EventFormValues;
+  /** Sent/skipped marks from admin_event_reminders. */
+  reminderStates?: ReminderState[];
   /** Unlock banners from admin_list_banners (20261021000001). */
   banners?: { id: string; name: string }[];
   submitLabel: string;
@@ -86,6 +101,10 @@ export function EventForm({ initial, submitLabel, coverUrl, banners = [], aside,
   const now = useSyncExternalStore(noSubscribe, () => LOADED_AT, () => null);
 
   const set = (field: keyof EventFormValues) => (e: { target: { value: string } }) => setValues((v) => ({ ...v, [field]: e.target.value }));
+
+  function toggleReminder(minutes: number, on: boolean) {
+    setValues((v) => ({ ...v, reminders: on ? [...v.reminders, minutes] : v.reminders.filter((m) => m !== minutes) }));
+  }
 
   function onStart(e: { target: { value: string } }) {
     const startsAt = e.target.value;
@@ -172,7 +191,21 @@ export function EventForm({ initial, submitLabel, coverUrl, banners = [], aside,
               <input id={`${prefix}-ends`} className="input" type="datetime-local" name="endsAt" value={values.endsAt} onChange={set("endsAt")} min={values.startsAt || undefined} disabled={!values.startsAt} />
             </div>
           </div>
-          <p id={`${prefix}-time-help`} className="field-help">Times are Bangkok time. Pick the start first; the end can&apos;t be before it.</p>
+          <p id={`${prefix}-time-help`} className="field-help">Times are Bangkok time. Pick the start first; the end can&apos;t be before it. Set an end time to keep check-in open.</p>
+          <fieldset className={styles.colorRow}>
+            <legend className="label">Reminders <span className="optional">(optional)</span></legend>
+            {REMINDER_PRESETS.map((p) => {
+              const state = reminderStates.find((r) => r.offset_minutes === p.minutes);
+              return (
+                <label key={p.minutes} className={styles.styleOption}>
+                  <input type="checkbox" name="reminders" value={p.minutes} checked={values.reminders.includes(p.minutes)} onChange={(e) => toggleReminder(p.minutes, e.target.checked)} />
+                  {p.label}
+                  {state?.sent_at && <span className="hint">sent</span>}
+                  {state?.skipped_at && !state.sent_at && <span className="hint">skipped</span>}
+                </label>
+              );
+            })}
+          </fieldset>
           <div className="field">
             <label htmlFor={`${prefix}-location`}>Location <span className="optional">(optional)</span></label>
             <input id={`${prefix}-location`} className="input" name="location" value={values.location} onChange={set("location")} maxLength={120} placeholder="Spawn, survival world" />

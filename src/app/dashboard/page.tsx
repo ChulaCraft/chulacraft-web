@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AchievementGrid, eventHistory, type AchievementGroup } from "@/components/achievement-grid";
+import { AchievementGrid, EventHistory, showcase, ShowcaseRow, toEventHistory, type AchievementGroup, type EventVisit } from "@/components/achievement-grid";
 import { CopyButton } from "@/components/copy-button";
 import { PixelIcon } from "@/components/icons";
 import { BannerStrip, ProfileBanner } from "@/components/profile-banner";
@@ -9,12 +9,14 @@ import { getSiteUrl } from "@/lib/env";
 import { toStudyLevel } from "@/lib/faculties";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import Link from "next/link";
+import QRCode from "qrcode";
 import { Fragment } from "react";
 import { AboutYouForm } from "../register/details/about-you-form";
 import { removeFriend, respondFriendRequest, setBanner, unblockPlayer } from "./actions";
 import { BanCard, type MyBan } from "./ban-card";
 import styles from "./dashboard.module.css";
 import { ServiceUnavailable } from "./service-unavailable";
+import { ShowcasePicker } from "./showcase-picker";
 import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Your profile" };
@@ -41,6 +43,12 @@ function unlockHint(banner: Banner) {
 
 type Social = { incoming: SocialPerson[]; outgoing: SocialPerson[]; friends: SocialPerson[]; blocked: SocialPerson[] };
 
+const SHOWCASE_ERRORS: Record<string, string> = {
+  NOT_OWNED: "You can only feature badges you hold. Refresh and pick again.",
+  INVALID: "Pick up to 3 of your badges.",
+  FAILED: "That didn't save. Please try again in a moment."
+};
+
 const SOCIAL_ERRORS: Record<string, string> = {
   NOT_FOUND: "That player is no longer available.",
   TOO_MANY_REQUESTS: "You have 50 friend requests waiting for an answer. Answer one first.",
@@ -63,8 +71,8 @@ function PersonAvatar({ src, name, size = 40 }: { src: string | null; name: stri
     : <span className="avatar" aria-hidden="true" style={{ width: size, height: size }}>{name.charAt(0).toUpperCase()}</span>;
 }
 
-export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; edit?: string; saved?: string; done?: string; appeal?: string; appealError?: string; bannerError?: string }> }) {
-  const { error: errorCode, edit, saved, done, appeal, appealError, bannerError } = await searchParams;
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; edit?: string; saved?: string; done?: string; appeal?: string; appealError?: string; bannerError?: string; showcaseError?: string }> }) {
+  const { error: errorCode, edit, saved, done, appeal, appealError, bannerError, showcaseError } = await searchParams;
   const session = await requireVerifiedUser();
   if (!session) return <ServiceUnavailable />;
   const { supabase, user } = session;
@@ -74,10 +82,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   let social: Social = { incoming: [], outgoing: [], friends: [], blocked: [] };
   let ban: MyBan | null = null;
   let banners: Banner[] = [];
+  let events: EventVisit[] = [];
+  let checkinCode: string | null = null;
   let lookupFailed = false;
 
   try {
-    const [profileRow, badges, socialRow, banRow, bannerRows] = await Promise.all([
+    const [profileRow, badges, socialRow, banRow, bannerRows, historyRow, codeRow] = await Promise.all([
       supabase.from("profiles").select("first_name, last_name, nickname, study_level, faculty, major").eq("user_id", user.id).maybeSingle(),
       // Published achievements only, and an entry names its event only when
       // that event is published too (20261006000001:438-439).
@@ -87,8 +97,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       // Also finishes an expired temp ban, which puts the accounts back.
       supabase.rpc("my_ban"),
       // Cosmetic: a failure falls back to the default strip.
-      supabase.rpc("my_banners")
+      supabase.rpc("my_banners"),
+      // Attendance, which also drives the Events stat; a failure reads as none.
+      supabase.rpc("my_event_history"),
+      // Created on first read; a failure just hides the card.
+      supabase.rpc("my_checkin_code")
     ]);
+    events = toEventHistory(historyRow.data);
+    checkinCode = codeRow.error ? null : codeRow.data;
     banners = bannerRows.data ?? [];
     ban = banRow.data as MyBan | null;
     lookupFailed = Boolean(profileRow.error);
@@ -124,6 +140,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   // chat window, not into this site's address bar.
   const profilePath = `/player/${user.id}`;
   const profileUrl = `${getSiteUrl().replace(/\/+$/, "")}${profilePath}`;
+  // Drawn here so the browser never loads a QR encoder. The bare code, not a
+  // URL, so a phone camera pointed at it opens nothing.
+  const codeQr = checkinCode ? await QRCode.toString(checkinCode, { type: "svg", margin: 2, errorCorrectionLevel: "M" }).catch(() => null) : null;
 
   return (
     <>
@@ -152,7 +171,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             still={selectedBanner?.still_path}
             stats={[
               { label: "Badges", value: achievements.length },
-              { label: "Events", value: eventHistory(achievements).length },
+              { label: "Events", value: events.length },
               { label: "Friends", value: social.friends.length }
             ]}
             // AC 17: view the public page, or copy its address to share.
@@ -194,6 +213,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           )}
           <div className={styles.layout}>
             <div className={styles.side}>
+              {checkinCode && (
+                <section className={`panel ${styles.card}`} aria-labelledby="checkin-code-title">
+                  <h2 id="checkin-code-title" className={styles.cardTitle}>My check-in code</h2>
+                  <p className="hint">No signal at an event? Show this to staff and they scan you in.</p>
+                  {codeQr && (
+                    // eslint-disable-next-line @next/next/no-img-element -- inline SVG data URI; next/image cannot optimise it
+                    <img className={`pixel-4 ${styles.checkinQr}`} src={`data:image/svg+xml;utf8,${encodeURIComponent(codeQr)}`} alt={`QR code for ${checkinCode}`} width={200} height={200} />
+                  )}
+                  <div className={styles.checkinCode}>
+                    <span className="mono">{checkinCode}</span>
+                    <CopyButton text={checkinCode} className="btn btn-sm btn-outline" what="Check-in code" />
+                  </div>
+                </section>
+              )}
+
               <section className={`panel ${styles.card}`} aria-labelledby="friends-title">
                 <div className={styles.cardHead}>
                   <h2 id="friends-title" className={styles.cardTitle}>Friends</h2>
@@ -329,9 +363,32 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 )}
               </section>
 
+              <section id="showcase" className={`panel ${styles.card}`} aria-labelledby="showcase-title">
+                <h2 id="showcase-title" className={styles.cardTitle}>Showcase</h2>
+                <div role="status" aria-live="polite">
+                  {showcaseError && <p className={`alert alert-error ${styles.smallAlert}`} role="alert"><PixelIcon name="warning" />{SHOWCASE_ERRORS[showcaseError] ?? SHOWCASE_ERRORS.FAILED}</p>}
+                  {saved === "showcase" && <p className={`alert alert-success ${styles.smallAlert}`}><PixelIcon name="check" />Showcase saved.</p>}
+                </div>
+                {achievements.length === 0 ? (
+                  <p className="muted">Earn a badge to feature it here.</p>
+                ) : (
+                  <>
+                    <p className="hint">Up to 3 badges shown first on your public profile.</p>
+                    <ShowcaseRow groups={showcase(achievements)} label="Your showcase" />
+                    {!achievements.some((group) => group.showcase_position != null) && <p className="hint">Showing your top badges. Pick some below to choose your own.</p>}
+                    <ShowcasePicker groups={achievements} />
+                  </>
+                )}
+              </section>
+
               <section className={`panel ${styles.card}`} aria-labelledby="badges-title">
                 <h2 id="badges-title" className={styles.cardTitle}>Achievements</h2>
                 <AchievementGrid groups={achievements} />
+              </section>
+
+              <section className={`panel ${styles.card}`} aria-labelledby="events-title">
+                <h2 id="events-title" className={styles.cardTitle}>Event history</h2>
+                <EventHistory events={events} />
               </section>
             </div>
           </div>

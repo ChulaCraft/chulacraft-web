@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { PixelIcon } from "@/components/icons";
 import styles from "./copy-button.module.css";
 
-export function CopyButton({ text, className = "btn btn-primary" }: { text: string; className?: string }) {
+/** `what` names the copied thing for screen readers ("… copied"). */
+export function CopyButton({ text, className = "btn btn-primary", what = "Server address" }: { text: string; className?: string; what?: string }) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -22,7 +23,7 @@ export function CopyButton({ text, className = "btn btn-primary" }: { text: stri
 
   return <>
     <span className="sr-only" role="status" aria-live="polite">
-      {state === "copied" ? "Server address copied" : state === "failed" ? "Couldn't copy. Select the address and copy it manually." : ""}
+      {state === "copied" ? `${what} copied` : state === "failed" ? `Couldn't copy. Select the ${what.toLowerCase()} and copy it manually.` : ""}
     </span>
     <button type="button" className={`${className} ${styles.copyButton}`} onClick={copy}>
       <PixelIcon name={state === "copied" ? "check" : "copy"} />

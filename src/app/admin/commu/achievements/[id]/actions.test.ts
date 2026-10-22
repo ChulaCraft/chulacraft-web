@@ -68,6 +68,40 @@ describe("admin achievement actions", () => {
     expect(m.remove).not.toHaveBeenCalled();
   });
 
+  it("sets the tier and Discord role after the save, a blank role clearing it", async () => {
+    expect(await redirected(saveAchievement, valid({ tier: "epic", discordRoleId: " 123456789012345678 " }))).toBe(`${target()}?done=saved`);
+    expect(m.rpc.mock.calls.map((call) => call[0])).toEqual(["admin_upsert_achievement", "admin_set_achievement_meta"]);
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_achievement_meta", { p_id: ID, p_tier: "epic", p_discord_role_id: "123456789012345678" });
+
+    await redirected(saveAchievement, valid({ tier: "rare", discordRoleId: "" }));
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_achievement_meta", { p_id: ID, p_tier: "rare", p_discord_role_id: null });
+  });
+
+  it("reports a refused tier or role, still cleaning up the replaced image", async () => {
+    m.rpc.mockResolvedValueOnce({ data: ID, error: null }).mockResolvedValueOnce({ error: { message: "ROLE_NOT_ALLOWED" } });
+    const data = valid({ tier: "rare", discordRoleId: "123456789012345678" });
+    data.set("image", image("image/png"));
+    expect(await redirected(saveAchievement, data)).toBe(`${target()}?error=ROLE_NOT_ALLOWED`);
+    expect(m.remove).toHaveBeenCalledExactlyOnceWith([CURRENT]);
+
+    m.rpc.mockResolvedValueOnce({ data: ID, error: null }).mockResolvedValueOnce({ error: { message: "INVALID" } });
+    expect(await redirected(saveAchievement, valid({ tier: "mythic" }))).toBe(`${target()}?error=INVALID`);
+  });
+
+  it("skips the tier call when the save itself fails", async () => {
+    m.rpc.mockResolvedValueOnce({ data: null, error: { message: "FORBIDDEN" } });
+    expect(await redirected(saveAchievement, valid())).toBe(`${target()}?error=FORBIDDEN`);
+    expect(m.rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it("sets the tier on a newly created achievement and lands on its page", async () => {
+    const created = "00000000-0000-0000-0000-0000000000c4";
+    m.rpc.mockResolvedValueOnce({ data: created, error: null }).mockResolvedValueOnce({ error: { message: "ROLE_NOT_ALLOWED" } });
+    expect(await redirected(saveAchievement, form({ name: "Miner", status: "draft", tier: "legendary", discordRoleId: "123456789012345678" })))
+      .toBe(`NEXT_REDIRECT:/admin/commu/achievements/${created}?error=ROLE_NOT_ALLOWED`);
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_achievement_meta", { p_id: created, p_tier: "legendary", p_discord_role_id: "123456789012345678" });
+  });
+
   it("keeps the current image when the file input was left empty", async () => {
     const data = valid();
     data.set("image", new File([], "", { type: "application/octet-stream" }));
@@ -86,7 +120,7 @@ describe("admin achievement actions", () => {
 
   it("falls back to draft for any status the form doesn't offer", async () => {
     await redirected(saveAchievement, valid({ status: "deleted" }));
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_upsert_achievement", expect.objectContaining({ p_status: "draft" }));
+    expect(m.rpc).toHaveBeenCalledWith("admin_upsert_achievement", expect.objectContaining({ p_status: "draft" }));
   });
 
   it("rejects a wrong-type or oversized file without uploading anything", async () => {

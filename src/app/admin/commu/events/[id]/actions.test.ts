@@ -134,21 +134,38 @@ describe("admin event actions", () => {
 
   it("saves the category after the event, and clears it when none is picked", async () => {
     expect(await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", category: "survival" }))).toBe(`${target()}?done=saved`);
-    expect(m.rpc).toHaveBeenNthCalledWith(m.rpc.mock.calls.length - 1, "admin_set_event_category", { p_id: ID, p_category: "survival" });
+    expect(m.rpc).toHaveBeenNthCalledWith(m.rpc.mock.calls.length - 2, "admin_set_event_category", { p_id: ID, p_category: "survival" });
     await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", category: "" }));
-    expect(m.rpc).toHaveBeenNthCalledWith(m.rpc.mock.calls.length - 1, "admin_set_event_category", { p_id: ID, p_category: null });
+    expect(m.rpc).toHaveBeenNthCalledWith(m.rpc.mock.calls.length - 2, "admin_set_event_category", { p_id: ID, p_category: null });
   });
 
-  it("saves the reward banner last, and clears it when none or a malformed id is posted", async () => {
+  it("saves the reward banner, and clears it when none or a malformed id is posted", async () => {
     await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", banner: "nether" }));
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_banner", { p_id: ID, p_banner_id: "nether" });
+    expect(m.rpc).toHaveBeenCalledWith("admin_set_event_banner", { p_id: ID, p_banner_id: "nether" });
     await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", banner: "<x>" }));
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_banner", { p_id: ID, p_banner_id: null });
+    expect(m.rpc).toHaveBeenCalledWith("admin_set_event_banner", { p_id: ID, p_banner_id: null });
+  });
+
+  it("saves the ticked reminder offsets last, none when nothing is ticked", async () => {
+    const data = valid();
+    data.append("reminders", "1440");
+    data.append("reminders", "60");
+    data.append("reminders", "x");
+    await redirected(saveEvent, data);
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_reminders", { p_id: ID, p_offsets: [1440, 60] });
+    await redirected(saveEvent, valid());
+    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_event_reminders", { p_id: ID, p_offsets: [] });
+  });
+
+  it("reports a reminder failure on the event page", async () => {
+    m.rpc.mockResolvedValueOnce({ data: ID, error: null }).mockResolvedValueOnce({ error: null }).mockResolvedValueOnce({ error: null })
+      .mockResolvedValueOnce({ error: { message: "INVALID" } });
+    expect(await redirected(saveEvent, valid())).toBe(`${target()}?error=INVALID`);
   });
 
   it("drops a category the site doesn't know", async () => {
     await redirected(saveEvent, form({ eventId: ID, name: "Race night", startsAt: "2026-11-01T18:00", category: "raid" }));
-    expect(m.rpc).toHaveBeenNthCalledWith(m.rpc.mock.calls.length - 1, "admin_set_event_category", { p_id: ID, p_category: null });
+    expect(m.rpc).toHaveBeenNthCalledWith(m.rpc.mock.calls.length - 2, "admin_set_event_category", { p_id: ID, p_category: null });
   });
 
   it("keeps the uploaded cover when the save creates the event", async () => {

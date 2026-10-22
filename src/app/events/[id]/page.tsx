@@ -132,6 +132,7 @@ export default async function EventPage({ params, searchParams }: {
               <dd aria-label={`${event.interest_count} players interested`}>{event.interest_count} {interested ? "player" : "players"}</dd>
             </dl>
             <p className="hint">All times are Asia/Bangkok.</p>
+            {!event.ended && <a className="btn" href={`/events/${event.id}/calendar.ics`} download>Add to calendar</a>}
 
             {event.ended ? (
               <p className="alert" role="status"><PixelIcon name="clock" />This event has ended.</p>

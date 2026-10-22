@@ -55,6 +55,37 @@ Exchanges the code for a session, reconciles identities (`src/lib/reconcile-iden
 `/welcome` (or the path reconcile chooses). Failures redirect to `/auth/error?reason=…`. Query parameters never choose
 the redirect target.
 
+### `GET /events/[id]/calendar.ics`
+
+Source: `src/app/events/[id]/calendar.ics/route.ts`. Public. Returns the event as a `text/calendar` download (times in UTC,
+`DTEND` = `ends_at`, or `starts_at` + 2 h when there is none). Reads `get_event`, so a draft or unknown id is `404`.
+The filename is a slug of the event name, or the event id when the name slugifies to nothing (Thai names).
+
+### `GET /events/[id]/check-in/start?t=<token>`
+
+Source: `src/app/events/[id]/check-in/start/route.ts`. Target of the event's QR code. Verifies the rotating token with
+`checkin_proof`, stores the returned 5-minute proof in an httpOnly cookie (`cc_checkin`) scoped to `/events/<id>/check-in`.
+Signed in: redirects to `/events/<id>/check-in`. Signed out: also sets `cc_next` (`/events/<id>/check-in`, `Path=/`,
+10 min) so the player returns after signing in, and redirects to `/register`. A bad or expired token redirects to
+`/events/<id>/check-in?error=TOKEN_EXPIRED`. Never records attendance (only the `checkIn` POST does).
+
+### `GET /check-in/continue`
+
+Source: `src/app/check-in/continue/route.ts`. Called by `/welcome` after sign-in when `cc_next` is set. Clears the cookie
+and redirects to the path only if `safeNext()` accepts it (`/events/<uuid>/check-in`), else `/dashboard`.
+
+### `/admin/commu/events/[id]/check-in` (page)
+
+Source: `src/app/admin/commu/events/[id]/check-in/page.tsx`. Community staff only (`requireArea("community")`). Shows the
+rotating event QR, a scanner for a player's personal `CC-XXXXXXXXXX` code (camera needs `Permissions-Policy:
+camera=(self)`, set for this path only in `next.config.ts`; typing the code always works), the attendee list, "Award
+badge to attendees" and "Reset code".
+
+### `/events/[id]/check-in` (page)
+
+Source: `src/app/events/[id]/check-in/page.tsx`. Signed in only (else `/register`). Shows the "Check in" button only
+while the proof cookie is present; reading the page never records attendance.
+
 ### `GET /api/dev-login?as=<user>` — local only
 
 Source: `src/app/api/dev-login/route.ts`. Signs in as a seeded user from `supabase/dev-seed.sql`.
@@ -72,6 +103,10 @@ role check (`FORBIDDEN`), not on the page.
 | `dashboard/actions.ts` | unlink Google, `respondFriendRequest`, `removeFriend`, `unblockPlayer`, `updatePrivacy`, `submitAppeal` |
 | `player/[id]/actions.ts` | `send_friend_request`, `respond_friend_request`, `remove_friend`, `block_player`, `report_player` |
 | `events/[id]/actions.ts` | `toggleInterest` → `set_event_interest` |
+| `events/[id]/check-in/actions.ts` | `checkIn` → `check_in` (proof from the cookie; clears the proof and `cc_next`) |
+| `dashboard/actions.ts` (showcase) | `setShowcase` → `set_my_showcase` (up to 3 badges) |
+| `notifications/actions.ts` | `openNotifications` → `my_notifications`, then `mark_my_notifications_read` |
+| `admin/commu/events/[id]/check-in/actions.ts` | `nextToken` → `admin_checkin_token` (returns QR `svg` + `expiresAt`; QR drawn server-side), `checkInPlayer` → `admin_check_in_player`, `awardAttendees` → `admin_award_attendees`, `resetCode` → `admin_rotate_checkin_secret`, `removeAttendance` → `admin_remove_attendance` |
 | `admin/users/[id]/actions.ts` | `admin_set_whitelisted`, `admin_set_role`, `admin_reset_chula`, `admin_ban_user`, `admin_lift_ban`, `admin_mark_guest` |
 | `admin/restore/actions.ts` | `restoreAccount` → `admin_set_whitelisted(…, true)` |
 | `admin/reports/actions.ts` | `handleReport` → `admin_handle_report` |
@@ -84,4 +119,4 @@ role check (`FORBIDDEN`), not on the page.
 
 | Public | Signed in | Admin (`/admin/*`, owner/admin role) |
 | --- | --- | --- |
-| `/`, `/about`, `/announcements`, `/events`, `/events/[id]`, `/privacy`, `/terms`, `/auth/error` | `/register`, `/register/details`, `/verify`, `/welcome`, `/dashboard`, `/settings`, `/players`, `/player/[id]` | `/admin`, `/admin/players`, `/admin/users/[id]`, `/admin/restore`, `/admin/reports`, `/admin/appeals`, `/admin/audit`, `/admin/achievements/**`, `/admin/announcements/**`, `/admin/server` |
+| `/`, `/about`, `/announcements`, `/events`, `/events/[id]`, `/events/[id]/calendar.ics`, `/privacy`, `/terms`, `/auth/error` | `/register`, `/register/details`, `/events/[id]/check-in`, `/verify`, `/welcome`, `/dashboard`, `/settings`, `/players`, `/player/[id]` | `/admin`, `/admin/players`, `/admin/users/[id]`, `/admin/restore`, `/admin/reports`, `/admin/appeals`, `/admin/audit`, `/admin/achievements/**`, `/admin/commu/events/[id]/check-in`, `/admin/announcements/**`, `/admin/server` |

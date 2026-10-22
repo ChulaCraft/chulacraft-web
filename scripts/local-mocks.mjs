@@ -58,6 +58,11 @@ if (!/^http:\/\/(127\.0\.0\.1|localhost):/.test(env.NEXT_PUBLIC_SUPABASE_URL ?? 
 }
 const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/+$/, "");
 
+/** Runs SQL in the local Supabase database container; returns trimmed output. */
+function psql(sql) {
+  return execFileSync("docker", ["exec", "-i", "supabase_db_chulacraft", "psql", "-U", "postgres", "-tA", "-c", sql]).toString().trim();
+}
+
 function dockerGateway() {
   try {
     return execFileSync("docker", ["network", "inspect", DOCKER_NETWORK, "--format", "{{(index .IPAM.Config 0).Gateway}}"]).toString().trim();
@@ -108,9 +113,44 @@ if (process.argv.includes("--google")) {
   const sql = `insert into auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
     select ${quote(sub)}, u, jsonb_build_object('sub', ${quote(sub)}, 'email', ${quote(email)}, 'email_verified', ${verified}), 'google', now(), now(), now()
     from (select ${userSql} as u) t where u is not null returning user_id;`;
-  const out = execFileSync("docker", ["exec", "-i", "supabase_db_chulacraft", "psql", "-U", "postgres", "-tA", "-c", sql]).toString().trim();
+  const out = psql(sql);
   console.log(out ? `Linked Google ${email} (${verified ? "verified" : "unverified"}, sub ${sub}) to user ${out.split("\n")[0]}. Now open /verify.` : "No mock-Discord user found; sign in with the Discord mock first or pass --user <uuid>.");
   process.exit(0);
+}
+
+// ---------- --bot | --bot-fail | --bot-once ----------
+// Stands in for chulacraft-discord (docs/bot-contract-phase5.md): polls the badge
+// role queue and the event reminder queue as service_role, logs each item and
+// writes it back. --bot-fail writes back ok:false ('mock failure') instead, so
+// the retry hold can be seen. --bot-once does a single pass and exits.
+
+if (["--bot", "--bot-fail", "--bot-once"].some((flag) => process.argv.includes(flag))) {
+  const fail = process.argv.includes("--bot-fail");
+  const once = process.argv.includes("--bot-once");
+  const quote = (s) => `'${String(s).replace(/'/g, "''")}'`;
+  const asService = (sql) => psql(`set role service_role; ${sql}`).replace(/^SET\n/, "");
+
+  const pass = () => {
+    const roles = JSON.parse(asService("select coalesce(jsonb_agg(q), '[]') from public.discord_role_queue() q;"));
+    for (const r of roles) console.log(`[role ${r.op}] discord ${r.discord_id} role ${r.role_id} -> ${fail ? "failed" : "ok"}`);
+    if (roles.length) {
+      const items = roles.map((r) => (fail ? { ...r, ok: false, error: "mock failure" } : { ...r, ok: true }));
+      asService(`select public.discord_role_queue_done(${quote(JSON.stringify(items))}::jsonb);`);
+    }
+    const reminders = JSON.parse(asService("select coalesce(jsonb_agg(q), '[]') from public.event_reminders_queue() q;"));
+    for (const r of reminders) {
+      console.log(`[reminder] "${r.name}" (${r.offset_minutes} min before), ping ${r.interested_discord_ids.length} -> ${fail ? "left unsent" : "sent"}`);
+      // The reminder contract has no failure write-back: a failed post is just not marked sent.
+      if (!fail) asService(`select public.event_reminder_sent(${quote(r.event_id)}::uuid, ${Number(r.offset_minutes)});`);
+    }
+    if (!roles.length && !reminders.length) console.log("[bot] queues empty");
+  };
+
+  pass();
+  if (once) process.exit(0);
+  console.log("Bot mock polling every 10 s (Ctrl+C to stop)");
+  setInterval(pass, 10_000);
+  await new Promise(() => {});
 }
 
 // ---------- shared ----------

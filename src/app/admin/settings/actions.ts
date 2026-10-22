@@ -23,3 +23,28 @@ export async function saveSiteSettings(formData: FormData) {
   revalidatePath("/", "layout");
   redirect(`/admin/settings?${error ? `error=${dbErrorCode(error) ?? "FAILED"}` : "done=saved"}`);
 }
+
+/** The allowlist of Discord roles a badge may give (20261026000001). The RPCs
+ *  own the format and the IN_USE check; these only forward and report. */
+function finishRole(error: { message: string } | null, done: string) {
+  revalidatePath("/admin/settings");
+  revalidatePath("/admin/commu/achievements", "layout");
+  redirect(`/admin/settings?${error ? `roleError=${dbErrorCode(error) ?? "FAILED"}` : `role=${done}`}#discord-roles`);
+}
+
+export async function saveDiscordRole(formData: FormData) {
+  const roleId = String(formData.get("roleId") ?? "").trim();
+  const label = String(formData.get("label") ?? "").trim();
+  if (!/^[0-9]{17,20}$/.test(roleId) || !label || label.length > 60) finishRole({ message: "INVALID" }, "saved");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_save_discord_role", { p_role_id: roleId, p_label: label });
+  finishRole(error, "saved");
+}
+
+export async function deleteDiscordRole(formData: FormData) {
+  const roleId = String(formData.get("roleId") ?? "");
+  if (!/^[0-9]{17,20}$/.test(roleId)) finishRole({ message: "INVALID" }, "removed");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_delete_discord_role", { p_role_id: roleId });
+  finishRole(error, "removed");
+}
