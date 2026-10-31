@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LinkGoogleButton } from "@/components/google-auth";
 import { PixelIcon } from "@/components/icons";
 import { ServerAddressRow } from "@/components/server-address-card";
-import { classifyIdentities, identityEmail } from "@/lib/chula";
+import { classifyIdentities, discordName, identityEmail } from "@/lib/chula";
+import { NEXT_COOKIE, safeNext } from "@/lib/safe-next";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireVerifiedUser } from "@/lib/verified-user";
 import { ServiceUnavailable } from "../dashboard/service-unavailable";
@@ -44,11 +46,14 @@ export default async function WelcomePage() {
   }
   if (lookupFailed) return <ServiceUnavailable />;
   if (!hasProfile) redirect("/register/details");
+  // A QR scan started before sign-in: this page cannot clear the cookie, so the
+  // continue route does that and then lands on the check-in page.
+  if (safeNext((await cookies()).get(NEXT_COOKIE)?.value)) redirect("/check-in/continue");
 
   const personal = classifyIdentities(user.identities ?? [], chulaGoogleSub).personal.filter((i) => identityEmail(i) !== chulaEmail);
   const personalEmail = personal[0] ? identityEmail(personal[0]) : null;
   const meta = user.user_metadata;
-  const name = typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "player";
+  const name = discordName(user.identities) ?? (typeof meta.full_name === "string" ? meta.full_name : typeof meta.user_name === "string" ? meta.user_name : "player");
   const synced = accounts.find((a) => a.sync_status === "synced");
   const first = synced ?? accounts[0];
   const state = synced ? "allset" : accounts.length ? "almost" : "progress";

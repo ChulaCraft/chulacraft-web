@@ -6,6 +6,10 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import styles from "./admin.module.css";
 import { StatRow, timeSince, ToolCards, when, type Stats } from "./overview";
+import { playersHref } from "./players/params";
+import { staffCan } from "@/lib/staff";
+import { myRole } from "./staff-gate";
+import { timed } from "@/lib/perf";
 
 // The admin layout's title template only reaches child segments, not this page.
 export const metadata: Metadata = { title: "Admin dashboard" };
@@ -14,9 +18,11 @@ type Activity = Database["public"]["Functions"]["admin_recent_activity"]["Return
 
 export default async function AdminPage() {
   const supabase = await createClient();
+  const role = await timed("myRole", myRole());
+  const isAdmin = staffCan(role, "admin");
   const [stats, activity] = await Promise.all([
-    supabase.rpc("admin_overview_stats").single<Stats>(),
-    supabase.rpc("admin_recent_activity", { p_limit: 5 }),
+    timed("admin_overview_stats", supabase.rpc("admin_overview_stats").single<Stats>()),
+    isAdmin ? timed("admin_recent_activity", supabase.rpc("admin_recent_activity", { p_limit: 5 })) : Promise.resolve({ data: [], error: null }),
   ]);
   const s = stats.data;
   const log: Activity[] = activity.data ?? [];
@@ -40,7 +46,7 @@ export default async function AdminPage() {
           <ul className={styles.attention}>
             {s.retrying_sync > 0 && (
               <li>
-                <Link href="/admin/players" data-tone="amber">
+                <Link href={playersHref({ whitelist: ["retrying"] })} data-tone="amber">
                   <PixelIcon name="retry" size={20} />
                   <span>
                     <strong>{s.retrying_sync} {s.retrying_sync === 1 ? "account" : "accounts"} retrying sync</strong><br />
@@ -52,7 +58,7 @@ export default async function AdminPage() {
             )}
             {s.unverified > 0 && (
               <li>
-                <Link href="/admin/players">
+                <Link href={playersHref({ role: ["user"], status: ["unverified"] })}>
                   <PixelIcon name="info" size={20} />
                   <span>
                     <strong>{s.unverified} {s.unverified === 1 ? "player hasn't" : "players haven't"} verified</strong><br />
@@ -67,21 +73,23 @@ export default async function AdminPage() {
       )}
 
       <StatRow label="Overview" stats={[
-        { label: "Players", value: s.players },
-        { label: "Verified Chula", value: s.verified },
-        { label: "Guests", value: s.guests },
-        { label: "Whitelisted accounts", value: s.whitelisted_accounts },
-        { label: "Pending sync", value: s.pending_sync },
+        { label: "Players", value: s.players, href: playersHref({ role: ["user"] }) },
+        { label: "Verified Chula", value: s.verified, href: playersHref({ role: ["user"], status: ["verified"] }) },
+        { label: "Guests", value: s.guests, href: playersHref({ role: ["user"], status: ["guest"] }) },
+        { label: "Whitelisted accounts", value: s.whitelisted_accounts, href: playersHref({ whitelist: ["whitelisted", "pending", "retrying"] }) },
+        { label: "Pending sync", value: s.pending_sync, href: playersHref({ whitelist: ["pending"] }) },
       ]} />
     </>}
 
-    <ToolCards title="Categories" tools={[
-      { title: "Players", desc: "Manage players, verify guests, change roles, restore removed accounts.", icon: "user", href: "/admin/players", cta: "Open players", count: s ? String(s.players) : undefined },
-      { title: "Minecraft server", desc: "Server status, live console, and start, stop or restart.", icon: "retry", href: "/admin/server", cta: "Open server" },
-      { title: "Community", desc: "Achievements, events, and announcements on the site and Discord.", icon: "info", href: "/admin/achievements", cta: "Open achievements" },
-      { title: "Audit log", desc: "Every admin action across all players.", icon: "lock", href: "/admin/audit", cta: "Open audit log" },
-    ]} />
+    <ToolCards title="Categories" tools={([
+      { area: "players_read", title: "Players", desc: "Manage players, verify guests, change roles, restore removed accounts.", icon: "user", href: playersHref({ role: ["user"] }), cta: "Open players", count: s ? String(s.players) : undefined },
+      { area: "moderation", title: "Moderation", desc: "Player reports, ban appeals and bans.", icon: "shield", href: "/admin/reports", cta: "Open reports" },
+      { area: "community", title: "Community", desc: "Achievements, events, and announcements on the site and Discord.", icon: "info", href: "/admin/commu", cta: "Open community" },
+      { area: "admin", title: "Ops", desc: "Every service's status, logs and console, start, stop or restart, backups and updates.", icon: "retry", href: "/admin/ops", cta: "Open ops" },
+      { area: "admin", title: "Audit log", desc: "Every admin action across all players.", icon: "lock", href: "/admin/audit", cta: "Open audit log" },
+    ] as const).filter((t) => staffCan(role, t.area))} />
 
+    {isAdmin && <>
     <section aria-labelledby="act-title" className="panel">
       <div className={styles.listHead}>
         <h2 id="act-title">Recent admin activity</h2>
@@ -104,5 +112,6 @@ export default async function AdminPage() {
           </ol>
         )}
     </section>
+    </>}
   </>;
 }

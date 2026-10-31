@@ -16,7 +16,7 @@
   align-items: flex-start;
   gap: 14px;
   background: var(--surface);
-  box-shadow: inset 0 0 0 2px var(--edge);
+  box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .steps > li[data-kind="done"] {
@@ -27,7 +27,7 @@
 .steps > li[data-kind="current"] {
   --edge: var(--pink);
   --title: var(--text);
-  --state: var(--pink-soft);
+  --state: var(--pink-ink);
 }
 
 .steps > li[data-kind="waiting"] {
@@ -47,7 +47,7 @@
   display: grid;
   place-items: center;
   clip-path: var(--pixel-4);
-  color: var(--bg);
+  color: var(--on-accent);
   font: 700 16px var(--font-display), monospace;
 }
 
@@ -66,7 +66,7 @@
 [data-kind="upcoming"] .marker {
   clip-path: none;
   color: var(--text-3);
-  box-shadow: inset 0 0 0 2px var(--edge);
+  box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .body {

@@ -13,8 +13,15 @@
 //                   override for Google. Use --google to attach a Google
 //                   identity to a user and test /verify instead.
 //   Server manager  /servers, status, rlog, start/stop/restart and the console
-//                   WebSocket, checking the EdDSA token exactly like the real one.
+//                   WebSocket, checking the EdDSA token exactly like the real one,
+//                   plus the ops contract (docs/ops-manager-contract.md): /services,
+//                   /service/:id/*, /backups. State is in memory, per process.
 //   Minecraft ping  answers the server-list ping, so the "Online · N/M" badge shows.
+//
+//   --manager-only  just the server manager, for the Playwright visual tests: key from
+//                   $MCSV_JWT_PRIVATE_KEY, port from $MOCK_MANAGER_PORT, no env file or
+//                   Supabase needed, plus POST /__mock/state?services=ok|down|slow to
+//                   make /services answer 503 or after the website's 5 s timeout.
 //
 // Every listener binds to loopback, except the Discord mock, which binds to the
 // Supabase docker network gateway (a host-only address) because both the browser
@@ -50,13 +57,20 @@ function addEnv(file, values, header) {
   return missing.map(([key]) => key);
 }
 
-const env = readEnv(ENV_FILE);
+const managerOnly = process.argv.includes("--manager-only");
+const env = managerOnly ? { MCSV_JWT_PRIVATE_KEY: process.env.MCSV_JWT_PRIVATE_KEY } : readEnv(ENV_FILE);
+if (managerOnly) PORTS.manager = Number(process.env.MOCK_MANAGER_PORT) || PORTS.manager;
 // Same rule as DEV_LOGIN_ENABLED (src/lib/dev-login.ts): only against a local Supabase.
-if (!/^http:\/\/(127\.0\.0\.1|localhost):/.test(env.NEXT_PUBLIC_SUPABASE_URL ?? "")) {
+if (!managerOnly && !/^http:\/\/(127\.0\.0\.1|localhost):/.test(env.NEXT_PUBLIC_SUPABASE_URL ?? "")) {
   console.error(`Refusing to run: NEXT_PUBLIC_SUPABASE_URL in ${ENV_FILE} must be a local Supabase (http://127.0.0.1:…).`);
   process.exit(1);
 }
-const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/+$/, "");
+const supabaseUrl = (env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/+$/, "");
+
+/** Runs SQL in the local Supabase database container; returns trimmed output. */
+function psql(sql) {
+  return execFileSync("docker", ["exec", "-i", "supabase_db_chulacraft", "psql", "-U", "postgres", "-tA", "-c", sql]).toString().trim();
+}
 
 function dockerGateway() {
   try {
@@ -108,9 +122,127 @@ if (process.argv.includes("--google")) {
   const sql = `insert into auth.identities (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
     select ${quote(sub)}, u, jsonb_build_object('sub', ${quote(sub)}, 'email', ${quote(email)}, 'email_verified', ${verified}), 'google', now(), now(), now()
     from (select ${userSql} as u) t where u is not null returning user_id;`;
-  const out = execFileSync("docker", ["exec", "-i", "supabase_db_chulacraft", "psql", "-U", "postgres", "-tA", "-c", sql]).toString().trim();
+  const out = psql(sql);
   console.log(out ? `Linked Google ${email} (${verified ? "verified" : "unverified"}, sub ${sub}) to user ${out.split("\n")[0]}. Now open /verify.` : "No mock-Discord user found; sign in with the Discord mock first or pass --user <uuid>.");
   process.exit(0);
+}
+
+// ---------- --bot | --bot-fail | --bot-once ----------
+// Stands in for chulacraft-discord (docs/bot-contract-phase5.md and
+// docs/bot-contract-ops.md). On start it registers the v1 settings (fake
+// defaults) and tasks. Each pass reads bot_config(), works the badge role queue
+// and the event reminder queue as service_role (logging each item and writing it
+// back), reports a run for every task that isn't paused, and reports each ID
+// setting whose value changed: ok, or invalid "Unknown Channel" for a channel
+// ending 0000. --bot-fail writes back ok:false ('mock failure') instead, so the
+// retry hold can be seen. --bot-once does a single pass and exits.
+
+if (["--bot", "--bot-fail", "--bot-once"].some((flag) => process.argv.includes(flag))) {
+  const fail = process.argv.includes("--bot-fail");
+  const once = process.argv.includes("--bot-once");
+  const quote = (s) => `'${String(s).replace(/'/g, "''")}'`;
+  const asService = (sql) => psql(`set role service_role; ${sql}`).replace(/^SET\n/, "");
+
+  // The v1 registry from docs/bot-contract-ops.md, with fake IDs as the ".env" defaults.
+  const fakeId = (n) => String(100000000000000000n + BigInt(n));
+  const setting = (key, kind, label, default_value, extra = {}) => ({ key, kind, applies: "live", label, description: "", default_value, ...extra });
+  const SETTINGS = [
+    setting("discord_guild_id", "guild", "Discord server", fakeId(1), { applies: "restart", description: "The server the bot works in." }),
+    setting("discord_admin_bot_channel_id", "channel", "Admin bot channel", fakeId(2), { description: "Where staff use /announce." }),
+    setting("discord_announcement_channel_id", "channel", "Announcements channel", fakeId(3), { description: "Where announcement drafts and event reminders are posted." }),
+    setting("discord_status_channel_id", "channel", "Status channel", fakeId(4), { description: "Where down and recovery alerts go." }),
+    setting("discord_web_news_channel_id", "channel", "Website news channel", fakeId(5), { description: "Where website announcements are mirrored." }),
+    setting("verified_role_id", "role", "Verified role", fakeId(6), { description: "Given to every verified player." }),
+    setting("status_alert_mention_role_id", "role", "Alert mention role", null, { description: "Pinged on down alerts only." }),
+    setting("discord_announcement_admin_role_ids", "role_list", "Announcement admin roles", fakeId(7), { description: "Roles that may use /announce." }),
+    setting("discord_announcement_admin_user_ids", "user_list", "Announcement admin users", fakeId(8), { description: "People who may use /announce." }),
+    setting("status_minecraft_address", "text", "Minecraft address", "mc.chulacraft.com", { description: "Pinged by the status monitor." }),
+    setting("status_website_url", "url", "Website URL", "https://chulacraft.com/", { description: "Checked by the status monitor." }),
+    setting("web_announcements_url", "url", "Announcements page URL", "https://chulacraft.com/announcements"),
+    setting("openrouter_site_url", "url", "OpenRouter site URL", "https://mc.ratchaphon.com"),
+    setting("status_monitor_interval_ms", "number", "Status check interval (ms)", "60000", { min_value: 10000 }),
+    setting("web_announcements_interval_ms", "number", "Website news interval (ms)", "60000", { min_value: 10000 }),
+    setting("announcement_draft_ttl_minutes", "number", "Draft lifetime (minutes)", "30", { min_value: 1 }),
+    setting("announcement_daily_generation_limit", "number", "Drafts per day", "50", { min_value: 1 }),
+    setting("announcement_daily_warning_threshold", "number", "Drafts-per-day warning", "40", { min_value: 1 }),
+    setting("announcement_user_cooldown_seconds", "number", "Cooldown per person (s)", "10", { min_value: 1 }),
+    setting("announcement_max_concurrent_requests", "number", "Concurrent AI requests", "2", { min_value: 1 }),
+    setting("announcement_max_image_bytes", "number", "Largest image (bytes)", "8388608", { min_value: 1 }),
+    setting("openrouter_default_model", "text", "Default model", "openrouter/free"),
+    setting("openrouter_allowed_models", "text_list", "Allowed models", "openrouter/free,openai/gpt-oss-20b:free"),
+    setting("openrouter_require_free_models", "boolean", "Free models only", "true"),
+  ];
+  const JOBS = [
+    { name: "web_announcements", label: "Website news", interval_seconds: 60 },
+    { name: "status_monitor", label: "Status monitor", interval_seconds: 60 },
+    { name: "verified_role_sync", label: "Verified role sync", interval_seconds: null },
+    { name: "join_to_create", label: "Join to create", interval_seconds: null },
+    { name: "managed_messages", label: "Managed messages", interval_seconds: null },
+    { name: "announce_drafts", label: "/announce drafts", interval_seconds: null },
+    { name: "badge_roles", label: "Badge roles", interval_seconds: 60 },
+    { name: "event_reminders", label: "Event reminders", interval_seconds: 60 },
+  ];
+  const ID_KINDS = new Set(["guild", "channel", "role", "role_list", "user_list"]);
+  const kindOf = Object.fromEntries(SETTINGS.map((s) => [s.key, s.kind]));
+  asService(`select public.bot_register(${quote(JSON.stringify(SETTINGS))}::jsonb, ${quote(JSON.stringify(JOBS))}::jsonb);`);
+  console.log(`[bot] registered ${SETTINGS.length} settings and ${JOBS.length} tasks`);
+
+  const applied = {};
+  const report = (job, startedAt, ok, items, error = null) => asService(`select public.bot_job_report(${quote(job)}, ${quote(startedAt)}::timestamptz, now(), ${ok}, ${items === null ? "null" : Number(items)}, ${error === null ? "null" : quote(error)});`);
+  // Event-driven tasks run once at startup (the verified-role sweep, managed messages).
+  for (const job of ["verified_role_sync", "managed_messages"]) report(job, new Date().toISOString(), true, 0);
+
+  const configPass = () => {
+    const config = JSON.parse(asService("select public.bot_config();"));
+    const checks = [];
+    for (const [key, value] of Object.entries(config.settings)) {
+      if (applied[key] === value || !ID_KINDS.has(kindOf[key])) { applied[key] = value; continue; }
+      applied[key] = value;
+      if (value === null) continue;
+      const bad = kindOf[key] === "channel" && /0000$/.test(value);
+      console.log(`[setting] ${key} = ${value} -> ${bad ? "invalid (Unknown Channel)" : "ok"}`);
+      checks.push(bad ? { key, value, ok: false, error: "Unknown Channel" } : { key, value, ok: true });
+    }
+    if (checks.length) asService(`select public.bot_settings_report(${quote(JSON.stringify(checks))}::jsonb);`);
+    return new Set(config.paused_jobs);
+  };
+
+  const pass = () => {
+    const paused = configPass();
+    const startedAt = new Date().toISOString();
+    if (paused.size) console.log(`[bot] paused, skipped: ${[...paused].join(", ")}`);
+    // Nothing to do in the mock, but every run is reported (items 0), like the real bot.
+    for (const job of ["web_announcements", "status_monitor"]) if (!paused.has(job)) report(job, startedAt, true, 0);
+
+    let worked = 0;
+    if (!paused.has("badge_roles")) {
+      const roles = JSON.parse(asService("select coalesce(jsonb_agg(q), '[]') from public.discord_role_queue() q;"));
+      for (const r of roles) console.log(`[role ${r.op}] discord ${r.discord_id} role ${r.role_id} -> ${fail ? "failed" : "ok"}`);
+      if (roles.length) {
+        const items = roles.map((r) => (fail ? { ...r, ok: false, error: "mock failure" } : { ...r, ok: true }));
+        asService(`select public.discord_role_queue_done(${quote(JSON.stringify(items))}::jsonb);`);
+      }
+      report("badge_roles", startedAt, !(fail && roles.length), roles.length, fail && roles.length ? "mock failure" : null);
+      worked += roles.length;
+    }
+    if (!paused.has("event_reminders")) {
+      const reminders = JSON.parse(asService("select coalesce(jsonb_agg(q), '[]') from public.event_reminders_queue() q;"));
+      for (const r of reminders) {
+        console.log(`[reminder] "${r.name}" (${r.offset_minutes} min before), ping ${r.interested_discord_ids.length} -> ${fail ? "left unsent" : "sent"}`);
+        // The reminder contract has no failure write-back: a failed post is just not marked sent.
+        if (!fail) asService(`select public.event_reminder_sent(${quote(r.event_id)}::uuid, ${Number(r.offset_minutes)});`);
+      }
+      report("event_reminders", startedAt, !(fail && reminders.length), reminders.length, fail && reminders.length ? "mock failure" : null);
+      worked += reminders.length;
+    }
+    if (!worked) console.log("[bot] queues empty");
+  };
+
+  pass();
+  if (once) process.exit(0);
+  console.log("Bot mock polling every 10 s (Ctrl+C to stop)");
+  setInterval(pass, 10_000);
+  await new Promise(() => {});
 }
 
 // ---------- shared ----------
@@ -197,7 +329,7 @@ function startDiscord(host) {
 
 // ---------- server manager mock ----------
 
-const PERMISSION = { STATUS: 1, LOGS: 2, CONSOLE_READ: 4, CONSOLE_WRITE: 8, START: 16, STOP: 32, RESTART: 64 };
+const PERMISSION = { STATUS: 1, LOGS: 2, CONSOLE_READ: 4, CONSOLE_WRITE: 8, START: 16, STOP: 32, RESTART: 64, BACKUP_READ: 128, BACKUP_RUN: 256, UPDATE: 512 };
 const ACTION_BITS = { start: PERMISSION.START, stop: PERMISSION.STOP, restart: PERMISSION.RESTART };
 
 /** Same checks as chulacraft-server-manager: EdDSA signature, audience, expiry, permission bits. */
@@ -217,15 +349,41 @@ const servers = {
   creative: { active: false, startedAt: 0, log: [] },
 };
 const consoles = new Set();
+// --manager-only: how /services behaves (ok | down | slow), set by the visual tests.
+let servicesMode = "ok";
+
+// Ops contract services. survival IS servers.survival (one state, two route families);
+// the rest live only under /service/:id. `fail` is a docker service whose every
+// per-service endpoint answers 500 (status, metrics, uptime, rlog, image, actions) so
+// the UI can show one broken panel; /services and /backups still work.
+const SERVICE_META = {
+  survival: { name: "Survival", kind: "systemd", console: true, backups: true, updatable: false, image: null },
+  "discord-bot": { name: "Discord bot", kind: "docker", console: false, backups: false, updatable: true, image: { current: "ghcr.io/chulacraft/discord-bot:latest@sha256:1a2b3c4d", latest: "ghcr.io/chulacraft/discord-bot:latest@sha256:9f3c1a2b" } },
+  "whitelist-worker": { name: "Whitelist worker", kind: "docker", console: false, backups: false, updatable: true, image: { current: "ghcr.io/chulacraft/whitelist-worker:latest@sha256:5e6f7a8b", latest: "ghcr.io/chulacraft/whitelist-worker:latest@sha256:5e6f7a8b" } },
+  fail: { name: "Broken service", kind: "docker", console: false, backups: false, updatable: true, image: { current: "example/fail:latest@sha256:00000000", latest: "example/fail:latest@sha256:00000000" } },
+};
+const now0 = Date.now();
+const state = {
+  ...servers,
+  "discord-bot": { active: false, startedAt: 0, lastRestart: new Date(now0 - 26 * 3600 * 1000).toISOString(), log: [] },
+  "whitelist-worker": { active: true, startedAt: now0 - 50 * 3600 * 1000, lastRestart: new Date(now0 - 50 * 3600 * 1000).toISOString(), log: [] },
+  fail: { active: false, startedAt: 0, lastRestart: null, log: [] },
+};
+state.survival.lastRestart = new Date(state.survival.startedAt).toISOString();
+const backups = [
+  { id: "bk-3", target: "world", kind: "nightly", size_bytes: 812_000_000, created_at: new Date(now0 - 3 * 3600 * 1000).toISOString(), status: "ok" },
+  { id: "bk-2", target: "supabase", kind: "manual", size_bytes: 0, created_at: new Date(now0 - 27 * 3600 * 1000).toISOString(), status: "failed" },
+  { id: "bk-1", target: "supabase", kind: "nightly", size_bytes: 4_200_000, created_at: new Date(now0 - 51 * 3600 * 1000).toISOString(), status: "ok" },
+];
 
 function log(name, message) {
   const line = `[${new Date().toISOString().slice(11, 19)} INFO]: ${message}`;
-  const s = servers[name];
+  const s = state[name];
   s.log.push({ message: line, at: Date.now() * 1000 });
   if (s.log.length > 500) s.log.shift();
   for (const c of consoles) if (c.server === name) sendFrame(c.socket, JSON.stringify({ type: "log", message: line }));
 }
-for (const name of Object.keys(servers)) for (let i = 1; i <= 30; i++) log(name, `Mock ${name} boot line ${i}`);
+for (const name of Object.keys(state)) for (let i = 1; i <= 30; i++) log(name, `Mock ${name} boot line ${i}`);
 
 /** Minimal RFC 6455 text frame (server frames are never masked). */
 function sendFrame(socket, text, opcode = 0x1) {
@@ -252,6 +410,40 @@ function readFrames(buffer) {
   return [frames, buffer];
 }
 
+/** Deterministic 0..1 noise so charts look alive but never change between calls. */
+const wave = (i, seed) => (Math.sin(i * 0.9 + seed) + Math.sin(i * 0.23 + seed * 2) + 2) / 4;
+
+const serviceStatus = (id) => {
+  const s = state[id];
+  const up = s.active;
+  return {
+    state: up ? "up" : "down",
+    since: new Date(up ? s.startedAt : (s.stoppedAt ?? now0 - 26 * 3600 * 1000)).toISOString(),
+    last_restart: s.lastRestart,
+    cpu_pct: up ? Math.round((8 + wave(Date.now() / 5000, id.length) * 20) * 10) / 10 : 0,
+    mem_bytes: up ? Math.round((0.4 + wave(Date.now() / 9000, id.length) * 0.3) * 1024 ** 3) : 0,
+    mem_limit_bytes: up ? 2 * 1024 ** 3 : 0,
+  };
+};
+
+function serviceMetrics(id, hours) {
+  const step = 5 * 60_000, end = Math.floor(Date.now() / step) * step, count = hours * 12, seed = id.length;
+  return Array.from({ length: count }, (_, i) => {
+    const t = end - (count - 1 - i) * step;
+    return { t: new Date(t).toISOString(), cpu_pct: Math.round((6 + wave(t / step, seed) * 30) * 10) / 10, mem_bytes: Math.round((0.4 + wave(t / step / 6, seed + 1) * 0.4) * 1024 ** 3) };
+  });
+}
+
+function serviceUptime(id, days) {
+  const hour = 3_600_000, end = Math.floor(Date.now() / hour) * hour, count = days * 24;
+  return Array.from({ length: count }, (_, i) => {
+    const t = end - (count - 1 - i) * hour;
+    // discord-bot had a bad afternoon two days ago; everything else is solid except one brief blip.
+    const bad = id === "discord-bot" ? t > end - 50 * hour && t < end - 46 * hour : (t / hour) % 97 === 0;
+    return { t: new Date(t).toISOString(), up_ratio: bad ? (id === "discord-bot" ? 0 : 0.8) : 1 };
+  });
+}
+
 function startManager() {
   const pem = env.MCSV_JWT_PRIVATE_KEY?.replace(/\\n/g, "\n");
   if (!pem) {
@@ -269,6 +461,21 @@ function startManager() {
     const json = (code, body) => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(body)); };
     const token = (req.headers.authorization ?? "").replace(/^Bearer /, "");
     const deny = (need) => { const why = checkToken(token, need, publicKey); if (why) json(401, { error: why }); return why; };
+    // Ops contract routes: 401 for a bad token, 403 for a good token without the bit.
+    const denyOps = (need) => {
+      const why = checkToken(token, need, publicKey);
+      if (why) json(why === "missing permission" ? 403 : 401, { error: why });
+      return why;
+    };
+    const readBody = async () => { let b = ""; for await (const chunk of req) b += chunk; try { return JSON.parse(b || "{}"); } catch { return {}; } };
+
+    if (managerOnly && req.method === "POST" && url.pathname === "/__mock/state") {
+      servicesMode = ["down", "slow"].includes(url.searchParams.get("services")) ? url.searchParams.get("services") : "ok";
+      return json(200, { services: servicesMode });
+    }
+    if (url.pathname === "/services" && servicesMode === "down") return json(503, { error: "mock: manager backend unavailable" });
+    if (url.pathname === "/services" && servicesMode === "slow") return void setTimeout(ops, 6000);
+    if (url.pathname === "/services" || url.pathname === "/backups" || url.pathname.startsWith("/service/")) return ops();
 
     if (req.method === "GET" && url.pathname === "/servers") return deny(PERMISSION.STATUS) || json(200, Object.keys(servers));
     const m = url.pathname.match(/^\/server\/([A-Za-z0-9_.@-]+)\/(status|rlog|start|stop|restart)$/);
@@ -283,18 +490,70 @@ function startManager() {
     }
     if (req.method === "POST" && ACTION_BITS[op]) {
       if (deny(ACTION_BITS[op])) return;
-      if (op === "stop") { s.active = false; log(name, "Stopping the server"); }
-      else { s.active = true; s.startedAt = Date.now(); log(name, op === "restart" ? "Restarting the server" : "Starting the server"); }
+      if (op === "stop") { s.active = false; s.stoppedAt = Date.now(); log(name, "Stopping the server"); }
+      else { s.active = true; s.startedAt = Date.now(); if (op === "restart") s.lastRestart = new Date().toISOString(); log(name, op === "restart" ? "Restarting the server" : "Starting the server"); }
       return json(200, { ok: true });
     }
     json(405, { error: "method not allowed" });
+
+    function ops() {
+      if (req.method === "GET" && url.pathname === "/services") {
+        if (denyOps(PERMISSION.STATUS)) return;
+        return json(200, Object.entries(SERVICE_META).map(([id, m]) => ({
+          id, name: m.name, kind: m.kind, console: m.console, actions: ["start", "stop", "restart"], backups: m.backups, updatable: m.updatable,
+        })));
+      }
+      if (url.pathname === "/backups") {
+        if (req.method === "GET") return denyOps(PERMISSION.BACKUP_READ) || json(200, backups);
+        if (req.method !== "POST") return json(405, { error: "method not allowed" });
+        return (async () => {
+          if (denyOps(PERMISSION.BACKUP_RUN)) return;
+          const { target } = await readBody();
+          if (target !== "world" && target !== "supabase") return json(400, { error: "target must be world or supabase" });
+          if (backups.some((b) => b.target === target && b.status === "running")) return json(409, { error: "backup already running" });
+          const entry = { id: `bk-${randomUUID().slice(0, 8)}`, target, kind: "manual", size_bytes: 0, created_at: new Date().toISOString(), status: "running" };
+          backups.unshift(entry);
+          // "Finishes" after 3 s so the UI can watch running -> ok.
+          setTimeout(() => { entry.status = "ok"; entry.size_bytes = target === "world" ? 815_000_000 : 4_300_000; }, 3000).unref();
+          json(202, { id: entry.id });
+        })();
+      }
+      const m = url.pathname.match(/^\/service\/([A-Za-z0-9_.@-]+)\/(status|metrics|uptime|rlog|image|start|stop|restart|update)$/);
+      if (!m || !SERVICE_META[m[1]]) return json(404, { error: "not found" });
+      const [, id, op] = m;
+      const meta = SERVICE_META[id], s = state[id];
+      const reads = { status: PERMISSION.STATUS, metrics: PERMISSION.STATUS, uptime: PERMISSION.STATUS, image: PERMISSION.STATUS, rlog: PERMISSION.LOGS };
+      const isRead = req.method === "GET" && op in reads;
+      const isAction = req.method === "POST" && (ACTION_BITS[op] || op === "update");
+      if (!isRead && !isAction) return json(405, { error: "method not allowed" });
+      if (denyOps(isRead ? reads[op] : op === "update" ? PERMISSION.UPDATE : ACTION_BITS[op])) return;
+      if (id === "fail") return json(500, { error: "mock failure" });
+      if (isRead) {
+        if (op === "status") return json(200, serviceStatus(id));
+        if (op === "metrics") return json(200, serviceMetrics(id, Math.min(Math.max(Number(url.searchParams.get("hours")) || 24, 1), 168)));
+        if (op === "uptime") return json(200, serviceUptime(id, Math.min(Math.max(Number(url.searchParams.get("days")) || 7, 1), 7)));
+        if (op === "image") return meta.image ? json(200, { ...meta.image, checked_at: new Date(now0 - 600_000).toISOString() }) : json(404, { error: "no image" });
+        const max = Math.min(Number(url.searchParams.get("max_lines")) || 200, 500);
+        return json(200, s.log.slice(-max).reverse().map(({ message }) => ({ message })));
+      }
+      if (op === "update") {
+        if (!meta.updatable) return json(404, { error: "not updatable" });
+        meta.image.current = meta.image.latest;
+        log(id, `Pulled ${meta.image.latest} and recreated`);
+        s.active = true; s.startedAt = Date.now(); s.lastRestart = new Date().toISOString();
+        return json(202, { ok: true });
+      }
+      if (op === "stop") { s.active = false; s.stoppedAt = Date.now(); log(id, "Stopping"); }
+      else { s.active = true; s.startedAt = Date.now(); if (op === "restart") s.lastRestart = new Date().toISOString(); log(id, op === "restart" ? "Restarting" : "Starting"); }
+      json(202, { ok: true });
+    }
   });
 
   server.on("upgrade", (req, socket) => {
-    const m = new URL(req.url, "http://127.0.0.1").pathname.match(/^\/server\/([A-Za-z0-9_.@-]+)\/console$/);
+    const m = new URL(req.url, "http://127.0.0.1").pathname.match(/^\/(?:server|service)\/([A-Za-z0-9_.@-]+)\/console$/);
     // Browsers can't set headers on a WebSocket, so the token rides as the second subprotocol.
     const [kind, token] = String(req.headers["sec-websocket-protocol"] ?? "").split(",").map((p) => p.trim());
-    const why = !m || !servers[m[1]] ? "not found" : kind !== "mcsv.jwt" ? "missing token" : checkToken(token, PERMISSION.CONSOLE_READ, publicKey);
+    const why = !m || !(servers[m[1]] || SERVICE_META[m[1]]?.console) ? "not found" : kind !== "mcsv.jwt" ? "missing token" : checkToken(token, PERMISSION.CONSOLE_READ, publicKey);
     if (why) { socket.end(`HTTP/1.1 401 Unauthorized\r\n\r\n${why}`); return; }
     const accept = createHash("sha1").update(`${req.headers["sec-websocket-key"]}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`).digest("base64");
     socket.write(`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${accept}\r\nSec-WebSocket-Protocol: mcsv.jwt\r\n\r\n`);
@@ -356,6 +615,10 @@ function startMinecraft() {
   }).listen(PORTS.minecraft, "127.0.0.1", () => console.log(`Minecraft ping mock  127.0.0.1:${PORTS.minecraft}`));
 }
 
-startDiscord(dockerGateway());
-startManager();
-startMinecraft();
+if (managerOnly) {
+  startManager();
+} else {
+  startDiscord(dockerGateway());
+  startManager();
+  startMinecraft();
+}

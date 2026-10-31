@@ -2,6 +2,8 @@ import type { SupabaseClient, UserIdentity } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { classifyIdentities, identityEmail, type LinkError } from "@/lib/chula";
 import { dbErrorCode } from "@/lib/db-error";
+import { after } from "next/server";
+import { recordFunnelFailure } from "@/lib/funnel";
 
 type Outcome = { signOut: true; reason: "discord_required" } | { signOut: false; path: string };
 
@@ -27,7 +29,7 @@ export async function reconcileIdentities(session: SupabaseClient<Database>, adm
   if (identities.filter((i) => i.provider === "discord").length !== 1) return { signOut: true, reason: "discord_required" };
 
   const { data: claim, error: claimLookupError } = await admin.from("chula_claims").select("google_sub").eq("user_id", userId).maybeSingle();
-  if (claimLookupError) return { signOut: false, path: "/verify?error=other" };
+  if (claimLookupError) { after(() => recordFunnelFailure("verify", "OTHER")); return { signOut: false, path: "/verify?error=other" }; }
   const { cu, invalid, personal } = classifyIdentities(identities, claim?.google_sub ?? null);
   // The claimed account is always the Chula one, even if its email later changes.
   const claimed = identities.find((i) => i.provider === "google" && i.id === claim?.google_sub);
@@ -73,6 +75,9 @@ export async function reconcileIdentities(session: SupabaseClient<Database>, adm
   }
 
   const query = error ? `?error=${error}` : "";
+  // Anonymous count for /admin/insights. after() runs it once the response is sent, so the
+  // redirect never waits on it (callers are route handlers and server-component pages).
+  if (error) { const code = (error as string).toUpperCase(); after(() => recordFunnelFailure("verify", code)); }
   if (!verified) return { signOut: false, path: `/verify${query}` };
   return { signOut: false, path: error ? `/settings${query}` : "/welcome" };
 }

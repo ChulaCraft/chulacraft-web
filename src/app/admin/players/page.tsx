@@ -1,124 +1,84 @@
 import type { Metadata } from "next";
+import Form from "next/form";
 import Link from "next/link";
+import { FilterChips, FilterPanel, KeepState } from "@/components/data-table";
 import { PixelIcon } from "@/components/icons";
-import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
+import { MetricTile } from "@/components/charts/metric-tile";
+import { insightsRpc } from "@/lib/insights/rpc";
 import { createClient } from "@/lib/supabase/server";
-import type { Database } from "@/lib/supabase/database.types";
+import type { RawParams } from "@/lib/table-query";
 import styles from "../admin.module.css";
-import { StatRow, ToolCards, type Stats } from "../overview";
+import { makeWindow, playerStats } from "../insights/data";
+import { staffCan } from "@/lib/staff";
+import { myRole } from "../staff-gate";
+import { loadPlayers } from "./actions";
+import { activeView, BASE, COLUMNS, hrefFor, readPlayers, VIEWS } from "./params";
+import { PlayerTable } from "./player-table";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Players" };
 
-type Fn = Database["public"]["Functions"];
-type UserRow = Fn["admin_search_users"]["Returns"][number];
-type Newest = Fn["admin_newest_players"]["Returns"][number];
-
-/** verification_kind is a text column with no check constraint, so narrow it here. */
-const kind = (value: string): VerificationKind => (value === "verified" || value === "guest" ? value : "unverified");
-
-export default async function AdminPlayersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const q = (await searchParams).q?.trim() ?? "";
+export default async function AdminPlayersPage({ searchParams }: { searchParams: Promise<RawParams> }) {
+  const search = await searchParams;
+  const state = readPlayers(search);
   const supabase = await createClient();
-  let users: UserRow[] = [];
-  let failed = false;
-  let stats: Stats | null = null;
-  let newest: Newest[] = [];
-  if (q) {
-    const { data, error } = await supabase.rpc("admin_search_users", { p_query: q });
-    users = data ?? [];
-    failed = Boolean(error);
-  } else {
-    const [s, n] = await Promise.all([
-      supabase.rpc("admin_overview_stats").single<Stats>(),
-      supabase.rpc("admin_newest_players", { p_limit: 5 }),
-    ]);
-    stats = s.data;
-    newest = n.data ?? [];
-    failed = Boolean(s.error || n.error);
-  }
+  const role = await timed("myRole", myRole());
+  const isAdmin = staffCan(role, "admin");
+  const can = { guest: isAdmin, ban: staffCan(role, "moderation"), award: staffCan(role, "community") };
+  const [first, catalog, insights] = await Promise.all([
+    loadPlayers(search, 0),
+    can.award ? timed("admin_list_achievements", supabase.rpc("admin_list_achievements")) : Promise.resolve({ data: [] as { id: string; name: string; status: string }[] }),
+    // The strip is an extra: if the RPC fails it is left out and the table still shows.
+    isAdmin ? insightsRpc(supabase, "insights_players", 30) : null,
+  ]);
+  const tiles = insights && !insights.error ? playerStats(makeWindow("30d"), insights.data) : null;
+  const achievements = (catalog.data ?? []).filter((a) => a.status === "published").map((a) => ({ id: a.id, name: a.name }));
+  const view = activeView(state);
+  const ctx = { base: BASE, state };
 
   return <>
     <div className={styles.titleRow}>
       <h1 className={styles.title}>Players</h1>
-      <Link href="/admin/restore" className="link-button">Removed accounts →</Link>
+      {isAdmin && <Link href="/admin/restore" className="link-button">Removed accounts →</Link>}
     </div>
 
-    <form className={`panel pixel-4 ${styles.search}`} role="search">
+    {tiles && <section className={styles.insightStrip} aria-label="Player insights">
+      <MetricTile label="Players" value={tiles.players.value ?? "–"} delta={tiles.players.delta} series={tiles.players.series} href="/admin/insights?tab=players" />
+      <MetricTile label="New signups 30d" value={tiles.signups.value ?? "–"} delta={tiles.signups.delta} series={tiles.signups.series} href="/admin/insights?tab=players" />
+      <MetricTile label="Chula verified" value={tiles.verified.value ?? "–"} delta={tiles.verified.delta} series={tiles.verified.series} href="/admin/insights?tab=players" />
+      <MetricTile label="Guests" value={tiles.guests.value ?? "–"} delta={tiles.guests.delta} series={tiles.guests.series} href="/admin/insights?tab=players" />
+    </section>}
+
+    <Form scroll={false} action={BASE} className={`panel pixel-4 ${styles.search}`} role="search">
+      <KeepState state={state} except={["q"]} />
       <label htmlFor="admin-q" className="label">Search players</label>
       <div className={styles.searchRow}>
         <div className={styles.searchInput}>
           <PixelIcon name="search" />
-          <input id="admin-q" className="input" name="q" defaultValue={q} placeholder="Discord name or ID, Chula email, or Minecraft name" aria-describedby="q-help" />
+          <input id="admin-q" className="input" name="q" type="search" defaultValue={state.q} placeholder="Discord name or ID, Chula email, or Minecraft name" aria-describedby="q-help" />
         </div>
         <button className="btn btn-primary" type="submit">Search</button>
       </div>
       <p id="q-help" className="field-help">Includes removed Minecraft accounts.</p>
-    </form>
+    </Form>
 
-    <div aria-live="polite" className="hint">
-      {q && !failed && `${users.length === 50 ? "First 50" : users.length} ${users.length === 1 ? "player" : "players"} found for “${q}”`}
-    </div>
+    <nav className={styles.subnav} aria-label="Views">
+      {VIEWS.map((v) => (
+        <Link scroll={false} key={v.label} href={hrefFor({ ...state, filters: {} }, { filters: v.filters })} aria-current={view === v.label ? "page" : undefined}>{v.label}</Link>
+      ))}
+    </nav>
 
-    {failed ? (
-      <div className="alert alert-error" role="alert"><PixelIcon name="warning" /><p className="alert-body">Couldn&apos;t load players. Please try again.</p></div>
-    ) : !q ? <>
-      {stats && <StatRow label="Player overview" stats={[
-        { label: "All players", value: stats.players, rail: "var(--pink)" },
-        { label: "Verified Chula", value: stats.verified, rail: "var(--green)" },
-        { label: "Guests", value: stats.guests, rail: "var(--lavender)" },
-        { label: "Unverified", value: stats.unverified, rail: "var(--edge)" },
-      ]} />}
-
-      <ToolCards title="Player tools" tools={[
-        { title: "Removed accounts", desc: "Minecraft accounts taken off the whitelist. Put them back.", icon: "revoked", href: "/admin/restore", count: stats ? String(stats.removed_accounts) : undefined },
-        { title: "Unverified players", desc: "Players who signed in but never verified Chula.", icon: "info" },
-        { title: "Guest list", desc: "Every non-Chula player an admin let in.", icon: "shield" },
-      ]} />
-
-      <section aria-labelledby="new-title" className="panel">
-        <div className={styles.listHead}>
-          <h2 id="new-title">Newest players</h2>
+    {"error" in first
+      ? <div className="alert alert-error" role="alert"><PixelIcon name="warning" /><p className="alert-body">Couldn&apos;t load players. Please try again.</p></div>
+      : <>
+        <div className={styles.tableBar}>
+          {/* Keyed by the view so it closes once Apply has loaded the results. */}
+          <FilterPanel key={hrefFor(state)} columns={COLUMNS} {...ctx} />
+          <p className={styles.tableCount} aria-live="polite"><strong>{first.total.toLocaleString("en-GB")}</strong> {first.total === 1 ? "player" : "players"}</p>
+          <FilterChips columns={COLUMNS} {...ctx} />
+          {isAdmin && <a href={hrefFor(state).replace(BASE, `${BASE}/export`)} className="btn btn-sm" download><PixelIcon name="arrow" />Export CSV</a>}
         </div>
-        {newest.length === 0 ? <p className="muted">No players yet.</p> : (
-          <ul className={styles.newest}>
-            {newest.map((n) => (
-              <li key={n.user_id}>
-                <Link href={`/admin/users/${n.user_id}`}>
-                  <strong>{n.display_name ?? n.handle ?? "Player"}{n.handle && n.handle !== n.display_name && <span className="hint"> @{n.handle}</span>}</strong>
-                  <VerificationBadge kind={kind(n.verification_kind)} />
-                  <time dateTime={n.created_at}>{new Date(n.created_at).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", dateStyle: "medium" })}</time>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </> : users.length === 0 ? (
-      <div className={styles.empty}>
-        <p className="section-title">No players found</p>
-        <p className="muted">Check the spelling, or try part of their email or Minecraft name.</p>
-      </div>
-    ) : (
-      <ul className={styles.results} aria-label="Search results">
-        {users.map((user) => {
-          const name = user.discord_username ?? user.email ?? user.user_id;
-          return (
-            <li key={user.user_id}>
-              <Link href={`/admin/users/${user.user_id}`}>
-                <span className={`avatar ${styles.avatarSm}`} aria-hidden="true">{name.charAt(0).toUpperCase()}</span>
-                <span className={styles.resultMain}>
-                  <strong>{name}{user.role !== "user" && <span className="optional"> · {user.role}</span>}</strong>
-                  <span className={`mono ${styles.small}`}>{user.chula_email ?? user.email ?? "No email"}</span>
-                </span>
-                <span className={`mono ${styles.resultMc}`}>{user.minecraft_usernames ?? "—"}</span>
-                <VerificationBadge kind={kind(user.verification_kind)} />
-                <PixelIcon name="arrow" />
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    )}
+        <PlayerTable key={hrefFor(state)} initial={first.rows} total={first.total} search={search} achievements={achievements} can={can} />
+      </>}
   </>;
 }
-

@@ -1,22 +1,35 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import { ConfirmAction } from "@/components/confirm-action";
 import { PixelIcon } from "@/components/icons";
+import { BannerStrip } from "@/components/profile-banner";
 import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
 import { describeChange } from "@/lib/change-log";
 import { MAX_MINECRAFT_ACCOUNTS, syncBadge, toSyncStatus } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../../admin.module.css";
 import { when } from "../../overview";
-import { banUser, liftBan, markGuest, resetChula, setWhitelisted } from "./actions";
+import { AboutYouForm } from "@/app/register/details/about-you-form";
+import { STUDY_LEVELS, toStudyLevel } from "@/lib/faculties";
+import { ROLE_LABELS, staffCan } from "@/lib/staff";
+import { LEVEL_OPTIONS, PRIVACY_FIELDS, type Privacy } from "@/lib/privacy";
+import { banUser, grantBanner, liftBan, markGuest, resetChula, saveProfileFor, setPrivacyFor, setRole, setWhitelisted } from "./actions";
 import { RoleControl } from "./role-control";
 import { SubmitButton } from "@/components/submit-button";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Player" };
 
 /** admin_get_user returns a jsonb document, so it can't be derived from the
  * generated table types; this mirrors the keys built in 20261004000001. */
+/** admin_user_profile is jsonb too (20261018000001). */
+type SupportProfile = {
+  first_name: string | null; last_name: string | null; nickname: string | null;
+  faculty: string | null; major: string | null; study_level: string | null; privacy: Privacy;
+} | null;
+
 type Detail = {
   user: { id: string; email: string | null; created_at: string; role: string } | null;
   discord: { id: string; username: string | null } | null;
@@ -30,6 +43,7 @@ type Detail = {
 
 const ERRORS: Record<string, string> = {
   FORBIDDEN: "You don't have permission to change this player.",
+  INVALID_LEVEL: "That privacy setting isn't one we know.",
   LIMIT_REACHED: `This player already has ${MAX_MINECRAFT_ACCOUNTS} active Minecraft accounts.`,
   SELF_ROLE_CHANGE: "You can't change your own role.",
   OWNER_ROLE_PROTECTED: "Owners are peers, so you can't change another owner's role.",
@@ -49,22 +63,29 @@ const DONE: Record<string, string> = {
   removed: "Account removed from the whitelist.",
   banned: "Player banned. Their accounts leave the whitelist and they're kicked within a few seconds.",
   lifted: "Ban lifted. The accounts it removed are going back on the whitelist.",
+  profile: "Profile details saved.",
+  privacy: "Privacy settings saved.",
+  banner_given: "Banner given. They can pick it on their profile now.",
+  banner_taken: "Banner taken back. If they were using it, they're back on the default.",
 };
 
 export default async function AdminUserPage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; done?: string }>;
+  searchParams: Promise<{ error?: string; done?: string; edit?: string }>;
 }) {
   const { id } = await params;
-  const { error: errorCode, done } = await searchParams;
+  const { error: errorCode, done, edit } = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const supabase = await createClient();
-  const [{ data, error }, { data: myRole }, { data: { user: me } }, { data: bans }] = await Promise.all([
-    supabase.rpc("admin_get_user", { p_user_id: id }),
-    supabase.rpc("current_app_role"),
+  const [{ data, error }, { data: myRole }, { data: { user: me } }, { data: bans }, { data: support }, { data: banners }] = await Promise.all([
+    timed("admin_get_user", supabase.rpc("admin_get_user", { p_user_id: id })),
+    timed("current_app_role", supabase.rpc("current_app_role")),
     supabase.auth.getUser(),
-    supabase.rpc("admin_user_bans", { p_user_id: id }),
+    timed("admin_user_bans", supabase.rpc("admin_user_bans", { p_user_id: id })),
+    timed("admin_user_profile", supabase.rpc("admin_user_profile", { p_user_id: id })),
+    // Community area only (event staff too); others get FORBIDDEN and no section.
+    timed("admin_user_banners", supabase.rpc("admin_user_banners", { p_user_id: id })),
   ]);
   if (error) {
     return <>
@@ -81,10 +102,17 @@ export default async function AdminUserPage({ params, searchParams }: {
   const target = detail.user;
 
   const isOwner = myRole === "owner";
-  const canManage = isOwner || target.role === "user";
+  // Edits are owner/admin only; moderators and event staff view. Staff count as
+  // non-players, so only an owner edits them (same rule as the RPCs).
+  const canManage = staffCan(myRole, "admin") && (isOwner || target.role === "user");
+  const canModerate = staffCan(myRole, "moderation");
   const name = detail.discord?.username ?? target.email ?? target.id;
   const handle = detail.discord?.username ?? target.id.slice(0, 8);
   const activeBan = bans?.find((b) => b.active);
+  const profile = support as SupportProfile;
+  const privacy: Privacy = profile?.privacy ?? { profile: "public", minecraft: "public", achievements: "public", friends: "public" };
+  const levelLabel = STUDY_LEVELS.find((l) => l.value === profile?.study_level)?.label;
+  const privacyLabel = (v: string) => LEVEL_OPTIONS.find((o) => o.value === v)?.label ?? v;
 
   return <>
     <Link href="/admin/players" className="back-link"><PixelIcon name="back" />Players</Link>
@@ -102,7 +130,7 @@ export default async function AdminUserPage({ params, searchParams }: {
       </div>
       <div className={styles.badges}>
         <VerificationBadge kind={detail.verification_kind} />
-        <span className={styles.roleBadge}>Role: {target.role}</span>
+        <span className={styles.roleBadge}>Role: {ROLE_LABELS[target.role] ?? target.role}</span>
         {activeBan && <span className="badge badge-danger"><PixelIcon name="revoked" />Banned</span>}
       </div>
     </section>
@@ -164,7 +192,26 @@ export default async function AdminUserPage({ params, searchParams }: {
           </section>
         )}
 
-        {(target.role === "user" || (bans?.length ?? 0) > 0) && (
+        {myRole === "admin" && (target.role === "moderator" || target.role === "event_staff") && (
+          <section className={`panel ${styles.actionsCard}`} aria-labelledby="staff-title">
+            <h2 id="staff-title" className={styles.sectionTitle}>Staff role</h2>
+            <div className={styles.actionRow}>
+              <p className="hint">Admins can take a staff role away. Only an owner can give one.</p>
+              <ConfirmAction
+                action={setRole}
+                fields={{ userId: target.id, role: "user" }}
+                trigger="Remove staff role"
+                triggerClassName="btn btn-sm btn-danger-outline"
+                title={`Make ${name} a regular player?`}
+                body={`${name} loses their ${ROLE_LABELS[target.role]} tools straight away.`}
+                confirmLabel="Remove staff role"
+                confirmClassName="btn btn-danger"
+              />
+            </div>
+          </section>
+        )}
+
+        {canModerate && (target.role === "user" || (bans?.length ?? 0) > 0) && (
           <section className={`panel ${styles.actionsCard}`} aria-labelledby="ban-title">
             <h2 id="ban-title" className={styles.sectionTitle}>Ban</h2>
             {activeBan ? (
@@ -229,6 +276,80 @@ export default async function AdminUserPage({ params, searchParams }: {
       </div>
 
       <div className={styles.mainCol}>
+        <section className="panel" aria-labelledby="profile-title">
+          <div className={styles.listHead}>
+            <h2 id="profile-title" className={styles.sectionTitle}>Profile</h2>
+            {canManage && edit !== "profile" && <Link href={`/admin/users/${id}?edit=profile`} scroll={false} className="link-button">Edit</Link>}
+          </div>
+          {edit === "profile" && canManage ? (
+            <AboutYouForm
+              save={saveProfileFor.bind(null, id)}
+              submitLabel="Save details"
+              cancelHref={`/admin/users/${id}`}
+              initial={{ first: profile?.first_name ?? "", last: profile?.last_name ?? "", nick: profile?.nickname ?? "", level: toStudyLevel(profile?.study_level), faculty: profile?.faculty ?? "", major: profile?.major ?? "" }}
+            />
+          ) : (
+            <dl className={styles.facts}>
+              <dt>Name</dt><dd>{[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || <span className="hint">Not set</span>}</dd>
+              <dt>Nickname</dt><dd>{profile?.nickname ?? <span className="hint">Not set</span>}</dd>
+              <dt>Study level</dt><dd>{levelLabel ?? <span className="hint">Not set</span>}</dd>
+              <dt>Faculty</dt><dd>{profile?.faculty ?? <span className="hint">Not set</span>}</dd>
+              <dt>Major</dt><dd>{profile?.major ?? <span className="hint">Not set</span>}</dd>
+            </dl>
+          )}
+        </section>
+
+        <section className="panel" aria-labelledby="privacy-title">
+          <h2 id="privacy-title" className={styles.sectionTitle}>Privacy</h2>
+          {canManage ? (
+            <form action={setPrivacyFor} className={styles.privacyGrid}>
+              <input type="hidden" name="userId" value={id} />
+              {PRIVACY_FIELDS.map(([field, label]) => (
+                <div className="field" key={field}>
+                  <label htmlFor={`privacy-${field}`}>{label}</label>
+                  <select id={`privacy-${field}`} name={field} className="input" defaultValue={privacy[field]}>
+                    {LEVEL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+              ))}
+              <div><SubmitButton className="btn btn-sm">Save privacy</SubmitButton></div>
+            </form>
+          ) : (
+            <dl className={styles.facts}>
+              {PRIVACY_FIELDS.map(([field, label]) => <Fragment key={field}><dt>{label}</dt><dd>{privacyLabel(privacy[field])}</dd></Fragment>)}
+            </dl>
+          )}
+        </section>
+
+        {banners && (
+          <section className="panel" aria-labelledby="banners-title">
+            <h2 id="banners-title" className={styles.sectionTitle}>Banners</h2>
+            <p className="hint">Defaults are free for everyone. These are earned at an event that rewards them, or given here.</p>
+            <ul className={styles.bannerList}>
+              {banners.filter((b) => b.kind === "unlock").map((banner) => (
+                <li key={banner.id}>
+                  <BannerStrip colors={banner.colors} image={banner.image_path} still={banner.still_path} className={styles.bannerSwatch} />
+                  <span className={styles.bannerText}>
+                    <strong>{banner.name}</strong>
+                    <span className="hint">
+                      {banner.granted ? "Given by staff" : banner.owned ? `Earned at ${banner.event_names.join(", ") || "an event"}` : "Locked"}
+                      {banner.selected && " · in use"}
+                    </span>
+                  </span>
+                  {(banner.granted || !banner.owned) && (
+                    <form action={grantBanner}>
+                      <input type="hidden" name="userId" value={id} />
+                      <input type="hidden" name="bannerId" value={banner.id} />
+                      <input type="hidden" name="grant" value={String(!banner.granted)} />
+                      <SubmitButton className={banner.granted ? "btn btn-sm btn-danger-outline" : "btn btn-sm"}>{banner.granted ? "Take back" : "Give"}</SubmitButton>
+                    </form>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <section className={`panel ${styles.flush}`} aria-labelledby="mc-title">
           <h2 id="mc-title" className={`${styles.sectionTitle} ${styles.flushTitle}`}>Minecraft accounts</h2>
           {detail.registrations.length === 0 ? <p className={`muted ${styles.flushTitle}`}>No Minecraft accounts added yet.</p> : (
@@ -270,6 +391,8 @@ export default async function AdminUserPage({ params, searchParams }: {
           )}
         </section>
 
+        {/* Per-player history is audit data: owner/admin only, like /admin/audit. */}
+        {staffCan(myRole, "admin") && (
         <section className="panel" aria-labelledby="log-title">
           <div className={styles.listHead}>
             <h2 id="log-title" className={styles.sectionTitle}>Change log</h2>
@@ -289,6 +412,7 @@ export default async function AdminUserPage({ params, searchParams }: {
             </ol>
           )}
         </section>
+        )}
       </div>
     </div>
   </>;

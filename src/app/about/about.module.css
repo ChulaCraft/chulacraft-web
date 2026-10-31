@@ -1,21 +1,26 @@
+/* Full-bleed night field: the world fades in from the right and sinks
+   into the page at the bottom, so the hero has no box around it. */
 .hero {
   position: relative;
   overflow: hidden;
-  border-bottom: 2px solid var(--surface-2);
+  isolation: isolate;
 }
 
 .heroImage {
+  z-index: -2;
   object-fit: cover;
-  opacity: 0.55;
+  -webkit-mask-image: linear-gradient(90deg, transparent 20%, #000 65%), linear-gradient(180deg, #000 60%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent 20%, #000 65%), linear-gradient(180deg, #000 60%, transparent 100%);
+  mask-composite: intersect;
 }
 
-.heroTint {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, var(--bg) 0%, rgba(32, 26, 43, 0.92) 45%, rgba(32, 26, 43, 0.4) 100%),
-    linear-gradient(180deg, rgba(32, 26, 43, 0) 60%, var(--bg) 100%);
+/* Narrow screens: the words cover the whole banner, so the picture steps
+   back to a faint texture behind them. */
+@media (max-width: 800px) {
+  .heroImage {
+    opacity: 0.22;
+  }
 }
 
 .heroInner {
@@ -61,16 +66,21 @@
 }
 
 .valueIcon {
+  --tone: var(--pink);
   width: 44px;
   height: 44px;
   display: grid;
   place-items: center;
-  color: var(--bg);
-  background: var(--pink);
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 16%, var(--surface));
 }
 
+/* Mission, vision, values: one lit colour each. */
+li:nth-child(2) .valueIcon { --tone: var(--amber); }
+li:nth-child(3) .valueIcon { --tone: var(--violet); }
+
 .valueTitle {
-  font: 600 26px/1.2 var(--font-display), monospace;
+  font: 700 22px/1.25 var(--font-body), Georgia, serif;
 }
 
 .community {
@@ -108,6 +118,8 @@
 
 .shot {
   position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
   aspect-ratio: 4 / 3;
   background: var(--surface);
 }

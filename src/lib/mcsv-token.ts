@@ -11,7 +11,10 @@ export const PERMISSION = {
   CONSOLE_WRITE: 8,
   START: 16,
   STOP: 32,
-  RESTART: 64
+  RESTART: 64,
+  BACKUP_READ: 128,
+  BACKUP_RUN: 256,
+  UPDATE: 512
 } as const;
 
 /** Every bit, including ones the manager adds later: owners only. */
@@ -21,7 +24,7 @@ const P = PERMISSION;
 /** What a site role may ever be granted; each token carries only the bits its request needs. */
 export function maskFor(role: string | null | undefined) {
   if (role === "owner") return ALL;
-  if (role === "admin") return P.STATUS | P.LOGS | P.CONSOLE_READ | P.RESTART;
+  if (role === "admin") return P.STATUS | P.LOGS | P.CONSOLE_READ | P.RESTART | P.BACKUP_READ | P.BACKUP_RUN;
   return 0;
 }
 
@@ -32,7 +35,7 @@ export function managerUrl() {
   return (process.env.MCSV_MANAGER_URL?.trim() || "https://mc.chulacraft.com/api/mcsv_manager").replace(/\/+$/, "");
 }
 
-/** ws:// or wss:// origin of the manager: the CSP connect-src entry the /admin/server console needs. */
+/** ws:// or wss:// origin of the manager: the CSP connect-src entry the /admin/ops console needs. */
 export function managerSocketOrigin() {
   try {
     return new URL(managerUrl()).origin.replace(/^http/, "ws");

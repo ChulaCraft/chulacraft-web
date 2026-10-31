@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { AchievementGrid, type AchievementGroup } from "@/components/achievement-grid";
+import { AchievementGrid, EventHistory, showcase, ShowcaseRow, toEventHistory, type AchievementGroup } from "@/components/achievement-grid";
 import { PixelIcon } from "@/components/icons";
+import { ProfileBanner } from "@/components/profile-banner";
 import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
-import { blockPlayer, removeFriend, reportPlayer, respondFriendRequest, sendFriendRequest } from "./actions";
+import { blockPlayer, removeFriend, respondFriendRequest, sendFriendRequest } from "./actions";
+import { ReportDialog } from "./report-dialog";
 import styles from "./player.module.css";
 import { SubmitButton } from "@/components/submit-button";
+import { siteSettings } from "@/lib/site-content";
+import { timed } from "@/lib/perf";
 
 /** player_card() in supabase/migrations/20261007000001_social.sql builds this
  *  jsonb, so the generated types cannot describe it. Every section is optional:
@@ -45,7 +49,7 @@ function Avatar({ src, name, size = 72 }: { src: string | null; name: string; si
 async function loadCard(id: string): Promise<PlayerCard | null> {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_player_profile", { p_user_id: id });
+    const { data, error } = await timed("get_player_profile", supabase.rpc("get_player_profile", { p_user_id: id }));
     // A read failure looks like a missing profile: there is nothing to show
     // either way, and both end at the 404.
     if (error || !data) return null;
@@ -58,8 +62,23 @@ async function loadCard(id: string): Promise<PlayerCard | null> {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const card = UUID.test(id) ? await loadCard(id) : null;
-  if (!card) return { title: "Player not found" };
-  return { title: card.display_name };
+  // Only a profile the viewer may see (can_view, via player_card's `hidden`) is
+  // indexable and gets its own image (./opengraph-image.tsx). Anyone else,
+  // including every crawler (the read is signed-in only), gets noindex and the
+  // site image: setting openGraph.images here stops the file-based one.
+  // openGraph replaces the layout's whole object, so siteName/type/locale are restated.
+  const hidden = {
+    robots: { index: false },
+    openGraph: { siteName: "ChulaCraft", type: "website", locale: "en_US", images: "/opengraph-image" },
+  } satisfies Metadata;
+  if (!card) return { title: "Player not found", ...hidden };
+  const visible = !card.hidden;
+  return {
+    title: card.display_name,
+    description: `${card.display_name} on ChulaCraft, the Minecraft server for the Chula community.`,
+    alternates: { canonical: `/player/${card.user_id}` },
+    ...(visible ? {} : hidden),
+  };
 }
 
 const ERRORS: Record<string, string> = {
@@ -69,6 +88,7 @@ const ERRORS: Record<string, string> = {
   INVALID_TARGET: "You can't do that to yourself.",
   INVALID: "Pick what happened and describe it in at least 10 characters. Links must start with https://.",
   ALREADY_REPORTED: "You already reported this player. An admin will look at it.",
+  REPORTS_CLOSED: "Reports are switched off right now. Message an admin on Discord instead.",
   RATE_LIMITED: "You've sent 5 reports today. Try again tomorrow, or message an admin on Discord.",
   FAILED: "That didn't save. Please try again in a moment."
 };
@@ -85,14 +105,21 @@ export default async function PlayerPage({ params, searchParams }: {
   const supabase = await createClient();
   let signedIn = true;
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await timed("auth.getUser", supabase.auth.getUser());
     signedIn = Boolean(user);
   } catch {
     signedIn = false;
   }
   if (!signedIn) redirect("/register");
 
-  const card = await loadCard(id);
+  const [card, banner, events] = await Promise.all([
+    loadCard(id),
+    // Cosmetic: a failure falls back to the default strip.
+    timed("get_player_banner", supabase.rpc("get_player_banner", { p_user_id: id }).maybeSingle()).then(({ data }) => data, () => null),
+    // Attendance, behind the same achievements privacy as the badges; a
+    // failure (or a block, NOT_FOUND) reads as no events.
+    timed("get_player_event_history", supabase.rpc("get_player_event_history", { p_user_id: id })).then(({ data }) => toEventHistory(data), () => [])
+  ]);
   // A blocked profile and an unknown one are both NOT_FOUND (AC 18).
   if (!card) notFound();
 
@@ -123,52 +150,97 @@ export default async function PlayerPage({ params, searchParams }: {
             {done === "reported" && <p className="alert alert-success" role="status"><PixelIcon name="check" />Report sent. Thanks, an admin will look at it.</p>}
           </div>
 
-          <header className={styles.header}>
-            <Avatar src={card.avatar_url} name={card.display_name} />
-            <div className={styles.headerText}>
-              <h1 className={styles.name}>{card.display_name}</h1>
-              {names.length > 0 && (
-                <ul className={styles.heads} aria-label="Minecraft accounts">
-                  {names.map((name) => (
-                    <li key={name}>{mcHead(name, 40)}<span className="mono">{name}</span></li>
-                  ))}
-                </ul>
+          <ProfileBanner
+            name={card.display_name}
+            avatarUrl={card.avatar_url}
+            colors={banner?.colors}
+            image={banner?.image_path}
+            still={banner?.still_path}
+            heading
+            stats={card.hidden || blocked ? [] : [
+              { label: "Badges", value: badges.length },
+              { label: "Events", value: events.length },
+              { label: "Friends", value: card.friend_count ?? 0 }
+            ]}
+            actions={isSelf ? <Link href="/dashboard" className="btn btn-sm">Edit profile</Link> : <>
+              {relationship === "none" && (
+                <form action={sendFriendRequest}>
+                  <input type="hidden" name="playerId" value={id} />
+                  <SubmitButton className="btn btn-sm btn-primary"><PixelIcon name="plus" />Add friend</SubmitButton>
+                </form>
               )}
-            </div>
-          </header>
+              {relationship === "outgoing" && (
+                <form action={removeFriend}>
+                  <input type="hidden" name="playerId" value={id} />
+                  <SubmitButton className="btn btn-sm">Cancel request</SubmitButton>
+                </form>
+              )}
+              {relationship === "incoming" && (
+                <>
+                  <form action={respondFriendRequest}>
+                    <input type="hidden" name="requesterId" value={id} />
+                    <input type="hidden" name="accept" value="true" />
+                    <SubmitButton className="btn btn-sm btn-primary"><PixelIcon name="check" />Accept</SubmitButton>
+                  </form>
+                  <form action={respondFriendRequest}>
+                    <input type="hidden" name="requesterId" value={id} />
+                    <input type="hidden" name="accept" value="false" />
+                    <SubmitButton className="btn btn-sm">Decline</SubmitButton>
+                  </form>
+                </>
+              )}
+              {relationship === "friend" && (
+                <form action={removeFriend}>
+                  <input type="hidden" name="playerId" value={id} />
+                  <SubmitButton className="btn btn-sm">Unfriend</SubmitButton>
+                </form>
+              )}
+              {!blocked && (
+                <form action={blockPlayer}>
+                  <input type="hidden" name="playerId" value={id} />
+                  <SubmitButton className="btn btn-sm btn-danger-outline">Block</SubmitButton>
+                </form>
+              )}
+              {/* Reporting stays available when blocked: harassment is often why. */}
+              {(await timed("siteSettings", siteSettings())).reportsOpen && <ReportDialog playerId={id} playerName={card.display_name} />}
+            </>}
+          >
+            {names.length > 0 && (
+              <ul className={styles.heads} aria-label="Minecraft accounts">
+                {names.map((name) => (
+                  <li key={name}>{mcHead(name, 32)}<span className="mono">{name}</span></li>
+                ))}
+              </ul>
+            )}
+          </ProfileBanner>
+          {!isSelf && !blocked && <p className="hint">Blocking removes any friendship and hides this profile from them, both ways.</p>}
 
           {/* AC 20: a viewer who may not see the profile still gets the name, the
-              avatar, an explanation and the two actions that always work. */}
+              avatar, an explanation and the actions that always work (above). */}
           {card.hidden ? (
             <section className={`panel ${styles.hidden}`}>
               <h2 className={styles.cardTitle}>This user hides their profile</h2>
               <p className="muted">You can still send them a friend request. Accepting it unlocks whatever they choose to share.</p>
-              <div className={styles.actions}>
-                {!isSelf && relationship !== "outgoing" && (
-                  <form action={sendFriendRequest}>
-                    <input type="hidden" name="playerId" value={id} />
-                    <SubmitButton className="btn btn-primary"><PixelIcon name="plus" />Add friend</SubmitButton>
-                  </form>
-                )}
-                {relationship === "outgoing" && (
-                  <form action={removeFriend}>
-                    <input type="hidden" name="playerId" value={id} />
-                    <SubmitButton className="btn">Cancel request</SubmitButton>
-                  </form>
-                )}
-                {relationship !== "blocked_by_me" && (
-                  <form action={blockPlayer}>
-                    <input type="hidden" name="playerId" value={id} />
-                    <SubmitButton className="btn btn-danger-outline">Block</SubmitButton>
-                  </form>
-                )}
-              </div>
             </section>
-          ) : (
+          ) : !blocked && (
             <div className={styles.sections}>
+              {/* Only when achievements are visible: player_card leaves the key
+                  out entirely when privacy hides them. */}
+              {badges.length > 0 && (
+                <section className={`panel ${styles.card}`} aria-labelledby="showcase-title">
+                  <h2 id="showcase-title" className={styles.cardTitle}>Showcase</h2>
+                  <ShowcaseRow groups={showcase(badges)} label={`${card.display_name}'s showcase`} />
+                </section>
+              )}
+
               <section className={`panel ${styles.card}`} aria-labelledby="badges-title">
                 <h2 id="badges-title" className={styles.cardTitle}>Achievements</h2>
                 <AchievementGrid groups={badges} />
+              </section>
+
+              <section className={`panel ${styles.card}`} aria-labelledby="events-title">
+                <h2 id="events-title" className={styles.cardTitle}>Event history</h2>
+                <EventHistory events={events} />
               </section>
 
               <section className={`panel ${styles.card}`} aria-labelledby="friends-title">
@@ -191,65 +263,18 @@ export default async function PlayerPage({ params, searchParams }: {
                   </ul>
                 )}
               </section>
-
-              {/* The one row of buttons, decided by the relationship the card
-                  reports. A blocked pair sees only Unblock. */}
-              {!isSelf && !blocked && (
-                <section className={`panel ${styles.card}`} aria-labelledby="actions-title">
-                  <h2 id="actions-title" className={styles.cardTitle}>Friendship</h2>
-                  <div className={styles.actions}>
-                    {relationship === "none" && (
-                      <form action={sendFriendRequest}>
-                        <input type="hidden" name="playerId" value={id} />
-                        <SubmitButton className="btn btn-primary"><PixelIcon name="plus" />Add friend</SubmitButton>
-                      </form>
-                    )}
-                    {relationship === "outgoing" && (
-                      <form action={removeFriend}>
-                        <input type="hidden" name="playerId" value={id} />
-                        <SubmitButton className="btn">Cancel request</SubmitButton>
-                      </form>
-                    )}
-                    {relationship === "incoming" && (
-                      <>
-                        <form action={respondFriendRequest}>
-                          <input type="hidden" name="requesterId" value={id} />
-                          <input type="hidden" name="accept" value="true" />
-                          <SubmitButton className="btn btn-primary"><PixelIcon name="check" />Accept</SubmitButton>
-                        </form>
-                        <form action={respondFriendRequest}>
-                          <input type="hidden" name="requesterId" value={id} />
-                          <input type="hidden" name="accept" value="false" />
-                          <SubmitButton className="btn">Decline</SubmitButton>
-                        </form>
-                      </>
-                    )}
-                    {relationship === "friend" && (
-                      <form action={removeFriend}>
-                        <input type="hidden" name="playerId" value={id} />
-                        <SubmitButton className="btn">Unfriend</SubmitButton>
-                      </form>
-                    )}
-                    <form action={blockPlayer}>
-                      <input type="hidden" name="playerId" value={id} />
-                      <SubmitButton className="btn btn-danger-outline">Block</SubmitButton>
-                    </form>
-                  </div>
-                  <p className="hint">Blocking removes any friendship and hides this profile from them, both ways.</p>
-                </section>
-              )}
-
-              {relationship === "blocked_by_me" && (
-                <section className={`panel ${styles.card}`} aria-labelledby="blocked-title">
-                  <h2 id="blocked-title" className={styles.cardTitle}>You blocked this player</h2>
-                  <p className="muted">They can&apos;t find you and can&apos;t see this profile. Unblocking restores both.</p>
-                  <form action={removeFriend} className={styles.actions}>
-                    <input type="hidden" name="playerId" value={id} />
-                    <SubmitButton className="btn">Unfriend</SubmitButton>
-                  </form>
-                </section>
-              )}
             </div>
+          )}
+
+          {relationship === "blocked_by_me" && (
+            <section className={`panel ${styles.card}`} aria-labelledby="blocked-title">
+              <h2 id="blocked-title" className={styles.cardTitle}>You blocked this player</h2>
+              <p className="muted">They can&apos;t find you and can&apos;t see this profile. Unblocking restores both.</p>
+              <form action={removeFriend} className={styles.actions}>
+                <input type="hidden" name="playerId" value={id} />
+                <SubmitButton className="btn">Unfriend</SubmitButton>
+              </form>
+            </section>
           )}
 
           {blocked && (
@@ -263,34 +288,6 @@ export default async function PlayerPage({ params, searchParams }: {
             </section>
           )}
 
-          {/* Reporting stays available when blocked: harassment is often why. */}
-          {!isSelf && (
-            <details className={`panel ${styles.card}`}>
-              <summary className="link-button">Report this player</summary>
-              <form action={reportPlayer} className="stack gap-10" style={{ marginTop: 12 }}>
-                <input type="hidden" name="playerId" value={id} />
-                <label className="stack gap-6">
-                  <span className="label">What happened?</span>
-                  <select className="input" name="category" defaultValue="grief">
-                    <option value="grief">Griefing</option>
-                    <option value="cheat">Cheating or hacked client</option>
-                    <option value="harassment">Harassment</option>
-                    <option value="other">Something else</option>
-                  </select>
-                </label>
-                <label className="stack gap-6">
-                  <span className="label">Details</span>
-                  <textarea className="input" name="details" rows={3} minLength={10} maxLength={2000} required placeholder="Where, when, and what they did" />
-                </label>
-                <label className="stack gap-6">
-                  <span className="label">Screenshot or video link <span className="optional">optional</span></span>
-                  <input className="input" type="url" name="evidenceUrl" pattern="https://.*" maxLength={500} placeholder="https://" />
-                </label>
-                <p className="hint">Only admins see reports. The player isn&apos;t told who reported them.</p>
-                <SubmitButton className="btn btn-sm btn-danger-outline">Send report</SubmitButton>
-              </form>
-            </details>
-          )}
         </div>
       </main>
     </>

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { dbErrorCode } from "@/lib/db-error";
 import { UUID } from "@/lib/registration";
+import { validateProfile, type ProfileDetails, type ProfileErrors } from "@/lib/faculties";
 
 // The RPCs enforce every role rule; these actions only forward the request and
 // send the outcome back to the page as a known error code. Ids are checked here
@@ -83,4 +84,53 @@ export async function markGuest(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_mark_guest", { p_user_id: userId });
   finish(userId, error, "guest");
+}
+
+// Customer support: the same profile and privacy the player edits themselves.
+export type SupportProfileState = { errors?: ProfileErrors; failed?: boolean; code?: string };
+
+export async function saveProfileFor(userId: string, _prev: SupportProfileState, formData: FormData): Promise<SupportProfileState> {
+  if (!UUID.test(userId)) return { failed: true };
+  const v: ProfileDetails = {
+    first: String(formData.get("first") ?? "").trim(),
+    last: String(formData.get("last") ?? "").trim(),
+    nick: String(formData.get("nick") ?? "").trim(),
+    level: String(formData.get("level") ?? "") as ProfileDetails["level"],
+    faculty: String(formData.get("faculty") ?? ""),
+    major: String(formData.get("major") ?? "")
+  };
+  const errors = validateProfile(v);
+  if (Object.keys(errors).length) return { errors };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_update_profile", {
+    p_user_id: userId, p_first_name: v.first, p_last_name: v.last, p_nickname: v.nick,
+    p_faculty: v.faculty, p_major: v.major, p_study_level: v.level
+  });
+  if (error) return { failed: true, code: dbErrorCode(error) ?? "FAILED" };
+  revalidatePath(`/admin/users/${userId}`);
+  redirect(`/admin/users/${userId}?done=profile`);
+}
+
+const PRIVACY_LEVELS = ["public", "friends", "private"];
+
+export async function setPrivacyFor(formData: FormData) {
+  const userId = id(formData, "userId");
+  if (!userId) redirect("/admin");
+  const levels = ["profile", "minecraft", "achievements", "friends"].map((field) => String(formData.get(field) ?? ""));
+  if (!levels.every((level) => PRIVACY_LEVELS.includes(level))) redirect(`/admin/users/${userId}?error=INVALID_LEVEL`);
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_privacy", {
+    p_user_id: userId, p_profile: levels[0], p_minecraft: levels[1], p_achievements: levels[2], p_friends: levels[3]
+  });
+  finish(userId, error, "privacy");
+}
+
+export async function grantBanner(formData: FormData) {
+  const userId = id(formData, "userId");
+  const bannerId = String(formData.get("bannerId") ?? "");
+  if (!userId || !/^[a-z0-9-]{2,32}$/.test(bannerId)) redirect("/admin");
+  const grant = formData.get("grant") === "true";
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_grant_banner", { p_user_id: userId, p_banner_id: bannerId, p_grant: grant });
+  finish(userId, error, grant ? "banner_given" : "banner_taken");
 }

@@ -82,8 +82,8 @@ select ok((select public from storage.buckets where id = 'achievements'),
 select ok(exists (select 1 from pg_policies
   where schemaname = 'storage' and tablename = 'objects'
   and policyname = 'admins upload achievement images' and lower(cmd) = 'insert'
-  and with_check like '%current_app_role%' and with_check like '%owner%'),
-  'the storage insert policy gates on the admin role (a player is denied by the database, not only by the form)');
+  and with_check like '%staff_can(%community%'),
+  'the storage insert policy gates on the community staff check (20261019000001) (a player is denied by the database, not only by the form)');
 
 -- A player really is refused by the policy, not just by the form: the policy
 -- expression is evaluated as the player with their JWT claims set.

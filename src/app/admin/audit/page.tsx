@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import styles from "../admin.module.css";
 import { when } from "../overview";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Audit log" };
 
@@ -23,6 +24,9 @@ const ENTITIES: Record<string, string> = {
   achievement_awards: "Awards",
   announcements: "Announcements",
   server_console: "Server console",
+  ops: "Ops console",
+  bot_settings: "Discord bot settings",
+  bot_jobs: "Discord bot tasks",
   bans: "Bans",
   appeals: "Appeals",
   reports: "Reports",
@@ -44,7 +48,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
   const cursor = beforeAt && !Number.isNaN(Date.parse(beforeAt)) && beforeId && UUID.test(beforeId);
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_audit_log", {
+  const { data, error } = await timed("admin_audit_log", supabase.rpc("admin_audit_log", {
     p_actor: actor,
     p_target: target,
     p_entity: entity,
@@ -53,7 +57,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
     p_before_at: cursor ? beforeAt : undefined,
     p_before_id: cursor ? beforeId : undefined,
     p_limit: PAGE,
-  });
+  }));
   const log: Entry[] = data ?? [];
 
   const href = (change: Partial<Params>) => {

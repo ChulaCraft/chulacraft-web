@@ -1,0 +1,145 @@
+/* /admin/insights: tabs and a range picker over tile grids and chart panels.
+   Charts draw themselves (src/components/charts); this file lays them out,
+   boxes them as panels and owns the print stylesheet. */
+
+.page {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.printHeader {
+  display: none;
+}
+
+.tabs {
+  margin-top: -4px;
+}
+
+/* Every chart and notice sits in a panel box. */
+.page figure,
+.notice {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 20px;
+}
+
+.tileGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tileHead {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+}
+
+.empty {
+  padding: 32px 16px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.noticeTitle {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.external {
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+/* Loading skeletons (loading.tsx) */
+
+.skTile {
+  height: 104px;
+  border-radius: var(--radius);
+}
+
+.skChart {
+  height: 300px;
+  border-radius: var(--radius);
+}
+
+.skRanges {
+  width: min(100%, 320px);
+  height: 36px;
+  border-radius: 999px;
+}
+
+/* ---------- Print: Ctrl+P gives a one-column light report ---------- */
+
+@media print {
+  /* The site is dark-only. Swapping its two base colours turns every derived
+     neutral (surfaces, edges, text) light; the chart tokens have their own
+     print values in globals.css. */
+  :global(html):has(.page) {
+    --night: #fff;
+    --moon: #1a1424;
+    --surface: #fff;
+    --text-3: #5b5666;
+    color-scheme: light;
+    background: #fff;
+  }
+
+  :global(body):has(.page) {
+    background: #fff;
+    color: var(--text);
+  }
+
+  /* No navigation, menus, range picker or buttons on paper. */
+  :global(body):has(.page) :global(:is(header, footer, nav, aside, button, .skip-link)) {
+    display: none !important;
+  }
+
+  /* The admin shell's sidebar column goes, so the report gets the full width. */
+  :global(main):has(.page) {
+    display: block;
+    padding: 0;
+  }
+
+  .printHeader {
+    display: block;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--edge-strong);
+    color: var(--text-2);
+    font-size: 12px;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page figure,
+  .notice,
+  .tileGroup,
+  .tiles > * {
+    break-inside: avoid;
+  }
+}

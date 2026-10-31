@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn((to: string) => { throw new Error(`NEXT_REDIRECT:${to}`); })
 }));
 
-import { removeFriend, respondFriendRequest, unblockPlayer, updatePrivacy } from "./actions";
+import { removeFriend, respondFriendRequest, setBanner, setShowcase, unblockPlayer, updatePrivacy } from "./actions";
 
 const OTHER_ID = "00000000-0000-0000-0000-0000000000d1";
 const DASHBOARD = "/dashboard";
@@ -117,5 +117,66 @@ describe("dashboard social actions", () => {
       p_achievements: "private",
       p_friends: "friends"
     });
+  });
+});
+describe("setBanner", () => {
+  beforeEach(() => {
+    m.rpc.mockReset().mockResolvedValue({ error: null });
+    m.revalidatePath.mockReset();
+  });
+
+  it("saves the chosen banner", async () => {
+    expect(await redirected(setBanner, form({ bannerId: "ocean" }))).toBe("NEXT_REDIRECT:/dashboard?saved=banner");
+    expect(m.rpc).toHaveBeenCalledWith("set_my_banner", { p_banner_id: "ocean" });
+  });
+
+  it("rejects a malformed id without calling the database", async () => {
+    expect(await redirected(setBanner, form({ bannerId: "<x>" }))).toBe("NEXT_REDIRECT:/dashboard?edit=banner&bannerError=INVALID");
+    expect(m.rpc).not.toHaveBeenCalled();
+  });
+
+  it("passes the database's refusal back to the picker", async () => {
+    m.rpc.mockResolvedValueOnce({ error: { message: "NOT_OWNED" } });
+    expect(await redirected(setBanner, form({ bannerId: "gold" }))).toBe("NEXT_REDIRECT:/dashboard?edit=banner&bannerError=NOT_OWNED");
+  });
+});
+
+describe("setShowcase", () => {
+  const A = "00000000-0000-0000-0000-0000000000a1";
+  const B = "00000000-0000-0000-0000-0000000000a2";
+  const C = "00000000-0000-0000-0000-0000000000a3";
+  const D = "00000000-0000-0000-0000-0000000000a4";
+  const picks = (...ids: string[]) => {
+    const data = new FormData();
+    for (const id of ids) data.append("achievementId", id);
+    return data;
+  };
+
+  beforeEach(() => {
+    m.rpc.mockReset().mockResolvedValue({ error: null });
+    m.revalidatePath.mockReset();
+  });
+
+  it("saves up to three picks in the order posted", async () => {
+    expect(await redirected(setShowcase, picks(C, A, B))).toBe("NEXT_REDIRECT:/dashboard?saved=showcase#showcase");
+    expect(m.rpc).toHaveBeenCalledWith("set_my_showcase", { p_achievement_ids: [C, A, B] });
+    expect(m.revalidatePath).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("clears the showcase when nothing is ticked", async () => {
+    await redirected(setShowcase, picks());
+    expect(m.rpc).toHaveBeenCalledWith("set_my_showcase", { p_achievement_ids: [] });
+  });
+
+  it("refuses a fourth pick or a malformed id without calling the database", async () => {
+    expect(await redirected(setShowcase, picks(A, B, C, D))).toBe("NEXT_REDIRECT:/dashboard?showcaseError=INVALID#showcase");
+    expect(await redirected(setShowcase, picks(A, "r1"))).toBe("NEXT_REDIRECT:/dashboard?showcaseError=INVALID#showcase");
+    expect(m.rpc).not.toHaveBeenCalled();
+  });
+
+  it("shows the database's refusal", async () => {
+    m.rpc.mockResolvedValue({ error: { message: "NOT_OWNED" } });
+    expect(await redirected(setShowcase, picks(A))).toBe("NEXT_REDIRECT:/dashboard?showcaseError=NOT_OWNED#showcase");
+    expect(m.revalidatePath).not.toHaveBeenCalled();
   });
 });

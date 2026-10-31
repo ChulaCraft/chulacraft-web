@@ -24,18 +24,19 @@ function dismissedId() {
 
 /** The pinned announcement, under the header on every page. Dismissing stores
  *  its id, so a newer pinned announcement shows again. */
-export function AnnouncementBanner({ id, title, severity }: { id: string; title: string; severity: string }) {
+export function AnnouncementBanner({ id, title, severity, preview = false }: { id: string; title: string; severity: string; preview?: boolean }) {
   // Server-rendered visible: most visitors have not dismissed it, and showing
   // it late would shift the page for all of them.
   const dismissed = useSyncExternalStore(subscribe, dismissedId, () => null);
-  if (dismissed === id) return null;
+  // The admin preview always shows, and has nothing to dismiss.
+  if (dismissed === id && !preview) return null;
   const tone = SEVERITY[severity] ?? SEVERITY.info;
 
   return (
     <aside className={`alert announcement-banner${tone.alert}`} aria-label="Announcement">
       <PixelIcon name={severity === "info" ? "info" : "warning"} />
       <p className="alert-body"><strong>{tone.label}:</strong> <Link href={`/announcements#${id}`}>{title}</Link></p>
-      <button
+      {!preview && <button
         type="button"
         className="announcement-dismiss"
         aria-label="Dismiss announcement"
@@ -45,7 +46,7 @@ export function AnnouncementBanner({ id, title, severity }: { id: string; title:
         }}
       >
         <PixelIcon name="close" />
-      </button>
+      </button>}
     </aside>
   );
 }

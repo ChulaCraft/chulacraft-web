@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { UserIdentity } from "@supabase/supabase-js";
-import { classifyIdentities, discordAvatar, isChulaEmail, linkErrorMessage } from "./chula";
+import { classifyIdentities, discordAvatar, discordName, isChulaEmail, linkErrorMessage } from "./chula";
 
 function identity(provider: string, id: string, data: Record<string, unknown> = {}, created_at = "2026-01-01"): UserIdentity {
   return { id, identity_id: `row-${id}`, user_id: "u1", provider, identity_data: data, created_at };
@@ -68,3 +68,19 @@ describe("discordAvatar", () => {
   });
 });
 
+
+describe("discordName", () => {
+  it("prefers the Discord display name over a later Google identity", () => {
+    expect(discordName([
+      identity("discord", "d1", { full_name: "kaikubez", name: "kaikubez#0" }),
+      identity("google", "g1", { full_name: "Ratchaphon P." }, "2026-02-01"),
+    ])).toBe("kaikubez");
+  });
+  it("falls back to the username and strips a #0 discriminator", () => {
+    expect(discordName([identity("discord", "d1", { name: "kaikubez#0" })])).toBe("kaikubez");
+  });
+  it("returns null without a Discord identity", () => {
+    expect(discordName([identity("google", "g1", { full_name: "X" })])).toBeNull();
+    expect(discordName(undefined)).toBeNull();
+  });
+});

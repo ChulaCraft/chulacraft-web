@@ -1,36 +1,51 @@
-.main {
-  padding-top: clamp(24px, 4vw, 48px);
+/* Seller-centre layout: a sticky sidebar of sections beside the page. */
+.shell {
+  padding-top: clamp(20px, 3vw, 32px);
   padding-bottom: 72px;
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+}
+
+.main {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
+.sidebar {
+  position: sticky;
+  top: calc(var(--header-h) + 16px);
+  max-height: calc(100vh - var(--header-h) - 32px);
+  overflow-y: auto;
+  padding: 14px 10px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+/* Tab rows inside a page (which server, which players view). */
 .subnav {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-/* Phones: one swipeable row instead of four wrapped rows above every page. */
-@media (max-width: 640px) {
-  .subnav {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: thin;
-  }
-}
-
 .subnav a {
   flex: none;
   white-space: nowrap;
-  padding: 6px 12px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--edge-strong);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
   color: var(--text-2);
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 14px;
-  box-shadow: inset 0 0 0 2px var(--surface-2);
 }
 
 .subnav a:hover {
@@ -38,10 +53,113 @@
   background: var(--surface-2);
 }
 
-/* The selected tab (e.g. which server /admin/server is showing). */
 .subnav a[aria-current="page"] {
+  color: var(--pink-ink);
+  border-color: var(--pink);
+  background: var(--pink-soft);
+}
+
+.adminNav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* A top-level section: its name is the toggle, its pages fold out under it,
+   indented on a guide line so the hierarchy reads at a glance. */
+.navGroup > summary {
+  min-height: 42px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   color: var(--text);
-  box-shadow: inset 0 0 0 2px var(--pink);
+  font-weight: 600;
+  font-size: 15px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.navGroup > summary::-webkit-details-marker {
+  display: none;
+}
+
+.navGroup > summary:hover {
+  background: var(--surface-2);
+}
+
+.navGroup[data-active] > summary {
+  color: var(--pink-ink);
+}
+
+.navGroup > summary svg {
+  color: var(--text-3);
+  transition: rotate 160ms ease;
+}
+
+.navGroup[open] > summary svg {
+  rotate: 180deg;
+}
+
+.subnavLinks {
+  margin: 2px 0 8px 14px;
+  padding-left: 8px;
+  border-left: 1px solid var(--edge);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navGroup[open] .subnavLinks {
+  animation: group-open 160ms ease-out;
+}
+
+@keyframes group-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.subnavLinks a {
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  color: var(--text);
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.subnavLinks a:hover {
+  background: var(--surface-2);
+}
+
+.subnavLinks a[aria-current="page"] {
+  color: var(--pink-ink);
+  background: var(--pink-soft);
+  font-weight: 600;
+}
+
+.navSearch {
+  padding: 0 2px;
+}
+
+/* Below desktop the sidebar sits above the page, the same folded tree. */
+@media (max-width: 1000px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .sidebar {
+    position: static;
+    max-height: none;
+    padding: 10px;
+  }
 }
 
 .title {
@@ -62,7 +180,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font: 600 20px/1.2 var(--font-display), monospace;
+  font: 700 20px/1.3 var(--font-body), Georgia, serif;
 }
 
 .small {
@@ -77,7 +195,6 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  clip-path: var(--pixel-4);
 }
 
 .searchRow {
@@ -110,7 +227,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
-  box-shadow: inset 0 0 0 2px var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .empty p:last-child {
@@ -123,11 +240,13 @@
   list-style: none;
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
   background: var(--surface);
 }
 
 .results > li {
-  border-top: 2px solid var(--surface-2);
+  border-top: 1px solid var(--edge);
 }
 
 .results > li:first-child {
@@ -264,7 +383,7 @@
   padding: 3px 10px;
   display: inline-flex;
   align-items: center;
-  box-shadow: inset 0 0 0 2px var(--edge);
+  box-shadow: inset 0 0 0 1px var(--edge);
   font-weight: 700;
   font-size: 13px;
   text-transform: capitalize;
@@ -339,7 +458,7 @@
 
 .roleRow {
   padding-top: 14px;
-  border-top: 2px solid var(--surface-2);
+  border-top: 1px solid var(--edge);
 }
 
 .roleField {
@@ -374,19 +493,18 @@
 
 .table th {
   padding: 8px 12px;
-  border-bottom: 2px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
   color: var(--text-2);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-align: left;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .table td {
   padding: 12px;
-  border-bottom: 2px solid var(--surface-2);
+  border-bottom: 1px solid var(--edge);
   vertical-align: middle;
 }
 
@@ -423,7 +541,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 2px 16px;
-  border-top: 2px solid var(--surface-2);
+  border-top: 1px solid var(--edge);
   font-size: 15px;
 }
 
@@ -451,12 +569,10 @@
   color: var(--lavender);
   font-weight: 700;
   font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .groupTitle {
-  font: 600 24px/1.2 var(--font-display), monospace;
+  font: 700 24px/1.3 var(--font-body), Georgia, serif;
 }
 
 .attention {
@@ -520,6 +636,7 @@
   display: flex;
   flex-direction: column-reverse;
   gap: 2px;
+  border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--bevel-panel);
 }
@@ -534,7 +651,8 @@
 }
 
 .statValue {
-  font: 600 32px/1.1 var(--font-display), monospace;
+  font: 700 32px/1.1 var(--font-body), Georgia, serif;
+  font-variant-numeric: tabular-nums;
 }
 
 .toolsSection {
@@ -565,6 +683,7 @@
   gap: 12px;
   color: var(--text);
   text-decoration: none;
+  border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--bevel-panel);
 }
@@ -576,7 +695,7 @@ a.tool:hover {
 
 .tool[data-soon] {
   background: transparent;
-  box-shadow: inset 0 0 0 2px var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--edge);
 }
 
 .toolHead {
@@ -591,8 +710,8 @@ a.tool:hover {
   height: 44px;
   display: grid;
   place-items: center;
-  color: var(--bg);
-  background: var(--pink);
+  color: var(--pink-ink);
+  background: var(--pink-soft);
 }
 
 .tool[data-soon] .toolIcon {
@@ -602,19 +721,18 @@ a.tool:hover {
 
 .toolCount {
   padding: 2px 8px;
-  color: var(--pink-soft);
-  background: var(--bg);
+  border-radius: 999px;
+  color: var(--pink-ink);
+  background: var(--pink-soft);
   font-size: 13px;
 }
 
 .soon {
   padding: 2px 8px;
   color: var(--text-2);
-  box-shadow: inset 0 0 0 2px var(--edge);
+  box-shadow: inset 0 0 0 1px var(--edge);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .toolText {
@@ -642,7 +760,7 @@ a.tool:hover {
 
 .toolCta {
   margin-top: auto;
-  color: var(--pink-soft);
+  color: var(--pink-ink);
   font-weight: 700;
   font-size: 15px;
 }
@@ -657,7 +775,7 @@ a.tool:hover {
 }
 
 .listHead h2 {
-  font: 600 20px/1.2 var(--font-display), monospace;
+  font: 700 20px/1.3 var(--font-body), Georgia, serif;
 }
 
 .newest {
@@ -667,7 +785,7 @@ a.tool:hover {
 }
 
 .newest li {
-  border-top: 2px solid var(--surface-2);
+  border-top: 1px solid var(--edge);
 }
 
 .newest a {
@@ -702,11 +820,13 @@ a.tool:hover {
   margin: 14px 0 0;
   padding: 0;
   list-style: none;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
   background: var(--surface);
 }
 
 .catalog > li {
-  border-top: 2px solid var(--surface-2);
+  border-top: 1px solid var(--edge);
 }
 
 .catalog > li:first-child {
@@ -777,7 +897,7 @@ a.tool:hover {
   resize: vertical;
   color: var(--text);
   background: var(--sunken);
-  box-shadow: inset 0 0 0 2px var(--edge-strong);
+  box-shadow: inset 0 0 0 1px var(--edge-strong);
   font: inherit;
   font-size: 16px;
 }
@@ -845,7 +965,7 @@ a.tool:hover {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border-top: 2px solid var(--surface-2);
+  border-top: 1px solid var(--edge);
 }
 
 /* The live card on the event editor, at the width it has on the homepage. */
@@ -870,8 +990,10 @@ a.tool:hover {
   margin: 0;
   padding: 12px;
   overflow: auto;
-  background: var(--bg);
-  box-shadow: inset 0 0 0 2px var(--surface-2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--edge);
   font: 13px/1.5 var(--font-mono), monospace;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -885,4 +1007,260 @@ a.tool:hover {
 
 .consoleInput input {
   flex: 1;
+}
+
+/* Players table. */
+.tableTools { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+.tableWrap { border-radius: var(--radius); background: var(--surface); box-shadow: var(--bevel-panel); }
+.tableWrap { overflow-x: auto; }
+.tableBar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.tableBar > a:last-child { margin-left: auto; }
+.tableCount { margin: 0; color: var(--text-2); }
+.tableCount strong { color: var(--text); font-size: 18px; }
+.cellLink { display: inline-flex; text-decoration: none; }
+.table td a:not(.badge) { text-decoration-color: var(--edge-strong); }
+.table td a:hover { text-decoration-color: currentColor; }
+.table td a.badge { text-decoration: none; }
+.table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.table th { position: sticky; top: 0; background: var(--surface-2); text-align: left; font-weight: 700; color: var(--text-2); }
+.table th, .table td { padding: 10px 12px; border-bottom: 1px solid var(--edge); vertical-align: middle; }
+.table tr[aria-selected="true"] td { background: var(--surface-hover); }
+.table td a { color: var(--text); }
+.tableFoot { display: flex; justify-content: center; padding: 16px; }
+
+.bulkBar {
+  position: sticky;
+  top: calc(var(--header-h) + 12px);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 2px var(--pink), var(--bevel-panel);
+}
+
+.bulkBar select {
+  width: auto;
+  min-height: 0;
+  padding: 6px 10px;
+}
+
+a.stat {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.stat {
+  position: relative;
+}
+
+a.stat:hover {
+  background: var(--surface-hover);
+  box-shadow: inset 0 0 0 2px var(--pink), var(--bevel-panel);
+}
+
+.statGo {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: var(--text-3);
+}
+
+a.stat:hover .statGo {
+  color: var(--pink);
+}
+
+/* Admin player page: privacy selects, two per row on wide screens. */
+.privacyGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px 18px;
+  align-items: end;
+}
+
+/* Event form: the details as the event page will show them. */
+.mdPreview {
+  padding: 14px 16px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--edge);
+}
+
+/* Player page: unlockable banners with give / take back. */
+.bannerList,
+.itemList {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bannerList li,
+.itemList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--sunken);
+}
+
+.bannerList .bannerSwatch {
+  flex: none;
+  width: 96px;
+  height: 28px;
+}
+
+.bannerText,
+.itemText {
+  flex: 1 1 160px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* /admin/commu/banners: live preview and the four colour pickers. */
+/* Same 5:1 shape as an uploaded picture, colours or not. */
+section .bannerPreview {
+  height: auto;
+  aspect-ratio: 5 / 1;
+}
+
+.colorRow {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: 10px;
+}
+
+.colorRow legend {
+  margin-bottom: 8px;
+}
+
+.colorField {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.colorField input {
+  width: 44px;
+  height: 44px;
+  padding: 2px;
+  border: 0;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--edge);
+  cursor: pointer;
+}
+
+.colorField input:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.colorField span {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Banner style: colours, picture or animated GIF. */
+.styleRow {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.styleRow legend {
+  margin-bottom: 8px;
+}
+
+.styleOption {
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--edge);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.styleOption input {
+  margin: 0;
+  accent-color: var(--pink);
+}
+
+.styleOption:has(:checked) {
+  box-shadow: inset 0 0 0 2px var(--pink);
+}
+
+.styleOption:has(:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+
+/* Phase 4: current picture beside an upload field, and the gallery/team lists. */
+.previewImage {
+  width: auto;
+  max-width: min(320px, 100%);
+  height: auto;
+  max-height: 180px;
+  object-fit: contain;
+  background: var(--surface-2);
+}
+
+.itemList .previewImage {
+  width: 96px;
+  height: 54px;
+  flex: none;
+}
+
+.itemList form {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.itemList form .input {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+/* Form beside its live preview; the preview stays in view while scrolling. */
+.editorGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .editorGrid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  }
+
+  .previewColumn {
+    position: sticky;
+    top: calc(var(--header-h) + 16px);
+  }
+}
+
+/* Four headline tiles above the players table (same numbers as Insights → Players). */
+.insightStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
 }

@@ -104,3 +104,28 @@ export async function submitAppeal(formData: FormData) {
   revalidatePath("/dashboard");
   redirect(`/dashboard?${error ? `appealError=${dbErrorCode(error) ?? "FAILED"}` : "appeal=sent"}`);
 }
+
+// Ownership is the RPC's call (NOT_OWNED); the id only has to look like one.
+export async function setBanner(formData: FormData) {
+  const bannerId = String(formData.get("bannerId") ?? "");
+  if (!/^[a-z0-9-]{2,32}$/.test(bannerId)) redirect("/dashboard?edit=banner&bannerError=INVALID");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_my_banner", { p_banner_id: bannerId });
+  if (error) redirect(`/dashboard?edit=banner&bannerError=${dbErrorCode(error) ?? "FAILED"}`);
+  revalidatePath("/dashboard");
+  redirect("/dashboard?saved=banner");
+}
+
+// Up to three picks, in the order posted. Ownership is the RPC's call
+// (NOT_OWNED); here the ids only have to look like ids. Nothing ticked clears
+// the showcase, which then falls back to the top badges.
+export async function setShowcase(formData: FormData) {
+  const ids = [...new Set(formData.getAll("achievementId").map(String))];
+  if (ids.length > 3 || !ids.every((id) => UUID.test(id))) redirect("/dashboard?showcaseError=INVALID#showcase");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_my_showcase", { p_achievement_ids: ids });
+  if (error) redirect(`/dashboard?showcaseError=${dbErrorCode(error) ?? "FAILED"}#showcase`);
+  revalidatePath("/dashboard");
+  revalidatePath("/player/[id]", "page");
+  redirect("/dashboard?saved=showcase#showcase");
+}

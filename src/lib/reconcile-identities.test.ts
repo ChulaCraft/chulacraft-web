@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient, UserIdentity } from "@supabase/supabase-js";
+
+// after() only works inside a request; keep its callback so tests can see it is deferred.
+const f = vi.hoisted(() => ({ record: vi.fn(), deferred: [] as (() => unknown)[] }));
+vi.mock("next/server", () => ({ after: (fn: () => unknown) => { f.deferred.push(fn); } }));
+vi.mock("@/lib/funnel", () => ({ recordFunnelFailure: f.record }));
+
 import { reconcileIdentities } from "./reconcile-identities";
 
 function identity(provider: string, id: string, data: Record<string, unknown> = {}, created_at = "2026-01-01"): UserIdentity {
@@ -35,6 +41,8 @@ describe("reconcileIdentities", () => {
     m.rpc.mockReset().mockResolvedValue({ error: null });
     m.logRows = [];
     m.claimSub = null;
+    f.record.mockReset();
+    f.deferred.length = 0;
     vi.spyOn(console, "error").mockImplementation(() => undefined);
   });
 
@@ -60,6 +68,20 @@ describe("reconcileIdentities", () => {
   it("unlinks a personal Google used on the verify step", async () => {
     expect(await run([discord, gmail])).toEqual({ signOut: false, path: "/verify?error=cu_wrong_domain" });
     expect(unlinkedIds()).toEqual(["gm"]);
+  });
+
+  it("counts the failure after the response, without waiting for it", async () => {
+    f.record.mockReturnValue(new Promise(() => {})); // never settles
+    expect(await run([discord, gmail])).toEqual({ signOut: false, path: "/verify?error=cu_wrong_domain" });
+    expect(f.record).not.toHaveBeenCalled();
+    f.deferred.forEach((fn) => fn());
+    expect(f.record).toHaveBeenCalledWith("verify", "CU_WRONG_DOMAIN");
+  });
+
+  it("does not count a successful verification", async () => {
+    m.claimSub = null;
+    await run([discord, cu]);
+    expect(f.deferred).toHaveLength(0);
   });
 
   it("unlinks an unverified Chula-domain identity", async () => {

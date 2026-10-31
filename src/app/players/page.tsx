@@ -5,7 +5,11 @@ import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
 import styles from "./players.module.css";
 
-export const metadata: Metadata = { title: "Find players" };
+export const metadata: Metadata = {
+  title: "Find players",
+  description: "Search ChulaCraft players by name or Minecraft username.",
+  alternates: { canonical: "/players" },
+};
 
 /** search_players() in supabase/migrations/20261007000001_social.sql:84
  *  returns this jsonb array of trimmed cards — display keys only, no sections.

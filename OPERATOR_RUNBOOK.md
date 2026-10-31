@@ -16,6 +16,12 @@
 - On restart, the worker reconciles all desired registrations. A `synced` record can therefore be restored after a world/container rebuild without manual RCON commands.
 - To revoke a player, set their known database record to `desired_whitelisted=false`. The worker removes only that known username; it does not remove manual entries such as `kaikub`.
 
+## Daily stats
+
+- `pg_cron` runs `public.snapshot_stats_daily()` at 23:55 Bangkok (job `stats-daily`), one row per day in `public.stats_daily`. Enable the `pg_cron` extension once on the hosted project (Dashboard → Database → Extensions) before applying `20261017000002_stats_daily.sql`.
+- Check it with `select * from cron.job_run_details order by start_time desc limit 5;`. A missed day is a gap, not an error; re-running the function for today is safe.
+- `/admin/insights` reads `stats_daily`; its history begins on the first snapshot, and a missed day shows as a gap in the chart.
+
 ## Troubleshooting and recovery
 
 | Symptom | Check and recovery |
@@ -51,3 +57,41 @@ To let a player change their Chula account, use **Reset Chula link** on `/admin/
 2. Apply `20260927000001_chula_google.sql` (additive only), then deploy the web app.
 3. Supabase → Authentication → Hooks → **Before User Created** → `public.hook_only_discord_signups`. Immediately sign in with a brand-new Discord account to confirm Discord signups still work.
 4. Apply `20260927000002_drop_cu_sso.sql`.
+
+## Ops console, backups and restore
+
+`/admin/ops` (owner/admin) shows every service the server-manager lists. The API is specified in `docs/ops-manager-contract.md`. Image update is owner-only and runs through the root-owned `chulacraft-update@<service-id>.service` unit (contract, "Updates"); check a failed update with `journalctl -u chulacraft-update@<service-id>`. Restore is never a button; do it by hand as below.
+
+### Release order (ops console)
+
+The new `/admin/ops` calls only the manager's `/services` and `/service/:id/*` (console WebSocket `/service/:id/console` included). The manager in production today serves only `/servers` and `/server/:id/*`, and `20261031000002_ops_console.sql` drops `admin_server_console_access`, which the deployed `/admin/server` still uses. The website has no `/servers` fallback, so release in this order:
+
+1. Ship the server-manager that serves `/services` and `/service/:id/*` **and** keeps the `/servers` + `/server/:id/*` aliases (contract, "Aliases"). The deployed `/admin/server` keeps working. Check: `GET /services` lists every service.
+2. Apply the Phase 7 migrations (`20261031000001` to `20261031000003`, and any later ones) and deploy the website in the same window. Between the two, `/admin/server` (old site, function dropped) or `/admin/ops` (new site, function missing) fails; keep the window short.
+3. In a later manager release, after `/admin/ops` works in production, remove the aliases and note it in `docs/ops-manager-contract.md`.
+
+### `OPS_HEALTH_TOKEN` (website health probe)
+
+1. Generate one long random value: `openssl rand -base64 32`.
+2. Website host: set `OPS_HEALTH_TOKEN` (server-only, never `NEXT_PUBLIC_`) and redeploy.
+3. Bot host (`chulacraft-discord/.env`): set `OPS_HEALTH_TOKEN` to the same value, plus the site URL its status monitor already uses, then restart the bot container.
+4. Check: `curl -s -H "Authorization: Bearer $OPS_HEALTH_TOKEN" https://<site>/api/ops/health` returns `{"ok":true,"db":"ok",...}`. Without the header it returns 401.
+5. Rotate by changing both sides; the monitor shows the website down until they match.
+
+### Restore a world backup
+
+1. Pick the backup in `/admin/ops` (Backups, `target: world`, status `ok`) and note its file on the Minecraft host.
+2. Tell players, then stop the server: `systemctl stop minecraft@survival` (or Stop in `/admin/ops`).
+3. Move the current world aside, never delete it: `mv <world_dir> <world_dir>.broken-$(date +%F)`.
+4. Extract the backup into `<world_dir>` and check ownership matches the Minecraft user.
+5. Start the server, watch the log in `/admin/ops` until it reports Done, and join once to confirm. Keep `.broken-*` until the restore is confirmed good.
+6. Whitelist: the worker reconciles on restart, so no manual RCON edits are needed.
+
+### Restore a Supabase dump
+
+1. Prefer restoring into a scratch project first: create it, then `psql "$SCRATCH_DB_URL" < dump.sql` (or `pg_restore` for custom-format dumps) and spot-check the tables you need.
+2. For production, announce downtime, then take one more dump of the current database as the safety copy.
+3. Restore with the same command against the production connection string. Review errors; extension and role "already exists" messages are normal.
+4. Re-run any migration newer than the dump date (`npx supabase db push`), then load `/admin` and a public page to confirm.
+5. Never run a restore from the website host with service-role keys in shell history; use a throwaway shell.
+

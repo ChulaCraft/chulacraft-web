@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import styles from "../admin.module.css";
 import { restoreAccount } from "./actions";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Removed accounts" };
 
@@ -21,7 +22,7 @@ const ERRORS: Record<string, string> = {
 export default async function RestorePage({ searchParams }: { searchParams: Promise<{ error?: string; restored?: string }> }) {
   const { error: code, restored } = await searchParams;
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_removed_accounts");
+  const { data, error } = await timed("admin_removed_accounts", supabase.rpc("admin_removed_accounts"));
   const rows: RemovedRow[] = data ?? [];
 
   return <>

@@ -20,11 +20,16 @@ describe("describeChange", () => {
     expect(describeChange("faculty", null, "Engineering")).toBe("updated faculty");
     expect(describeChange("study_level", null, "graduate")).toBe("updated study level");
     expect(describeChange("some_field", "a", "b")).toBe("changed some field");
+    expect(describeChange("privacy_minecraft", "public", "private")).toBe("set Minecraft privacy to private");
   });
 
   it("phrases content and server console actions", () => {
     expect(describeChange("banned", null, "2026-10-12 00:00:00+00")).toBe("issued a temporary ban");
     expect(describeChange("banned", null, null)).toBe("issued a permanent ban");
+    expect(describeChange("banner", null, "gold")).toBe("gave the gold banner");
+    expect(describeChange("banner", "gold", null)).toBe("took back the gold banner");
+    expect(describeChange("banner_design", null, "Lava")).toBe("edited the Lava banner");
+    expect(describeChange("reward_banner", null, "nether")).toBe("set the event's reward banner to nether");
     expect(describeChange("appeal", null, "rejected")).toBe("rejected an appeal");
     expect(describeChange("report", null, "dismissed")).toBe("dismissed a report");
     expect(describeChange("awarded_on", null, "2026-10-05")).toBe("gave an achievement");

@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import styles from "./register.module.css";
 import { DiscordAuthButton } from "@/components/discord-auth";
+import { RegisterConsent } from "@/components/register-consent";
 import { GoogleSignInButton } from "@/components/google-auth";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
 import { discordCommunityUrl } from "@/lib/site-links";
 
-export const metadata: Metadata = { title: "Sign in" };
+export const metadata: Metadata = {
+  title: "Sign in",
+  description: "Sign in with Discord to register for ChulaCraft, verify your Chula account and add your Minecraft name.",
+  alternates: { canonical: "/register" },
+};
 
 export default async function RegisterPage() {
   const supabase = await createClient();
@@ -65,9 +69,11 @@ export default async function RegisterPage() {
             </GoogleSignInButton>
           </div>
 
+          <RegisterConsent action="continuing with Discord or Google" />
+
           <div className={`pixel-4 ${styles.note}`}>
             <PixelIcon name="shield" className={styles.noteIcon} />
-            <p>We use your Discord account to sign you in and your Chula Google account to confirm you&apos;re part of the Chula community. Details are in our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.</p>
+            <p>We use your Discord account to sign you in and your Chula Google account to confirm you&apos;re part of the Chula community.</p>
           </div>
         </div>
       </main>

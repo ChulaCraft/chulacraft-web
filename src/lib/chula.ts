@@ -21,6 +21,13 @@ export function discordAvatar(identities: UserIdentity[] | undefined): string | 
   return typeof avatar === "string" ? avatar : null;
 }
 
+/** The Discord name, even after a Google link has overwritten user_metadata. */
+export function discordName(identities: UserIdentity[] | undefined): string | null {
+  const data = identities?.find((i) => i.provider === "discord")?.identity_data;
+  const name = data?.full_name ?? data?.name;
+  return typeof name === "string" && name ? name.replace(/#0$/, "") : null;
+}
+
 const byAge = (a: UserIdentity, b: UserIdentity) => (a.created_at ?? "").localeCompare(b.created_at ?? "");
 
 /**

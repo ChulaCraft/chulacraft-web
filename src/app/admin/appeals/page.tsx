@@ -6,6 +6,7 @@ import styles from "../admin.module.css";
 import { when } from "../overview";
 import { decideAppeal } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Appeals" };
 
@@ -22,7 +23,7 @@ export default async function AdminAppealsPage({ searchParams }: { searchParams:
   const { status: raw, error: errorCode, done } = await searchParams;
   const status = raw === "accepted" || raw === "rejected" ? raw : "open";
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_list_appeals", { p_status: status });
+  const { data, error } = await timed("admin_list_appeals", supabase.rpc("admin_list_appeals", { p_status: status }));
   const appeals = data ?? [];
 
   return <>

@@ -6,6 +6,7 @@ import styles from "../admin.module.css";
 import { when } from "../overview";
 import { handleReport } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Reports" };
 
@@ -23,7 +24,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
   const { status: raw, error: errorCode, done } = await searchParams;
   const status = raw === "actioned" || raw === "dismissed" ? raw : "open";
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_list_reports", { p_status: status });
+  const { data, error } = await timed("admin_list_reports", supabase.rpc("admin_list_reports", { p_status: status }));
   const reports = data ?? [];
 
   return <>
