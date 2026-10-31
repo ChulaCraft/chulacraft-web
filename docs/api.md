@@ -91,6 +91,63 @@ while the proof cookie is present; reading the page never records attendance.
 Source: `src/app/api/dev-login/route.ts`. Signs in as a seeded user from `supabase/dev-seed.sql`.
 Returns `404` unless `DEV_LOGIN_ENABLED` (`src/lib/dev-login.ts`).
 
+## Insights
+
+`GET /admin/insights?tab=<tab>&range=<range>` (page, `src/app/admin/insights/`). Tabs: `overview`, `players`, `events`, `community`,
+`staff`. Range: `7d`, `30d` (default), `90d`, `all`. An unknown tab or range, or a tab the role may not see, falls back to the first allowed
+tab and `30d` with no error. A role with no allowed tab gets the 404 page.
+
+| Tab | Role needed | RPCs called (`p_days` = 7/30/90, null for all) |
+| --- | --- | --- |
+| Overview | owner/admin | `insights_players`, `insights_funnel`, `insights_events`, `insights_community` |
+| Players | owner/admin | `insights_players`, `insights_funnel` |
+| Events | `community` (owner, admin, event_staff) | `insights_events` |
+| Community | `moderation` (owner, admin, moderator) | `insights_community` |
+| Staff activity | owner/admin | `insights_staff` |
+
+A failed RPC shows an alert in its own panel; the rest still renders. Charts download CSV (built in the browser from the plotted data), and the
+page prints as a light, one-column report. `/admin/players` also calls `insights_players(30)` for its four-tile strip (owner/admin only; left out if
+the call fails). Tables and the role gates are in [database.md](database.md#insights-v11-phase-6).
+
+## Error capture and health
+
+- `POST /api/client-errors` (`src/app/api/client-errors/route.ts`): body `{ route, message, digest? }`, JSON, at most 2 KB (`413`). Same-origin only
+  (`403`), 60 per minute per IP hash (`429`, per instance), bad body `400`, else `204`. Stored as `kind = client` after scrubbing.
+  The browser side is `reportError()` in `src/lib/report-error.ts` (at most 5 per distinct error per page load), called from the error boundaries.
+- `src/instrumentation.ts` `onRequestError` stores server errors (`kind = server`, path without query; redirects and not-found are skipped).
+- `GET /api/ops/health` with `Authorization: Bearer <OPS_HEALTH_TOKEN>`: `{ ok, db: "ok"|"down", errors_5m, version }`; `401` without the token,
+  `503` with `ok: false` when the database call fails. The logic is `opsHealth()` in `src/lib/ops-health.ts`.
+  The Discord bot's status monitor probes it every 60 s (down on failure or `ok: false`, error-spike alert at `errors_5m >= 10`).
+
+## `/admin/ops` (pages)
+
+Owner/admin only (`requireArea("admin")`); `/admin/server` redirects here (permanent, `next.config.ts`).
+
+- `/admin/ops`: every service the manager's `GET /services` returns (with its 7-day uptime bar), plus the built-in `website` row, then backups. Each row
+  loads its own status, so a slow or failing manager (5 s timeout) or one broken service only errors that panel.
+- `/admin/ops/[service]`: status, 24 h metrics, logs/console and the actions the service allows (7-day uptime is on the list only).
+  The ids `website` and `bot` are reserved for the fixed pages below and dropped from the manager's list, as are repeated ids.
+- `/admin/ops/website`: the website's own health (read directly, not through the manager) and the grouped error feed
+  (`admin_app_errors`).
+- `/admin/ops/bot`: the bot's settings and jobs. Its container (status, logs, restart, update) is the manager service
+  `discord-bot`, at `/admin/ops/discord-bot`, which this page links to. Settings and jobs come from `admin_bot_overview` (see [bot-contract-ops.md](bot-contract-ops.md)).
+
+Every manager call goes through `admin_ops_access` first (role check, audit row for changes; `update` is owner-only), then a
+60 s EdDSA JWT to `MCSV_MANAGER_URL`. The manager API is [ops-manager-contract.md](ops-manager-contract.md).
+
+## Metadata routes (SEO)
+
+`metadataBase` is `getSiteUrl()` (`NEXT_PUBLIC_SITE_URL`, else the Vercel URL), and every public page sets `alternates.canonical`.
+
+- `GET /sitemap.xml` (`src/app/sitemap.ts`, per request): the static public pages plus published events (`list_upcoming_events`,
+  `list_past_events`, anon). Players are never listed.
+- `GET /robots.txt` (`src/app/robots.ts`): disallows `/admin`, `/settings`, `/dashboard`, `/api`; points at the sitemap.
+- `GET /manifest.webmanifest` (`src/app/manifest.ts`), `/icon.png` (32 px) and `/apple-icon.png` (180 px), made from the logo.
+- `GET /opengraph-image` (site card), `/events/[id]/opengraph-image` (name, date, poster; anon read, so drafts get the site
+  card) and `/player/[id]/opengraph-image` (name, avatar, top badges) as PNG, drawn by `src/lib/og-image.tsx`. A player
+  image is only drawn when the asker may see the profile (`get_player_profile`, `hidden` = `can_view`); otherwise, and for
+  every crawler, it is the site card. Player pages a viewer can't see are `noindex` and name the site card as `og:image`.
+
 ## Server actions
 
 Form posts; each re-checks the session, calls one RPC, and redirects. Admin actions rely on the RPC's own
@@ -113,10 +170,10 @@ role check (`FORBIDDEN`), not on the page.
 | `admin/appeals/actions.ts` | `decideAppeal` → `admin_decide_appeal` |
 | `admin/achievements/**/actions.ts` | `admin_upsert_achievement`, `admin_delete_achievement`, `admin_revoke_award`, `admin_upsert_event`, `admin_delete_event`, `admin_resolve_identifiers`, `admin_list_event_interests`, `admin_award` |
 | `admin/announcements/[id]/actions.ts` | `admin_upsert_announcement`, `admin_delete_announcement` |
-| `admin/server/actions.ts` | `serverAction`, `openConsole` → `admin_server_console_access`, then calls `MCSV_MANAGER_URL` with a signed JWT |
+| `admin/ops/actions.ts` | `opsAction` (start/stop/restart/update/backup), `openConsole` → `admin_ops_access`, then calls `MCSV_MANAGER_URL` with a signed JWT |
 
 ## Pages
 
 | Public | Signed in | Admin (`/admin/*`, owner/admin role) |
 | --- | --- | --- |
-| `/`, `/about`, `/announcements`, `/events`, `/events/[id]`, `/events/[id]/calendar.ics`, `/privacy`, `/terms`, `/auth/error` | `/register`, `/register/details`, `/events/[id]/check-in`, `/verify`, `/welcome`, `/dashboard`, `/settings`, `/players`, `/player/[id]` | `/admin`, `/admin/players`, `/admin/users/[id]`, `/admin/restore`, `/admin/reports`, `/admin/appeals`, `/admin/audit`, `/admin/achievements/**`, `/admin/commu/events/[id]/check-in`, `/admin/announcements/**`, `/admin/server` |
+| `/`, `/about`, `/announcements`, `/events`, `/events/[id]`, `/events/[id]/calendar.ics`, `/gallery`, `/team`, `/rules`, `/privacy`, `/terms`, `/search`, `/auth/error` | `/register`, `/register/details`, `/events/[id]/check-in`, `/verify`, `/welcome`, `/dashboard`, `/settings`, `/players`, `/player/[id]` | `/admin`, `/admin/players`, `/admin/insights`, `/admin/users/[id]`, `/admin/restore`, `/admin/reports`, `/admin/appeals`, `/admin/audit`, `/admin/achievements/**`, `/admin/commu/events/[id]/check-in`, `/admin/announcements/**`, `/admin/ops`, `/admin/ops/[service]`, `/admin/ops/website` |

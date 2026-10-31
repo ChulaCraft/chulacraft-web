@@ -11,12 +11,19 @@ migrations are still the final word, and each section names the file to check.
 ## System at a glance
 
 ```
- Browser ──► Next.js (Vercel, stateless) ──► Supabase Postgres (all state)
-                                                   ▲        ▲
-              chulacraft-whitelist-worker ─────────┘        │   (Minecraft host: applies whitelist via RCON)
-              chulacraft-discord ───────────────────────────┘   (roles, announcements, status monitor)
-              chulacraft-server-manager ◄── signed JWT from /admin/server
+ Browser ──► Next.js (Vercel, stateless) ──────────► Supabase Postgres (all state)
+                │                    ▲                        ▲
+  /admin/ops:   │ signed 60 s JWT    │ GET /api/ops/health    │ service-role key
+                ▼                    │ (bot, every 60 s)      │ (worker and bot)
+ Minecraft host ─────────────────────┼────────────────────────┼──────────────────────
+   chulacraft-server-manager         │                        │
+     ├─ minecraft@<instance>         systemd unit             │
+     ├─ chulacraft-whitelist-worker  Docker container ────────┤  applies the whitelist via RCON
+     └─ chulacraft-discord           Docker container ────────┘  roles, announcements, status monitor
 ```
+
+The manager lists, controls and reports on each service; the website never talks to Docker or the host
+([ops-manager-contract.md](ops-manager-contract.md)). Alerts come from the bot's status monitor, not the manager.
 
 - **The web app holds no state.** Sessions live in Supabase auth cookies; everything else is in Postgres.
 - **The database is the shared contract.** Several services read and write it with the service-role key.

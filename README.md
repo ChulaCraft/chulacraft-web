@@ -111,7 +111,7 @@ This asynchronous boundary keeps registrations durable while the Minecraft host 
 | `/about` | Community mission, values, and server overview |
 | `/announcements` | Public server news; the pinned one is also the site-wide banner |
 | `/admin/announcements` | Admin-only: write, schedule, pin, and send announcements to Discord |
-| `/admin/server` | Admin-only: server status, live console, start/stop/restart through `chulacraft-server-manager` |
+| `/admin/ops` | Admin-only ops console through `chulacraft-server-manager`: every service's status, uptime, CPU/RAM, logs, live console, start/stop/restart, backups and owner-only image updates; `/admin/ops/website` shows the site's health and error feed. `/admin/server` redirects here |
 | `/register` | Public Discord or Google sign-in page; authenticated users redirect to `/welcome` |
 | `/verify` | Link a Chula Google account; the only page an unverified user can use |
 | `/welcome` | Protected Minecraft registration and synchronization status |
@@ -221,7 +221,7 @@ npm run dev:mocks                     # run the mocks next to `npm run dev`
 | Mock | Covers | Listens on |
 | --- | --- | --- |
 | Discord OAuth | "Continue with Discord": consent page with seeded users, a new player, or Deny, through the real `/auth/callback` | Supabase docker gateway `:54342` (host-only; Auth and the browser both reach it) |
-| Server manager | `/admin/server`: status, logs, live console, start/stop/restart; checks the EdDSA token like the real manager | `127.0.0.1:54340` |
+| Server manager | `/admin/ops` and the ops contract (`docs/ops-manager-contract.md`): services, status, metrics, uptime, logs, live console, actions, backups, image updates; four mock services (`survival`, `discord-bot`, `whitelist-worker`, and `fail`, which 500s); in-memory state; checks the EdDSA token like the real manager | `127.0.0.1:54340` |
 | Minecraft ping | The "Online · N/M playing" badge (`NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS`) | `127.0.0.1:54341` |
 
 Setup writes `MCSV_JWT_PRIVATE_KEY` (a dev-only key), `MCSV_MANAGER_URL` and `NEXT_PUBLIC_MINECRAFT_SERVER_ADDRESS` to `.env.development.local`, and `LOCAL_DISCORD_MOCK_URL` to `supabase/.env`. Both files are gitignored. Without that value, local Discord sign-in doesn't work.

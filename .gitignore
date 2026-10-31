@@ -19,3 +19,6 @@ memory-prices.csv
 graphify-out/cache/
 .vercel
 .env*
+
+# private audit material lives in the chulacraft-docs repo
+docs/audit/

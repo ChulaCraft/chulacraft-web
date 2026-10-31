@@ -1,4 +1,4 @@
-stil# Discord bot contract (v1.1 phase 5)
+# Discord bot contract (v1.1 phase 5)
 
 What `chulacraft-discord` must do for badge roles and event reminders. Both are **pull-based**: the bot calls an RPC
 with the service-role key, acts on Discord, then writes the result back. Nothing is pushed to the bot. Same pattern
@@ -6,6 +6,9 @@ as `announcements_discord_queue()`. The code is the final word: `supabase/migrat
 and `20261028000001_event_reminders.sql`.
 
 For local testing, `node scripts/local-mocks.mjs --bot` stands in for the bot (see [Local mock](#local-mock)).
+
+Phase 7 adds settings from the database, task reports and the health check: [bot-contract-ops.md](bot-contract-ops.md).
+It also moves the role-safety rule below into the database for roles the bot's settings name.
 
 ## Rules for the bot
 
