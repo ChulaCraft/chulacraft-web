@@ -36,7 +36,9 @@ const nextConfig: NextConfig = {
     return [
       { source: "/admin/achievements/events/:path*", destination: "/admin/commu/events/:path*", permanent: true },
       { source: "/admin/achievements/:path*", destination: "/admin/commu/achievements/:path*", permanent: true },
-      { source: "/admin/announcements/:path*", destination: "/admin/commu/announcements/:path*", permanent: true }
+      { source: "/admin/announcements/:path*", destination: "/admin/commu/announcements/:path*", permanent: true },
+      // v1.1 Phase 7: the Minecraft-only server page became the ops console for every service.
+      { source: "/admin/server", destination: "/admin/ops", permanent: true }
     ];
   },
   async headers() {
