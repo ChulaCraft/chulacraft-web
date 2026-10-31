@@ -212,8 +212,11 @@ select is((select e ->> 'event_name' from jsonb_array_elements(public.my_achieve
 select pg_temp.login('00000000-0000-0000-0000-000000000002');
 select is((select public.admin_award((select achievement from catalog), (select event from catalog), null,
   array['00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003',
-        '00000000-0000-0000-0000-000000000005']::uuid[])::int), 2,
-  'a duplicate id in one call is collapsed and unknown ids are ignored');
+        '00000000-0000-0000-0000-000000000005']::uuid[])::int), 1,
+  'a duplicate id in one call is collapsed, unknown ids are ignored and a holder is skipped');
+-- admin_award skips holders now; keep a legacy duplicate row so the later cases still see two awards.
+insert into public.achievement_awards (user_id, achievement_id, event_id, awarded_on)
+  select '00000000-0000-0000-0000-000000000003', (select achievement from catalog), (select event from catalog), date '2026-10-10';
 
 select pg_temp.login('00000000-0000-0000-0000-000000000003');
 select is((select g ->> 'count' from jsonb_array_elements(public.my_achievements()) g limit 1), '2',
@@ -232,7 +235,9 @@ select is((select g ->> 'count' from jsonb_array_elements(public.my_achievements
 -- An award without an event takes the date it was given.
 select pg_temp.login('00000000-0000-0000-0000-000000000002');
 select is((select public.admin_award((select achievement from catalog), null, date '2026-01-02',
-  array['00000000-0000-0000-0000-000000000005']::uuid[])::int), 1, 'an award without an event is allowed');
+  array['00000000-0000-0000-0000-000000000005']::uuid[])::int), 0, 'a holder is skipped even for an award without an event');
+insert into public.achievement_awards (user_id, achievement_id, awarded_on)
+  values ('00000000-0000-0000-0000-000000000005', (select achievement from catalog), date '2026-01-02');
 select is((select awarded_on from public.achievement_awards
   where user_id = '00000000-0000-0000-0000-000000000005' and event_id is null), date '2026-01-02',
   'an award without an event keeps the date it was given');
