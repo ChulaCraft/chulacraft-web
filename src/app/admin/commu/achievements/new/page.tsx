@@ -3,15 +3,13 @@ import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
-import { saveAchievement } from "../[id]/actions";
-import { MetaFields } from "../meta-fields";
-import { SubmitButton } from "@/components/submit-button";
+import { NewAchievementForm } from "./form";
 import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "New achievement" };
 
-/** Creating is the edit form with nothing filled in; saveAchievement mints the
- *  id when none is posted. */
+/** Creating is the edit form with nothing filled in; the client form keeps its
+ *  errors and typed text on this page (createAchievement). */
 export default async function NewAchievementPage() {
   const supabase = await createClient();
   const { data: roles } = await timed("admin_list_discord_roles", supabase.rpc("admin_list_discord_roles"));
@@ -19,32 +17,6 @@ export default async function NewAchievementPage() {
     <Link href="/admin/commu/achievements" className="back-link"><PixelIcon name="back" />Achievements</Link>
     <h1 className={styles.title}>New achievement</h1>
 
-    <form action={saveAchievement} className={`panel ${styles.catalogForm}`}>
-      <div className="field">
-        <label htmlFor="n-name">Name</label>
-        <input id="n-name" className="input" name="name" required maxLength={80} />
-      </div>
-      <div className="field">
-        <label htmlFor="n-desc">Description <span className="optional">(optional)</span></label>
-        <textarea id="n-desc" className={styles.textarea} name="description" rows={3} maxLength={500} />
-      </div>
-      <div className="field">
-        <label htmlFor="n-image">Image</label>
-        <input id="n-image" className="input" type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif" aria-describedby="n-image-help" />
-        <p id="n-image-help" className="field-help">PNG, JPEG, WebP or GIF, up to 2 MB.</p>
-      </div>
-      <div className="field">
-        <label htmlFor="n-status">Status</label>
-        <select id="n-status" className="input" name="status" defaultValue="draft">
-          <option value="draft">Draft — hidden from players</option>
-          <option value="published">Published — players see it</option>
-        </select>
-      </div>
-      <MetaFields idPrefix="n" roles={roles} tier="common" roleId={null} />
-      <div className={styles.formButtons}>
-        <SubmitButton className="btn btn-primary">Create achievement</SubmitButton>
-        <Link href="/admin/commu/achievements" className="btn">Cancel</Link>
-      </div>
-    </form>
+    <NewAchievementForm roles={roles} />
   </>;
 }
