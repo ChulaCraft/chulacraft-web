@@ -1,10 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 import { visualManagerKey } from "./tests/visual/helpers/manager-key.mjs";
+import { appPort as port, appUrl as baseURL, managerPort, managerUrl, stubUrl } from "./tests/visual/helpers/ports.mjs";
 
-const port = 3210;
-const baseURL = `http://127.0.0.1:${port}`;
-// The manager mock (scripts/local-mocks.mjs --manager-only) for /admin/ops.
-const managerPort = 3212;
+// The manager mock (scripts/local-mocks.mjs --manager-only) for /admin/ops runs on managerPort.
 
 export default defineConfig({
   testDir: "./tests/visual",
@@ -43,23 +41,23 @@ export default defineConfig({
   webServer: [
     {
       command: "node tests/visual/helpers/supabase-stub.mjs",
-      url: "http://127.0.0.1:3211/health",
+      url: `${stubUrl}/health`,
       reuseExistingServer: !process.env.CI,
       timeout: 10_000,
     },
     {
       command: "node scripts/local-mocks.mjs --manager-only",
       // Unauthenticated /services answers 401, which Playwright counts as ready.
-      url: `http://127.0.0.1:${managerPort}/services`,
+      url: `${managerUrl}/services`,
       env: { MCSV_JWT_PRIVATE_KEY: visualManagerKey, MOCK_MANAGER_PORT: String(managerPort) },
       reuseExistingServer: !process.env.CI,
       timeout: 10_000,
     },
     {
       command:
-        "export NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:3211 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_visual_audit SUPABASE_SECRET_KEY=sb_secret_visual_audit; npm run build && npm run start -- --hostname 127.0.0.1 --port 3210",
+        `export NEXT_PUBLIC_SUPABASE_URL=${stubUrl} NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_visual_audit SUPABASE_SECRET_KEY=sb_secret_visual_audit; npm run build && npm run start -- --hostname 127.0.0.1 --port ${port}`,
       // Absolute canonical and og:image URLs (metadataBase) point back at this server.
-      env: { MCSV_JWT_PRIVATE_KEY: visualManagerKey, MCSV_MANAGER_URL: `http://127.0.0.1:${managerPort}`, NEXT_PUBLIC_SITE_URL: baseURL },
+      env: { MCSV_JWT_PRIVATE_KEY: visualManagerKey, MCSV_MANAGER_URL: managerUrl, NEXT_PUBLIC_SITE_URL: baseURL },
       url: `${baseURL}/images/chulacraft-logo.webp`,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,

@@ -12,3 +12,9 @@ describe("toCsv", () => {
     expect(toCsv([[null, 3, true]])).toBe(",3,true\r\n");
   });
 });
+
+describe("toCsv with Thai text", () => {
+  it("passes Thai through untouched", () => {
+    expect(toCsv([["สวัสดี", "เก้า,สิบ"]])).toBe('สวัสดี,"เก้า,สิบ"\r\n');
+  });
+});

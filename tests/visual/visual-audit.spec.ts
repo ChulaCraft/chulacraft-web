@@ -1,5 +1,6 @@
 import { test } from "@playwright/test";
 import { auditPage } from "./helpers/audit-page";
+import { stubUrl } from "./helpers/ports.mjs";
 
 const visualUserId = "00000000-0000-4000-8000-000000000001";
 const encode = (value: object) => Buffer.from(JSON.stringify(value)).toString("base64url");
@@ -38,7 +39,7 @@ const routes = [
 for (const route of routes) {
   test(`${route.name} renders safely and captures a stable full-page screenshot`, async ({ page }, testInfo) => {
     const stateResponse = await fetch(
-      `http://127.0.0.1:3211/__visual/state?authenticated=${route.authenticated}`,
+      `${stubUrl}/__visual/state?authenticated=${route.authenticated}`,
       { method: "POST" },
     );
     if (!stateResponse.ok) throw new Error(`Could not set visual auth state: ${stateResponse.status}`);

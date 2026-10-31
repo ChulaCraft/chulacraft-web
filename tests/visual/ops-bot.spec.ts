@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { stubUrl } from "./helpers/ports.mjs";
 
 // /admin/ops/bot against the Supabase stub (helpers/supabase-stub.mjs). The stub
 // plays the bot: a saved setting is checked a moment later ("OK", or "Unknown
@@ -27,7 +28,7 @@ const authCookieValue = `base64-${encode({
     created_at: "2026-01-01T00:00:00.000Z",
   },
 })}`;
-const STUB = "http://127.0.0.1:3211";
+const STUB = stubUrl;
 
 async function signInAs(page: Page, role: string) {
   const res = await fetch(`${STUB}/__visual/state?authenticated=true&role=${role}`, { method: "POST" });
