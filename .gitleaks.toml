@@ -1,6 +1,13 @@
 [extend]
 useDefault = true
 
-# graphify's cache stores file hashes that look like API keys.
-[allowlist]
+[[allowlists]]
+description = "graphify's cache stores file hashes that look like API keys"
 paths = ['''^graphify-out/cache/''']
+
+[[allowlists]]
+description = "Fake Discord role ID used only as a fixture in the achievement action tests"
+targetRules = ["discord-client-id"]
+condition = "AND"
+paths = ['''^src/app/admin/commu/achievements/\[id\]/actions\.test\.ts$''']
+regexes = ['''^123456789012345678$''']
