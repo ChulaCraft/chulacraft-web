@@ -1,8 +1,10 @@
 import { createServer } from "node:http";
+import { readdirSync } from "node:fs";
 import { insightsFixture } from "./insights-fixture.mjs";
+import { stubPort } from "./ports.mjs";
 
 const host = "127.0.0.1";
-const port = 3211;
+const port = stubPort;
 let authenticated = false;
 // Insights tests sign in as a staff role; everyone else is a plain player.
 let role = "user";
@@ -127,6 +129,12 @@ const json = (response, status, body) => {
   response.writeHead(status, { "content-type": "application/json" });
   response.end(JSON.stringify(body));
 };
+
+// stubs/*.mjs: one file per task, each default-exporting (ctx) => boolean (see stubs/README.md).
+const extraStubs = [];
+for (const file of readdirSync(new URL("./stubs/", import.meta.url)).filter((f) => f.endsWith(".mjs")).sort()) {
+  extraStubs.push((await import(new URL(`./stubs/${file}`, import.meta.url).href)).default);
+}
 
 const server = createServer((request, response) => {
   const url = new URL(request.url ?? "/", `http://${host}:${port}`);
@@ -389,6 +397,9 @@ const server = createServer((request, response) => {
     }]));
     return;
   }
+
+  const ctx = { request, response, url, json, readJson, state: { get authenticated() { return authenticated; }, get role() { return role; } } };
+  if (extraStubs.some((handle) => handle(ctx))) return;
 
   response.writeHead(405, { "content-type": "application/json" });
   response.end(JSON.stringify({ message: "Visual audit stub is read-only" }));

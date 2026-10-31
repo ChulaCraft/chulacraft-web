@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { stubUrl } from "./helpers/ports.mjs";
 
 // A content save is visible on the very next public load (the Phase 4 bug: revalidateTag
 // served the old copy once after every save). Runs against the Supabase stub, which keeps
@@ -22,7 +23,7 @@ const authCookieValue = `base64-${encode({
 })}`;
 
 async function signInAsOwner(page: Page) {
-  const res = await fetch("http://127.0.0.1:3211/__visual/state?authenticated=true&role=owner", { method: "POST" });
+  const res = await fetch(`${stubUrl}/__visual/state?authenticated=true&role=owner`, { method: "POST" });
   if (!res.ok) throw new Error(`Could not set visual auth state: ${res.status}`);
   await page.context().addCookies([{
     name: "sb-127-auth-token", value: authCookieValue, domain: "127.0.0.1", path: "/",
@@ -32,7 +33,7 @@ async function signInAsOwner(page: Page) {
 }
 
 test.afterAll(async () => {
-  await fetch("http://127.0.0.1:3211/__visual/state?authenticated=false", { method: "POST" });
+  await fetch(`${stubUrl}/__visual/state?authenticated=false`, { method: "POST" });
 });
 
 test("a settings save shows on the very next homepage load", async ({ page }) => {

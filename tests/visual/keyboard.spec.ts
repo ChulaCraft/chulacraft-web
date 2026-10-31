@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { resetVisualSession, VISUAL_PLAYER_ID, visualSession } from "./helpers/visual-auth";
+import { stubUrl } from "./helpers/ports.mjs";
 
 // Keyboard-only walkthrough (Phase 7, step 6; docs/a11y-keyboard-pass.md): sign
 // in, verify, details, add a Minecraft name, and report a player, with Tab /
@@ -17,7 +18,7 @@ test.afterAll(async () => {
 });
 
 async function flow(name: "unverified" | "new") {
-  const res = await fetch(`http://127.0.0.1:3211/__visual/state?authenticated=true&role=user&flow=${name}`, { method: "POST" });
+  const res = await fetch(`${stubUrl}/__visual/state?authenticated=true&role=user&flow=${name}`, { method: "POST" });
   if (!res.ok) throw new Error(`Could not set visual flow: ${res.status}`);
 }
 
@@ -54,7 +55,7 @@ test("verify: Verify with Chula Google is reachable and starts the Google link",
   await visualSession(page, "user");
   await flow("unverified");
   const link = page.waitForRequest((req) => req.url().includes("/auth/v1/user/identities/authorize"));
-  await page.route("**/auth/v1/user/identities/authorize**", (route) => route.fulfill({ json: { url: "http://127.0.0.1:3211/health" } }));
+  await page.route("**/auth/v1/user/identities/authorize**", (route) => route.fulfill({ json: { url: `${stubUrl}/health` } }));
   await page.goto("/verify");
   await expect(page.getByRole("heading", { level: 1, name: /Verify you.re Chula/ })).toBeVisible();
   await tabTo(page, page.getByRole("button", { name: "Verify with Chula Google" }));
