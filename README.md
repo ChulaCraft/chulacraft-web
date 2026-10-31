@@ -1,8 +1,36 @@
-# ChulaCraft Web Version 1.0
+# ChulaCraft Web Version 1.1
 
 Public website, authentication gateway, and whitelist-registration portal for the ChulaCraft Minecraft Java Edition community.
 
 Players can explore the server, sign in, submit a Java Edition username, and follow its synchronization status. The app validates Minecraft profiles and stores the desired whitelist state in Supabase. It does **not** connect directly to Paper or RCON; a separate worker on the Minecraft host is responsible for applying database changes to the server.
+
+## Patch notes
+
+### v1.1 (2026-10-31)
+
+**Security**
+- Upgraded Next.js to 16.4.3, closing the advisories affecting 16.3.x. `npm audit --omit=dev` reports 0 vulnerabilities.
+- Dev-tool advisories (`vite`, `zod`) fixed with `npm audit fix`.
+- Narrowed the gitleaks allowlist to the one fake Discord role ID used in a test fixture.
+
+**New features**
+- Admin insights: charts and a registration funnel (including failure reasons).
+- Ops console at `/admin/ops` replaces `/admin/server`: service status, controls and health through the server manager and bot.
+- Bot admin tools and an event-reminder / notification system.
+- Error capture for server and browser errors, with scrubbing before storage, plus performance tracing.
+- Engagement features from phases 5-6: achievements, announcements, event attendance, profile banners.
+- SEO: `robots`, `sitemap`, web manifest, app icons, and Open Graph images for the home page, events and player profiles.
+- Site-wide redesign and page updates for responsiveness and accessibility.
+
+**Database**
+- New migrations `20261030000001` to `20261031000003` (insights, funnel failures, app errors, ops console, bot admin) with pgTAP tests.
+
+**Tooling and docs**
+- New visual suites: accessibility, keyboard, ops, SEO and cache. New Lighthouse script.
+- New docs: ops-manager and bot contracts, manual checks for phases 5-7, performance baseline, keyboard pass.
+- The graphify cache is no longer tracked. Security audit notes are kept out of this public repo.
+
+**Rollback:** the previous release is preserved on the `v1.0` branch.
 
 ## What is included
 
