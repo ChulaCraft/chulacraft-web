@@ -10,7 +10,7 @@ export const myRole = cache(async () => {
   return (data as string | null) ?? null;
 });
 
-/** Section layouts call this so a moderator who types /admin/server gets a 404,
+/** Section layouts call this so a moderator who types /admin/ops gets a 404,
  *  not a page of FORBIDDEN errors. The RPCs still check on their own. */
 export async function requireArea(area: Area) {
   if (!staffCan(await myRole(), area)) notFound();

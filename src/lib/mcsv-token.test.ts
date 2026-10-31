@@ -31,10 +31,17 @@ describe("manager tokens", () => {
 
   it("gives owners everything, admins no write/start/stop, players nothing", () => {
     expect(maskFor("owner")).toBe(2147483647);
-    expect(maskFor("admin")).toBe(71);
+    expect(maskFor("admin")).toBe(71 | 128 | 256);
     expect(maskFor("admin") & (PERMISSION.CONSOLE_WRITE | PERMISSION.START | PERMISSION.STOP)).toBe(0);
     expect(maskFor("player")).toBe(0);
     expect(maskFor(null)).toBe(0);
+  });
+
+  it("lets admins read and run backups but never update images; owners can", () => {
+    expect(maskFor("admin") & PERMISSION.UPDATE).toBe(0);
+    expect(maskFor("admin") & PERMISSION.BACKUP_READ).toBe(PERMISSION.BACKUP_READ);
+    expect(maskFor("admin") & PERMISSION.BACKUP_RUN).toBe(PERMISSION.BACKUP_RUN);
+    expect(maskFor("owner") & PERMISSION.UPDATE).toBe(PERMISSION.UPDATE);
   });
 });
 

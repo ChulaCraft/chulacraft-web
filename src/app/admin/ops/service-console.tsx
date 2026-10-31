@@ -7,8 +7,8 @@ import { openConsole } from "./actions";
 
 const KEEP = 500;
 
-/** Live server log over the manager's WebSocket, plus a command box for those allowed to type. */
-export function ServerConsole({ server, initial, canWrite }: { server: string; initial: string[]; canWrite: boolean }) {
+/** A service's live log over the manager's WebSocket, plus a command box for those allowed to type. */
+export function ServiceConsole({ service, name, initial, canWrite }: { service: string; name: string; initial: string[]; canWrite: boolean }) {
   const [lines, setLines] = useState(initial);
   const [status, setStatus] = useState<"connecting" | "live" | "closed" | "denied">("connecting");
   const [attempt, setAttempt] = useState(0);
@@ -19,7 +19,7 @@ export function ServerConsole({ server, initial, canWrite }: { server: string; i
     let ws: WebSocket | null = null;
     let stopped = false;
     const add = (line: string) => setLines((all) => [...all.slice(1 - KEEP), line]);
-    openConsole(server, canWrite).then((access) => {
+    openConsole(service, canWrite).then((access) => {
       if (stopped) return;
       if (!access) return setStatus("denied");
       try {
@@ -46,7 +46,7 @@ export function ServerConsole({ server, initial, canWrite }: { server: string; i
       stopped = true;
       ws?.close();
     };
-  }, [server, canWrite, attempt]);
+  }, [service, canWrite, attempt]);
 
   useEffect(() => {
     log.current?.scrollTo({ top: log.current.scrollHeight });
@@ -66,12 +66,14 @@ export function ServerConsole({ server, initial, canWrite }: { server: string; i
     <section aria-label="Console">
       <div className={styles.sectionTitle}>
         Console
-        <span className={`badge badge-${status === "live" ? "green" : "muted"}`} role="status">{status}</span>
+        <span className={`badge badge-${status === "live" ? "green" : "muted"}`} role="status" data-status-chip>
+          <PixelIcon name={status === "live" ? "check" : status === "connecting" ? "clock" : "close"} />{status}
+        </span>
         {(status === "closed" || status === "denied") && (
           <button type="button" className="btn btn-sm" onClick={() => { setStatus("connecting"); setAttempt((n) => n + 1); }}>Reconnect</button>
         )}
       </div>
-      <pre ref={log} className={styles.console} tabIndex={0} aria-label="Server log">{lines.join("\n")}</pre>
+      <pre ref={log} className={styles.console} tabIndex={0} aria-label={`${name} log`}>{lines.join("\n")}</pre>
       {canWrite && (
         <form onSubmit={send} className={styles.consoleInput}>
           <label htmlFor="console-command" className="sr-only">Command</label>

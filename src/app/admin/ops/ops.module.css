@@ -1,0 +1,271 @@
+/* /admin/ops: the service list, a service's detail page and the website page.
+   Tables, alerts, badges and the console box come from admin.module.css and
+   globals.css; this file lays the pages out. */
+
+.page {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.small {
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.back {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.detailHead,
+.rowHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row,
+.panel {
+  min-width: 0;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.rowName {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.uptime {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.uptimeBar {
+  width: 100%;
+  height: 24px;
+  display: block;
+  background: var(--surface-2);
+  border-radius: 2px;
+}
+
+.barUp {
+  fill: var(--green);
+}
+
+/* Short because it was down part of the hour; the colour only repeats that. */
+.barDown {
+  fill: var(--danger);
+}
+
+.facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 10px 20px;
+}
+
+.facts dt {
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+}
+
+.charts figure {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.usage {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.usageValue {
+  font: 700 24px/1.2 var(--font-display), monospace;
+}
+
+.tableGap {
+  margin-top: 12px;
+}
+
+.errors td:first-child {
+  min-width: 220px;
+  overflow-wrap: anywhere;
+}
+
+.kind {
+  color: var(--text-3);
+  font-family: var(--font-body), sans-serif;
+}
+
+.skRow {
+  height: 96px;
+  border-radius: var(--radius);
+}
+
+/* Kind and size under the backup's name, so the table fits 375 px. */
+.cellNote {
+  display: block;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+/* /admin/ops/bot: backlog tiles, the settings form, the tasks table. */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+}
+
+.group {
+  min-width: 0;
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.groupTitle {
+  padding: 0;
+  margin-bottom: 4px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.setting {
+  min-width: 0;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--surface);
+  scroll-margin-top: 80px;
+}
+
+.setting p {
+  margin: 0;
+}
+
+.settingForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settingLabel {
+  font-weight: 700;
+}
+
+.settingRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.settingRow > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.check {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+/* Long bot errors wrap inside the chip instead of widening the page. */
+.check :global(.badge) {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.jobs td {
+  vertical-align: top;
+}
+
+.lastRun {
+  min-width: 120px;
+  overflow-wrap: anywhere;
+}
+
+.stateCell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.runsRow td {
+  padding-top: 0;
+}
+
+.runsRow summary {
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.retired summary {
+  cursor: pointer;
+  color: var(--text-2);
+}
+
+.retiredList {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--text-2);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
