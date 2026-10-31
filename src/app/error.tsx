@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import { ErrorScreen } from "@/components/error-screen";
+import { reportError } from "@/lib/report-error";
 
 // Catches what a page or form action throws instead of handling, most often a
 // lost connection mid-submit. retry() re-fetches the page in place.
-export default function Error({ retry }: { error: Error & { digest?: string }; retry: () => void }) {
+export default function Error({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  useEffect(() => reportError(error), [error]);
   return <ErrorScreen
     code="Oops"
     title="Something went wrong"
