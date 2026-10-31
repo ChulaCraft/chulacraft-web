@@ -6,7 +6,11 @@ import { EVENT_CATEGORIES } from "@/lib/event-category";
 import { createClient } from "@/lib/supabase/server";
 import styles from "./search.module.css";
 
-export const metadata: Metadata = { title: "Search" };
+export const metadata: Metadata = {
+  title: "Search",
+  description: "Search ChulaCraft pages, events, announcements and players.",
+  alternates: { canonical: "/search" },
+};
 
 const MIN_QUERY = 2;
 

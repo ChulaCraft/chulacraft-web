@@ -11,6 +11,7 @@ import { ReportDialog } from "./report-dialog";
 import styles from "./player.module.css";
 import { SubmitButton } from "@/components/submit-button";
 import { siteSettings } from "@/lib/site-content";
+import { timed } from "@/lib/perf";
 
 /** player_card() in supabase/migrations/20261007000001_social.sql builds this
  *  jsonb, so the generated types cannot describe it. Every section is optional:
@@ -48,7 +49,7 @@ function Avatar({ src, name, size = 72 }: { src: string | null; name: string; si
 async function loadCard(id: string): Promise<PlayerCard | null> {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_player_profile", { p_user_id: id });
+    const { data, error } = await timed("get_player_profile", supabase.rpc("get_player_profile", { p_user_id: id }));
     // A read failure looks like a missing profile: there is nothing to show
     // either way, and both end at the 404.
     if (error || !data) return null;
@@ -61,8 +62,23 @@ async function loadCard(id: string): Promise<PlayerCard | null> {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const card = UUID.test(id) ? await loadCard(id) : null;
-  if (!card) return { title: "Player not found" };
-  return { title: card.display_name };
+  // Only a profile the viewer may see (can_view, via player_card's `hidden`) is
+  // indexable and gets its own image (./opengraph-image.tsx). Anyone else,
+  // including every crawler (the read is signed-in only), gets noindex and the
+  // site image: setting openGraph.images here stops the file-based one.
+  // openGraph replaces the layout's whole object, so siteName/type/locale are restated.
+  const hidden = {
+    robots: { index: false },
+    openGraph: { siteName: "ChulaCraft", type: "website", locale: "en_US", images: "/opengraph-image" },
+  } satisfies Metadata;
+  if (!card) return { title: "Player not found", ...hidden };
+  const visible = !card.hidden;
+  return {
+    title: card.display_name,
+    description: `${card.display_name} on ChulaCraft, the Minecraft server for the Chula community.`,
+    alternates: { canonical: `/player/${card.user_id}` },
+    ...(visible ? {} : hidden),
+  };
 }
 
 const ERRORS: Record<string, string> = {
@@ -89,7 +105,7 @@ export default async function PlayerPage({ params, searchParams }: {
   const supabase = await createClient();
   let signedIn = true;
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await timed("auth.getUser", supabase.auth.getUser());
     signedIn = Boolean(user);
   } catch {
     signedIn = false;
@@ -99,10 +115,10 @@ export default async function PlayerPage({ params, searchParams }: {
   const [card, banner, events] = await Promise.all([
     loadCard(id),
     // Cosmetic: a failure falls back to the default strip.
-    supabase.rpc("get_player_banner", { p_user_id: id }).maybeSingle().then(({ data }) => data, () => null),
+    timed("get_player_banner", supabase.rpc("get_player_banner", { p_user_id: id }).maybeSingle()).then(({ data }) => data, () => null),
     // Attendance, behind the same achievements privacy as the badges; a
     // failure (or a block, NOT_FOUND) reads as no events.
-    supabase.rpc("get_player_event_history", { p_user_id: id }).then(({ data }) => toEventHistory(data), () => [])
+    timed("get_player_event_history", supabase.rpc("get_player_event_history", { p_user_id: id })).then(({ data }) => toEventHistory(data), () => [])
   ]);
   // A blocked profile and an unknown one are both NOT_FOUND (AC 18).
   if (!card) notFound();
@@ -186,7 +202,7 @@ export default async function PlayerPage({ params, searchParams }: {
                 </form>
               )}
               {/* Reporting stays available when blocked: harassment is often why. */}
-              {(await siteSettings()).reportsOpen && <ReportDialog playerId={id} playerName={card.display_name} />}
+              {(await timed("siteSettings", siteSettings())).reportsOpen && <ReportDialog playerId={id} playerName={card.display_name} />}
             </>}
           >
             {names.length > 0 && (

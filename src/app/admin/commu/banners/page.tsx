@@ -8,6 +8,7 @@ import styles from "@/app/admin/admin.module.css";
 import { deleteBanner } from "./actions";
 import { BannerForm } from "./banner-form";
 import { BANNER_STYLES, toBannerStyle } from "./size";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Banners" };
 
@@ -37,7 +38,7 @@ const BLANK = ["#3a3050", "#55406e", "#7a4f8a", "#a0609a"];
 export default async function AdminBannersPage({ searchParams }: { searchParams: Promise<{ error?: string; done?: string; edit?: string }> }) {
   const { error: errorCode, done, edit } = await searchParams;
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_list_banners");
+  const { data, error } = await timed("admin_list_banners", supabase.rpc("admin_list_banners"));
   const rows = data ?? [];
   const editing = rows.find((b) => b.id === edit && b.kind === "unlock");
 

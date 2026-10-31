@@ -7,13 +7,14 @@ import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
 import { deleteGalleryGroup, moveGalleryGroup, saveGalleryGroup } from "./actions";
 import { GALLERY_DONE, GALLERY_ERRORS } from "./messages";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Gallery" };
 
 export default async function AdminGalleryPage({ searchParams }: { searchParams: Promise<{ error?: string; done?: string }> }) {
   const { error: errorCode, done } = await searchParams;
   const supabase = await createClient();
-  const [groups, images] = await Promise.all([supabase.rpc("list_gallery_groups"), supabase.rpc("list_gallery")]);
+  const [groups, images] = await Promise.all([timed("list_gallery_groups", supabase.rpc("list_gallery_groups")), timed("list_gallery", supabase.rpc("list_gallery"))]);
   const rows = groups.data ?? [];
   const count = (id: string) => (images.data ?? []).filter((i) => i.group_id === id).length;
 

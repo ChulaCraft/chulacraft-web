@@ -43,6 +43,16 @@
   --tier-epic: var(--violet);
   --tier-legendary: var(--amber);
   --tier-ink: var(--night);
+  /* Chart series, in fixed order (series 1 is always --chart-1). Sakura, Sky
+     and Amber hues stepped into the dataviz lightness band (OKLCH L 0.48-0.67)
+     so no line glares on Night; checked by the dataviz palette validator and,
+     against the panel, by src/lib/contrast.test.ts. Grid and axis text are the
+     existing hairline and quiet-text neutrals. */
+  --chart-1: #e8558e;
+  --chart-2: #3196dc;
+  --chart-3: #c08424;
+  --chart-grid: var(--edge);
+  --chart-axis: var(--text-3);
   --content-width: 1240px;
   --gutter: clamp(16px, 4vw, 32px);
   --radius-sm: 8px;
@@ -59,6 +69,19 @@
      component that used them picks up the new shape without changes. */
   --pixel-4: inset(0 round var(--radius-sm));
   --pixel-8: inset(0 round var(--radius));
+}
+
+/* Charts print on white paper (the Insights print stylesheet forces light
+   panels), so the chart tokens step down to ink-dark versions of the same
+   hues. src/lib/contrast.test.ts checks these against #fff. */
+@media print {
+  :root {
+    --chart-1: #c42a68;
+    --chart-2: #1f6fb2;
+    --chart-3: #8f5a00;
+    --chart-grid: #d9d5de;
+    --chart-axis: #5b5666;
+  }
 }
 
 /* No visible scrollbars anywhere: the page, side panels, tables and the
@@ -79,6 +102,9 @@ html {
 }
 
 body {
+  /* Trirong: all faces, then the preloaded 400/600 call (src/lib/fonts.ts).
+     Set here, not on :root, because next/font puts both variables on body. */
+  --font-body: var(--font-body-all), var(--font-body-regular);
   min-width: 320px;
   margin: 0;
   color: var(--text);

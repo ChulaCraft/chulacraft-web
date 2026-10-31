@@ -9,6 +9,7 @@ import styles from "@/app/admin/admin.module.css";
 import { addPlayers, confirmAward, prefillInterested, previewAward } from "./actions";
 import { selectionParam, selectionIds } from "../../selection";
 import { SubmitButton } from "@/components/submit-button";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Award achievement" };
 
@@ -35,10 +36,10 @@ export default async function AdminAwardPage({ params, searchParams }: {
   const selected = selectionIds(sel);
   const supabase = await createClient();
   const [catalog, events, search] = await Promise.all([
-    supabase.rpc("admin_list_achievements"),
-    supabase.rpc("admin_list_events"),
+    timed("admin_list_achievements", supabase.rpc("admin_list_achievements")),
+    timed("admin_list_events", supabase.rpc("admin_list_events")),
     // 50-row capped search, same as the Players page; bulk names go through the CSV.
-    q.trim() ? supabase.rpc("admin_search_users", { p_query: q.trim() }) : Promise.resolve({ data: [], error: null })
+    q.trim() ? timed("admin_search_users", supabase.rpc("admin_search_users", { p_query: q.trim() })) : Promise.resolve({ data: [], error: null })
   ]);
   const achievement = (catalog.data ?? []).find((row) => row.id === id);
   if (!achievement) notFound();

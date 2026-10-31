@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
 import { deleteDiscordRole, saveDiscordRole, saveSiteSettings } from "./actions";
 import { SettingsPreview, type SavedSettings } from "./settings-preview";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Site settings" };
 
@@ -20,6 +21,7 @@ const ROLE_ERRORS: Record<string, string> = {
   FORBIDDEN: "Only owners and admins can change which Discord roles badges may give.",
   INVALID: "The role ID is the 17 to 20 digit number Discord shows under Copy Role ID, and the label is 1 to 60 characters.",
   IN_USE: "A badge still gives that role. Pick another role (or none) on that badge first, then remove it here.",
+  ROLE_MANAGED_BY_BOT: "The Discord bot uses that role for one of its own settings (Ops → Discord bot), so badges can't give it.",
   FAILED: "The role list couldn't be changed. Please try again."
 };
 
@@ -33,8 +35,8 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
   const supabase = await createClient();
   // Straight from the database, not the cached copy the public pages read.
   const [{ data, error }, { data: roles, error: rolesError }] = await Promise.all([
-    supabase.rpc("get_site_settings"),
-    supabase.rpc("admin_list_discord_roles")
+    timed("get_site_settings", supabase.rpc("get_site_settings")),
+    timed("admin_list_discord_roles", supabase.rpc("admin_list_discord_roles"))
   ]);
   if (error) {
     return <section className={`panel ${styles.errorCard}`} role="alert">

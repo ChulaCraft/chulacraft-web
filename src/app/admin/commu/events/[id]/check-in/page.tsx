@@ -13,6 +13,7 @@ import { AwardAttendees } from "./award-attendees";
 import { CheckinQr, type WindowState } from "./checkin-qr";
 import { Scanner } from "./scanner";
 import local from "./check-in.module.css";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Check-in" };
 
@@ -53,9 +54,9 @@ export default async function AdminCheckInPage({ params, searchParams }: {
 
   const supabase = await createClient();
   const [catalog, attendance, achievementList] = await Promise.all([
-    supabase.rpc("admin_list_events"),
-    supabase.rpc("admin_list_attendance", { p_event_id: id }),
-    supabase.rpc("admin_list_achievements")
+    timed("admin_list_events", supabase.rpc("admin_list_events")),
+    timed("admin_list_attendance", supabase.rpc("admin_list_attendance", { p_event_id: id })),
+    timed("admin_list_achievements", supabase.rpc("admin_list_achievements"))
   ]);
   if (catalog.error) {
     return <section className={`panel ${styles.errorCard}`} role="alert">

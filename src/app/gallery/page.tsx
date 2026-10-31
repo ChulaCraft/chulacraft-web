@@ -7,6 +7,7 @@ import styles from "../team/team.module.css";
 export const metadata: Metadata = {
   title: "Gallery",
   description: "Screenshots from ChulaCraft builds and events.",
+  alternates: { canonical: "/gallery" },
 };
 
 export default async function GalleryPage() {

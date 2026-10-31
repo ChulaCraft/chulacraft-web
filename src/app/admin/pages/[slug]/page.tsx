@@ -10,6 +10,7 @@ import { DEFAULT_PAGES, LEGAL_EFFECTIVE_DATE, PAGES, isPageSlug } from "@/lib/si
 import styles from "@/app/admin/admin.module.css";
 import { savePage } from "../actions";
 import { PagePreview } from "./page-preview";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Edit page" };
 
@@ -33,7 +34,7 @@ export default async function AdminEditPage({ params, searchParams }: {
   if (!isPageSlug(slug)) notFound();
   const supabase = await createClient();
   // Straight from the database, not the cached copy the public page reads.
-  const { data, error } = await supabase.rpc("get_site_page", { p_slug: slug });
+  const { data, error } = await timed("get_site_page", supabase.rpc("get_site_page", { p_slug: slug }));
   if (error) {
     return <section className={`panel ${styles.errorCard}`} role="alert">
       <h1 className={styles.sectionTitle}><PixelIcon name="warning" size={22} className="tone-danger" />Couldn&apos;t load the page</h1>

@@ -14,6 +14,7 @@ import { IMAGE_TYPES, publicImageUrl } from "@/app/admin/commu/achievements/imag
 import { deleteTeamMember, moveTeamMember, saveTeamGeneration, saveTeamMember } from "../actions";
 import { TEAM_DONE, TEAM_ERRORS } from "../messages";
 import { MemberPreview } from "./member-preview";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Team generation" };
 
@@ -27,7 +28,7 @@ export default async function AdminTeamGenerationPage({ params, searchParams }: 
   const { error: errorCode, done, edit, kind: kindParam } = await searchParams;
   if (!UUID.test(id)) notFound();
   const supabase = await createClient();
-  const [gens, members] = await Promise.all([supabase.rpc("list_team_generations"), supabase.rpc("list_team")]);
+  const [gens, members] = await Promise.all([timed("list_team_generations", supabase.rpc("list_team_generations")), timed("list_team", supabase.rpc("list_team"))]);
   if (gens.error || members.error) {
     return <section className={`panel ${styles.errorCard}`} role="alert">
       <h1 className={styles.sectionTitle}><PixelIcon name="warning" size={22} className="tone-danger" />Couldn&apos;t load the team</h1>

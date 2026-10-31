@@ -11,6 +11,7 @@ import styles from "./about.module.css";
 export const metadata: Metadata = {
   title: "About",
   description: "A community-run Minecraft Java server for the Chula community.",
+  alternates: { canonical: "/about" },
 };
 
 const values = [

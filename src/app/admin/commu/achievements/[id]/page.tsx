@@ -12,6 +12,7 @@ import { publicImageUrl } from "../images";
 import { MetaFields } from "../meta-fields";
 import { deleteAchievement, revokeAward, saveAchievement } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Achievement" };
 
@@ -42,9 +43,9 @@ export default async function AdminAchievementPage({ params, searchParams }: {
 
   const supabase = await createClient();
   const [{ data: catalog, error: listError }, { data: awards }, { data: roles }] = await Promise.all([
-    supabase.rpc("admin_list_achievements"),
-    supabase.rpc("admin_list_awards", { p_achievement_id: id }),
-    supabase.rpc("admin_list_discord_roles")
+    timed("admin_list_achievements", supabase.rpc("admin_list_achievements")),
+    timed("admin_list_awards", supabase.rpc("admin_list_awards", { p_achievement_id: id })),
+    timed("admin_list_discord_roles", supabase.rpc("admin_list_discord_roles"))
   ]);
   if (listError) {
     return <section className={`panel ${styles.errorCard}`} role="alert">

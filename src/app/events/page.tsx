@@ -5,8 +5,14 @@ import { EVENT_CATEGORIES, toCategory } from "@/lib/event-category";
 import { createClient } from "@/lib/supabase/server";
 import { discordCommunityUrl } from "@/lib/site-links";
 import styles from "./events.module.css";
+import { timed } from "@/lib/perf";
 
-export const metadata: Metadata = { title: "Events" };
+export const metadata: Metadata = {
+  title: "Events",
+  description: "Community nights, builds and contests on the ChulaCraft Minecraft server.",
+  // One canonical for every ?category= view: they filter the same list.
+  alternates: { canonical: "/events" },
+};
 
 /** Every published event: what's coming up, then the archive. Both reads are
  *  granted to anon (20261006000002), so this page is public. */
@@ -14,8 +20,8 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   const category = toCategory((await searchParams).category);
   const supabase = await createClient();
   const [upcoming, past] = await Promise.all([
-    supabase.rpc("list_upcoming_events", { p_limit: 12 }),
-    supabase.rpc("list_past_events", { p_limit: 24 })
+    timed("list_upcoming_events", supabase.rpc("list_upcoming_events", { p_limit: 12 })),
+    timed("list_past_events", supabase.rpc("list_past_events", { p_limit: 24 }))
   ]);
   const failed = Boolean(upcoming.error || past.error);
   // The category chips filter what's already loaded; no extra round trip.

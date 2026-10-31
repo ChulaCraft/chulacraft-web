@@ -4,6 +4,7 @@ import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
 import { when } from "@/app/admin/overview";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Announcements" };
 
@@ -25,7 +26,7 @@ function state(publishedAt: string | null, expiresAt: string | null) {
 export default async function AdminAnnouncementsPage({ searchParams }: { searchParams: Promise<{ error?: string; done?: string }> }) {
   const { error: errorCode, done } = await searchParams;
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_list_announcements");
+  const { data, error } = await timed("admin_list_announcements", supabase.rpc("admin_list_announcements"));
   const rows = data ?? [];
 
   return <>

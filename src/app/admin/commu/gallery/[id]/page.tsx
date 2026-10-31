@@ -12,6 +12,7 @@ import { IMAGE_TYPES, publicImageUrl } from "@/app/admin/commu/achievements/imag
 import { addGalleryImage, deleteGalleryImage, moveGalleryImage, saveGalleryGroup, updateGalleryImage } from "../actions";
 import { GALLERY_DONE, GALLERY_ERRORS } from "../messages";
 import { GroupPreview } from "./group-preview";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Gallery group" };
 
@@ -23,7 +24,7 @@ export default async function AdminGalleryGroupPage({ params, searchParams }: {
   const { error: errorCode, done } = await searchParams;
   if (!UUID.test(id)) notFound();
   const supabase = await createClient();
-  const [groups, images] = await Promise.all([supabase.rpc("list_gallery_groups"), supabase.rpc("list_gallery")]);
+  const [groups, images] = await Promise.all([timed("list_gallery_groups", supabase.rpc("list_gallery_groups")), timed("list_gallery", supabase.rpc("list_gallery"))]);
   if (groups.error || images.error) {
     return <section className={`panel ${styles.errorCard}`} role="alert">
       <h1 className={styles.sectionTitle}><PixelIcon name="warning" size={22} className="tone-danger" />Couldn&apos;t load the gallery</h1>

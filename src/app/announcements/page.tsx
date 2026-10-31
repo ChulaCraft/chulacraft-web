@@ -4,7 +4,11 @@ import { publicImageUrl } from "@/app/admin/commu/achievements/images";
 import { AnnouncementItem } from "@/components/announcement-item";
 import styles from "./announcements.module.css";
 
-export const metadata: Metadata = { title: "Announcements" };
+export const metadata: Metadata = {
+  title: "Announcements",
+  description: "News from the ChulaCraft team: maintenance, updates and server notices.",
+  alternates: { canonical: "/announcements" },
+};
 
 /** Every live announcement, pinned first. The read is granted to anon
  *  (20261009000001), so this page is public. */

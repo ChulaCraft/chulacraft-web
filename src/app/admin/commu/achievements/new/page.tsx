@@ -6,6 +6,7 @@ import styles from "@/app/admin/admin.module.css";
 import { saveAchievement } from "../[id]/actions";
 import { MetaFields } from "../meta-fields";
 import { SubmitButton } from "@/components/submit-button";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "New achievement" };
 
@@ -13,7 +14,7 @@ export const metadata: Metadata = { title: "New achievement" };
  *  id when none is posted. */
 export default async function NewAchievementPage() {
   const supabase = await createClient();
-  const { data: roles } = await supabase.rpc("admin_list_discord_roles");
+  const { data: roles } = await timed("admin_list_discord_roles", supabase.rpc("admin_list_discord_roles"));
   return <>
     <Link href="/admin/commu/achievements" className="back-link"><PixelIcon name="back" />Achievements</Link>
     <h1 className={styles.title}>New achievement</h1>

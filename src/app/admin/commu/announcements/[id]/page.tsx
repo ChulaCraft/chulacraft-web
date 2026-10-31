@@ -12,6 +12,7 @@ import { deleteAnnouncement, saveAnnouncement } from "./actions";
 import { AnnouncementPreview } from "./announcement-preview";
 import { SubmitButton } from "@/components/submit-button";
 import { IMAGE_TYPES, publicImageUrl } from "@/app/admin/commu/achievements/images";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Announcement" };
 
@@ -44,7 +45,7 @@ export default async function AdminAnnouncementPage({ params, searchParams }: {
   let row = null;
   if (!isNew) {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("admin_list_announcements");
+    const { data, error } = await timed("admin_list_announcements", supabase.rpc("admin_list_announcements"));
     if (error) {
       return <section className={`panel ${styles.errorCard}`} role="alert">
         <h1 className={styles.sectionTitle}><PixelIcon name="warning" size={22} className="tone-danger" />Couldn&apos;t load announcements</h1>

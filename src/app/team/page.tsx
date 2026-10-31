@@ -8,6 +8,7 @@ import styles from "./team.module.css";
 export const metadata: Metadata = {
   title: "Team",
   description: "The board, members, contributors and sponsors behind ChulaCraft, generation by generation.",
+  alternates: { canonical: "/team" },
 };
 
 export default async function TeamPage({ searchParams }: { searchParams: Promise<{ gen?: string }> }) {

@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { toggleInterest } from "./actions";
 import styles from "./event.module.css";
 import { SubmitButton } from "@/components/submit-button";
+import { timed } from "@/lib/perf";
 
 /** get_event() in supabase/migrations/20261006000002_event_interest.sql:76 builds
  *  this jsonb, so the generated types cannot describe it. me_interested is the
@@ -45,8 +46,8 @@ const ends = (start: string, end: string) => (day(start) === day(end) ? clock(en
 async function loadEvent(id: string): Promise<{ event: EventDetail | null; signedIn: boolean }> {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data, error } = await supabase.rpc("get_event", { p_id: id });
+    const { data: { user } } = await timed("auth.getUser", supabase.auth.getUser());
+    const { data, error } = await timed("get_event", supabase.rpc("get_event", { p_id: id }));
     // No row and a hard read failure look the same to a visitor: either way
     // there is no published event at this address.
     if (error || !data) return { event: null, signedIn: Boolean(user) };
@@ -59,8 +60,15 @@ async function loadEvent(id: string): Promise<{ event: EventDetail | null; signe
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const { event } = UUID.test(id) ? await loadEvent(id) : { event: null };
-  if (!event) return { title: "Event not found" };
-  return { title: event.name, description: event.description ?? undefined };
+  if (!event) return { title: "Event not found", robots: { index: false } };
+  // A description is required for search results (Lighthouse SEO); an event
+  // without one gets its date and place instead of the site-wide text.
+  const fallback = `${event.name}: a ChulaCraft event on ${when(event.starts_at)}${event.location ? ` at ${event.location}` : ""}.`;
+  return {
+    title: event.name,
+    description: event.description?.trim().slice(0, 300) || fallback,
+    alternates: { canonical: `/events/${event.id}` },
+  };
 }
 
 const ERRORS: Record<string, string> = {

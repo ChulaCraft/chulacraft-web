@@ -1,4 +1,6 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { dbErrorCode } from "@/lib/db-error";
+import { failureCode, recordFunnelFailure } from "@/lib/funnel";
 import { siteSettings } from "@/lib/site-content";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { isValidMinecraftUsername, normalizeMinecraftUsername, REGISTRATION_COLUMNS, registrationError, toRegistrationView, UUID, type RegistrationRow } from "@/lib/registration";
@@ -84,30 +86,43 @@ type SaveRpc =
   | ["add_minecraft_account", { p_user_id: string; p_minecraft_uuid: string; p_minecraft_username: string }]
   | ["change_minecraft_account", { p_user_id: string; p_registration_id: string; p_minecraft_uuid: string; p_minecraft_username: string }];
 
+/** Counts a failed add/change, anonymously and after the response is sent, so it can't slow or alter it.
+ *  Not a 401 (not signed in yet) or a 429 (rate limit: not a drop-off, and repeat requests would inflate it). */
+function record(status: number, raised?: string | null) {
+  if (status === 401 || status === 429) return;
+  after(() => recordFunnelFailure("minecraft", failureCode(status, raised)));
+}
+
+/** An error response for add/change; counts it unless it is a 401 or 429. */
+function fail(error: string, status: number, raised?: string | null) {
+  record(status, raised);
+  return NextResponse.json({ error }, { status });
+}
+
 async function save(request: Request, toRpc: (profile: Profile, id: unknown, userId: string) => SaveRpc | null) {
   const { supabase, user, failure } = await signedIn();
-  if (failure) return failure;
+  if (failure) { record(failure.status); return failure; }
   // The registration RPCs are server-only, so this is the whole gate.
-  if (!(await siteSettings()).registrationOpen) return NextResponse.json({ error: "Registration is closed right now. Watch Discord for when it reopens." }, { status: 403 });
+  if (!(await siteSettings()).registrationOpen) return fail("Registration is closed right now. Watch Discord for when it reopens.", 403);
   let allowed: boolean | null;
   try {
     const { data, error } = await supabase.rpc("consume_registration_attempt");
-    if (error) return NextResponse.json({ error: "Registration is temporarily unavailable. Please try again." }, { status: 503 });
+    if (error) return fail("Registration is temporarily unavailable. Please try again.", 503);
     allowed = data;
-  } catch { return NextResponse.json({ error: "Registration is temporarily unavailable. Please try again." }, { status: 503 }); }
-  if (!allowed) return NextResponse.json({ error: "Too many attempts. Please wait a few minutes and try again." }, { status: 429 });
+  } catch { return fail("Registration is temporarily unavailable. Please try again.", 503); }
+  if (!allowed) return fail("Too many attempts. Please wait a few minutes and try again.", 429);
 
   let rawUsername: unknown;
   let id: unknown;
-  try { ({ minecraftUsername: rawUsername, id } = await request.json() as { minecraftUsername?: unknown; id?: unknown }); } catch { return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 }); }
-  if (typeof rawUsername !== "string" || !isValidMinecraftUsername(rawUsername)) return NextResponse.json({ error: "Enter 3–16 letters, numbers, or underscores." }, { status: 400 });
+  try { ({ minecraftUsername: rawUsername, id } = await request.json() as { minecraftUsername?: unknown; id?: unknown }); } catch { return fail("Send a valid registration request.", 400); }
+  if (typeof rawUsername !== "string" || !isValidMinecraftUsername(rawUsername)) return fail("Enter 3–16 letters, numbers, or underscores.", 400);
 
   let profile: Profile | null;
-  try { profile = await resolveMinecraftProfile(normalizeMinecraftUsername(rawUsername)); } catch { return NextResponse.json({ error: "Minecraft profile lookup is temporarily unavailable. Please try again." }, { status: 503 }); }
-  if (!profile) return NextResponse.json({ error: "We couldn’t find that Minecraft Java Edition profile." }, { status: 400 });
+  try { profile = await resolveMinecraftProfile(normalizeMinecraftUsername(rawUsername)); } catch { return fail("Minecraft profile lookup is temporarily unavailable. Please try again.", 503); }
+  if (!profile) return fail("We couldn’t find that Minecraft Java Edition profile.", 400);
 
   const call = toRpc(profile, id, user.id);
-  if (!call) return NextResponse.json({ error: "Send a valid registration request." }, { status: 400 });
+  if (!call) return fail("Send a valid registration request.", 400);
   const [fn, args] = call;
 
   // The account RPCs are service-role only so players can't skip the Mojang lookup above.
@@ -123,12 +138,12 @@ async function save(request: Request, toRpc: (profile: Profile, id: unknown, use
     data = result.data;
     error = result.error;
   }
-  catch { return NextResponse.json({ error: "We couldn’t save the registration. Please try again." }, { status: 503 }); }
+  catch { return fail("We couldn’t save the registration. Please try again.", 503); }
   if (error) {
-    const failure = registrationError(error.message, error.code);
-    return NextResponse.json({ error: failure.error }, { status: failure.status });
+    const mapped = registrationError(error.message, error.code);
+    return fail(mapped.error, mapped.status, dbErrorCode(error));
   }
   const registration = data?.[0];
-  if (!registration) return NextResponse.json({ error: "We couldn’t save the registration. Please try again." }, { status: 503 });
+  if (!registration) return fail("We couldn’t save the registration. Please try again.", 503);
   return NextResponse.json({ registration: toRegistrationView(registration) }, { status: "created" in registration && registration.created ? 201 : 200 });
 }

@@ -4,13 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 import { effectiveDate } from "@/lib/site-content";
 import { PAGES, PAGE_SLUGS } from "@/lib/site-pages";
 import styles from "@/app/admin/admin.module.css";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Pages" };
 
 export default async function AdminPagesPage() {
   const supabase = await createClient();
   const rows = await Promise.all(PAGE_SLUGS.map(async (slug) => {
-    const { data } = await supabase.rpc("get_site_page", { p_slug: slug });
+    const { data } = await timed("get_site_page", supabase.rpc("get_site_page", { p_slug: slug }));
     return { slug, updated: data?.[0]?.updated_at ?? null };
   }));
 

@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const m = vi.hoisted(() => ({ getUser: vi.fn(), order: vi.fn(), rpc: vi.fn(), userRpc: vi.fn(), open: true }));
+const m = vi.hoisted(() => ({ getUser: vi.fn(), order: vi.fn(), rpc: vi.fn(), userRpc: vi.fn(), record: vi.fn(), open: true }));
+
+// after() only works inside a request, so run its callback straight away.
+vi.mock("next/server", async (original) => ({ ...(await original<typeof import("next/server")>()), after: (fn: () => unknown) => { void fn(); } }));
+vi.mock("@/lib/funnel", async (original) => ({ ...(await original<typeof import("@/lib/funnel")>()), recordFunnelFailure: m.record }));
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => {
@@ -22,6 +26,7 @@ describe("Minecraft registration API", () => {
     m.order.mockReset();
     m.rpc.mockReset();
     m.userRpc.mockReset();
+    m.record.mockReset();
     m.open = true;
   });
 
@@ -32,6 +37,18 @@ describe("Minecraft registration API", () => {
     expect((await PATCH(new Request("https://example.test", { method: "PATCH", body }))).status).toBe(403);
     expect(m.userRpc).not.toHaveBeenCalled();
     expect(m.rpc).not.toHaveBeenCalled();
+    expect(m.record).toHaveBeenCalledTimes(2);
+    expect(m.record).toHaveBeenCalledWith("minecraft", "CLOSED");
+  });
+
+  it("counts neither a rate-limited attempt nor a missing sign-in", async () => {
+    m.userRpc.mockResolvedValue({ data: false, error: null });
+    const post = () => POST(new Request("https://example.test", { method: "POST", body: JSON.stringify({ minecraftUsername: "Steve" }) }));
+    expect((await post()).status).toBe(429);
+    expect(m.record).not.toHaveBeenCalled();
+    m.getUser.mockResolvedValueOnce({ data: { user: null } });
+    expect((await post()).status).toBe(401);
+    expect(m.record).not.toHaveBeenCalled();
   });
 
   it("requires a working, signed-in session", async () => {

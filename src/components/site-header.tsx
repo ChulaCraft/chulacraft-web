@@ -70,9 +70,11 @@ export async function SiteHeader() {
       {user ? <>
         <NotificationBell count={unread} />
         <details className="menu">
-          <summary aria-label={`Account menu for ${name}`}>
+          {/* Named by its content, so the visible name is part of the
+              accessible name (axe label-content-name-mismatch). */}
+          <summary>
             <Avatar src={avatar} name={name} />
-            <span>{name}</span>
+            <span><span className="sr-only">Account menu for </span>{name}</span>
             <PixelIcon name="chevron" size={14} />
           </summary>
           <div className="menu-panel">

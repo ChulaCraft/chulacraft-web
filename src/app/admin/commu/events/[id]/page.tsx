@@ -11,6 +11,7 @@ import { when } from "@/app/admin/overview";
 import { publicImageUrl } from "@/app/admin/commu/achievements/images";
 import { EventForm } from "../event-form";
 import { deleteEvent } from "./actions";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Event" };
 
@@ -39,12 +40,12 @@ export default async function AdminEventPage({ params, searchParams }: {
 
   const supabase = await createClient();
   const [catalog, interests, bannerList, reminderList] = await Promise.all([
-    supabase.rpc("admin_list_events"),
+    timed("admin_list_events", supabase.rpc("admin_list_events")),
     // Admin-only (20261006000002), so this is the only place the names behind
     // the public count are readable. A failure here must not hide the event.
-    supabase.rpc("admin_list_event_interests", { p_event_id: id }),
-    supabase.rpc("admin_list_banners"),
-    supabase.rpc("admin_event_reminders", { p_id: id })
+    timed("admin_list_event_interests", supabase.rpc("admin_list_event_interests", { p_event_id: id })),
+    timed("admin_list_banners", supabase.rpc("admin_list_banners")),
+    timed("admin_event_reminders", supabase.rpc("admin_event_reminders", { p_id: id }))
   ]);
   const { error: listError } = catalog;
   if (listError) {

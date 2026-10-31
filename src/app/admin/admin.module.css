@@ -1257,3 +1257,10 @@ section .bannerPreview {
     top: calc(var(--header-h) + 16px);
   }
 }
+
+/* Four headline tiles above the players table (same numbers as Insights → Players). */
+.insightStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+}

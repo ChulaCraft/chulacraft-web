@@ -1,3 +1,4 @@
+import { timed } from "@/lib/perf";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireVerifiedUser } from "@/lib/verified-user";
@@ -11,9 +12,9 @@ export const metadata: Metadata = { title: { default: "Admin", template: "%s · 
 // Real gate: every admin RPC re-checks the caller's role in the database.
 // This layout only keeps non-admins from seeing the admin screens at all.
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await requireVerifiedUser();
+  const session = await timed("requireVerifiedUser", requireVerifiedUser());
   if (!session) throw new Error("Could not load admin.");
-  const role = await myRole();
+  const role = await timed("myRole", myRole());
   if (!isStaff(role)) notFound();
 
   return (

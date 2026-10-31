@@ -18,6 +18,7 @@ import { LEVEL_OPTIONS, PRIVACY_FIELDS, type Privacy } from "@/lib/privacy";
 import { banUser, grantBanner, liftBan, markGuest, resetChula, saveProfileFor, setPrivacyFor, setRole, setWhitelisted } from "./actions";
 import { RoleControl } from "./role-control";
 import { SubmitButton } from "@/components/submit-button";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Player" };
 
@@ -78,13 +79,13 @@ export default async function AdminUserPage({ params, searchParams }: {
 
   const supabase = await createClient();
   const [{ data, error }, { data: myRole }, { data: { user: me } }, { data: bans }, { data: support }, { data: banners }] = await Promise.all([
-    supabase.rpc("admin_get_user", { p_user_id: id }),
-    supabase.rpc("current_app_role"),
+    timed("admin_get_user", supabase.rpc("admin_get_user", { p_user_id: id })),
+    timed("current_app_role", supabase.rpc("current_app_role")),
     supabase.auth.getUser(),
-    supabase.rpc("admin_user_bans", { p_user_id: id }),
-    supabase.rpc("admin_user_profile", { p_user_id: id }),
+    timed("admin_user_bans", supabase.rpc("admin_user_bans", { p_user_id: id })),
+    timed("admin_user_profile", supabase.rpc("admin_user_profile", { p_user_id: id })),
     // Community area only (event staff too); others get FORBIDDEN and no section.
-    supabase.rpc("admin_user_banners", { p_user_id: id }),
+    timed("admin_user_banners", supabase.rpc("admin_user_banners", { p_user_id: id })),
   ]);
   if (error) {
     return <>

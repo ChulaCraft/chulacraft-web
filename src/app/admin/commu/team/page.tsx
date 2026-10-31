@@ -7,13 +7,14 @@ import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
 import { deleteTeamGeneration, moveTeamGeneration, saveTeamGeneration } from "./actions";
 import { TEAM_DONE, TEAM_ERRORS } from "./messages";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Team" };
 
 export default async function AdminTeamPage({ searchParams }: { searchParams: Promise<{ error?: string; done?: string }> }) {
   const { error: errorCode, done } = await searchParams;
   const supabase = await createClient();
-  const [gens, members] = await Promise.all([supabase.rpc("list_team_generations"), supabase.rpc("list_team")]);
+  const [gens, members] = await Promise.all([timed("list_team_generations", supabase.rpc("list_team_generations")), timed("list_team", supabase.rpc("list_team"))]);
   const rows = gens.data ?? [];
   const count = (id: string) => (members.data ?? []).filter((m) => m.generation_id === id).length;
 

@@ -85,3 +85,28 @@ describe.each(themes)("badge tier tokens (%s)", (_name, tokens) => {
     expect(contrast(ink, resolve(tokens[`--tier-${tier}`], tokens))).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+/** Charts print on white: `@media print { :root { … } }` swaps in ink-dark
+ *  chart tokens, and the panel is white unless that block names its own. */
+const printBlock = css.match(/@media\s+print\s*\{\s*:root[^{]*\{([\s\S]*?)\}/);
+const printTokens = declarations(printBlock?.[1] ?? "");
+const chartThemes: [string, Record<string, string>, string][] = [
+  ["dark", dark, dark["--surface"]],
+  ["print", { ...dark, ...printTokens }, printTokens["--surface"] ?? "#ffffff"]
+];
+
+describe("print chart tokens", () => {
+  it("are defined", () => expect(Object.keys(printTokens)).toEqual(expect.arrayContaining(["--chart-1", "--chart-2", "--chart-3", "--chart-axis"])));
+});
+
+describe.each(chartThemes)("chart tokens (%s)", (_name, tokens, panelColour) => {
+  const panel = resolve(panelColour, tokens);
+
+  it.each(["--chart-1", "--chart-2", "--chart-3"])("%s line is at least 3:1 against the panel", (token) => {
+    expect(contrast(resolve(tokens[token], tokens), panel)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("axis text is at least 4.5:1 against the panel", () => {
+    expect(contrast(resolve(tokens["--chart-axis"], tokens), panel)).toBeGreaterThanOrEqual(4.5);
+  });
+});

@@ -6,13 +6,14 @@ import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
 import { when } from "@/app/admin/overview";
 import { publicImageUrl } from "./images";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Achievements" };
 
 export default async function AdminAchievementsPage({ searchParams }: { searchParams: Promise<{ error?: string; done?: string }> }) {
   const { error: errorCode, done } = await searchParams;
   const supabase = await createClient();
-  const achievements = await supabase.rpc("admin_list_achievements");
+  const achievements = await timed("admin_list_achievements", supabase.rpc("admin_list_achievements"));
 
   const ERRORS: Record<string, string> = {
     FORBIDDEN: "You don't have permission to do that.",

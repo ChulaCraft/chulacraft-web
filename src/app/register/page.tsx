@@ -8,7 +8,11 @@ import { GoogleSignInButton } from "@/components/google-auth";
 import { DiscordIcon, PixelIcon } from "@/components/icons";
 import { discordCommunityUrl } from "@/lib/site-links";
 
-export const metadata: Metadata = { title: "Sign in" };
+export const metadata: Metadata = {
+  title: "Sign in",
+  description: "Sign in with Discord to register for ChulaCraft, verify your Chula account and add your Minecraft name.",
+  alternates: { canonical: "/register" },
+};
 
 export default async function RegisterPage() {
   const supabase = await createClient();

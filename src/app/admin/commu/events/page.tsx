@@ -3,13 +3,14 @@ import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Events" };
 
 export default async function AdminEventsPage({ searchParams }: { searchParams: Promise<{ error?: string; done?: string }> }) {
   const { error: errorCode, done } = await searchParams;
   const supabase = await createClient();
-  const events = await supabase.rpc("admin_list_events");
+  const events = await timed("admin_list_events", supabase.rpc("admin_list_events"));
 
   const ERRORS: Record<string, string> = {
     FORBIDDEN: "You don't have permission to do that.",

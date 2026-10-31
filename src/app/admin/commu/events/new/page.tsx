@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PixelIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/server";
 import { EventForm } from "../event-form";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "New event" };
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = { title: "New event" };
  *  none is posted. */
 export default async function NewEventPage() {
   const supabase = await createClient();
-  const { data } = await supabase.rpc("admin_list_banners");
+  const { data } = await timed("admin_list_banners", supabase.rpc("admin_list_banners"));
   return <>
     <Link href="/admin/commu/events" className="back-link"><PixelIcon name="back" />Events</Link>
     <EventForm

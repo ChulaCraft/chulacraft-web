@@ -12,6 +12,11 @@ import { HomeHero } from "./home-hero";
 import { PlayOnView } from "./play-on-view";
 import { TypedText } from "./typed-text";
 import styles from "./home.module.css";
+import { timed } from "@/lib/perf";
+import type { Metadata } from "next";
+
+// Title and description come from the root layout.
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 /** The next published events, cached for a minute.
  *
@@ -28,7 +33,7 @@ import styles from "./home.module.css";
  * make the entry per-visitor, which the count does not need to be. */
 const upcomingEvents = unstable_cache(
   async (): Promise<UpcomingEvent[]> => {
-    const { data, error } = await anonClient().rpc("list_upcoming_events", { p_limit: 4 });
+    const { data, error } = await timed("list_upcoming_events", anonClient().rpc("list_upcoming_events", { p_limit: 4 }));
     if (error) throw new Error(error.message);
     return (data ?? []) as UpcomingEvent[];
   },
@@ -56,7 +61,7 @@ const steps = (serverAddress: string | null) => [
 ];
 
 export default async function HomePage() {
-  const [{ events }, settings] = await Promise.all([loadUpcomingEvents(), siteSettings()]);
+  const [{ events }, settings] = await Promise.all([loadUpcomingEvents(), timed("siteSettings", siteSettings())]);
   const { serverAddress } = settings;
 
   return (

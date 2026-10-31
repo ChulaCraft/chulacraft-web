@@ -3,14 +3,18 @@ import Form from "next/form";
 import Link from "next/link";
 import { FilterChips, FilterPanel, KeepState } from "@/components/data-table";
 import { PixelIcon } from "@/components/icons";
+import { MetricTile } from "@/components/charts/metric-tile";
+import { insightsRpc } from "@/lib/insights/rpc";
 import { createClient } from "@/lib/supabase/server";
 import type { RawParams } from "@/lib/table-query";
 import styles from "../admin.module.css";
+import { makeWindow, playerStats } from "../insights/data";
 import { staffCan } from "@/lib/staff";
 import { myRole } from "../staff-gate";
 import { loadPlayers } from "./actions";
 import { activeView, BASE, COLUMNS, hrefFor, readPlayers, VIEWS } from "./params";
 import { PlayerTable } from "./player-table";
+import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Players" };
 
@@ -18,13 +22,16 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
   const search = await searchParams;
   const state = readPlayers(search);
   const supabase = await createClient();
-  const role = await myRole();
+  const role = await timed("myRole", myRole());
   const isAdmin = staffCan(role, "admin");
   const can = { guest: isAdmin, ban: staffCan(role, "moderation"), award: staffCan(role, "community") };
-  const [first, catalog] = await Promise.all([
+  const [first, catalog, insights] = await Promise.all([
     loadPlayers(search, 0),
-    can.award ? supabase.rpc("admin_list_achievements") : Promise.resolve({ data: [] as { id: string; name: string; status: string }[] }),
+    can.award ? timed("admin_list_achievements", supabase.rpc("admin_list_achievements")) : Promise.resolve({ data: [] as { id: string; name: string; status: string }[] }),
+    // The strip is an extra: if the RPC fails it is left out and the table still shows.
+    isAdmin ? insightsRpc(supabase, "insights_players", 30) : null,
   ]);
+  const tiles = insights && !insights.error ? playerStats(makeWindow("30d"), insights.data) : null;
   const achievements = (catalog.data ?? []).filter((a) => a.status === "published").map((a) => ({ id: a.id, name: a.name }));
   const view = activeView(state);
   const ctx = { base: BASE, state };
@@ -34,6 +41,13 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
       <h1 className={styles.title}>Players</h1>
       {isAdmin && <Link href="/admin/restore" className="link-button">Removed accounts →</Link>}
     </div>
+
+    {tiles && <section className={styles.insightStrip} aria-label="Player insights">
+      <MetricTile label="Players" value={tiles.players.value ?? "–"} delta={tiles.players.delta} series={tiles.players.series} href="/admin/insights?tab=players" />
+      <MetricTile label="New signups 30d" value={tiles.signups.value ?? "–"} delta={tiles.signups.delta} series={tiles.signups.series} href="/admin/insights?tab=players" />
+      <MetricTile label="Chula verified" value={tiles.verified.value ?? "–"} delta={tiles.verified.delta} series={tiles.verified.series} href="/admin/insights?tab=players" />
+      <MetricTile label="Guests" value={tiles.guests.value ?? "–"} delta={tiles.guests.delta} series={tiles.guests.series} href="/admin/insights?tab=players" />
+    </section>}
 
     <Form scroll={false} action={BASE} className={`panel pixel-4 ${styles.search}`} role="search">
       <KeepState state={state} except={["q"]} />

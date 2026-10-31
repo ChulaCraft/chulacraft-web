@@ -8,8 +8,9 @@ import styles from "./home.module.css";
 /** The homepage hero: the world fills the screen, then shrinks into a card
  *  as the reader scrolls and the site header slides in (HeroStage drives it).
  *  The admin settings page renders it too, as a live preview: `preview`
- *  shows the settled card, keeps it out of the page outline, off the preload
- *  list and inert. */
+ *  shows the settled card, keeps it out of the page outline, lazy-loaded at
+ *  normal priority and inert. On the real hero the image is the mobile LCP
+ *  element, so it loads eagerly at high priority (docs/perf-baseline.md). */
 export function HomeHero({ kicker, intro, preview = false }: { kicker: string; intro: string; preview?: boolean }) {
   const Heading = preview ? "p" : "h1";
   const stage = (
@@ -20,7 +21,8 @@ export function HomeHero({ kicker, intro, preview = false }: { kicker: string; i
           src="/images/landingpage-bg.webp"
           alt="ChulaCraft players outside a Chulalongkorn-inspired Minecraft building"
           fill
-          preload={!preview}
+          loading={preview ? "lazy" : "eager"}
+          fetchPriority={preview ? undefined : "high"}
           sizes="100vw"
         />
         <div className={`container ${styles.cardText}`}>
