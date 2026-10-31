@@ -36,7 +36,7 @@ export type Service = {
 
 export type MetricPoint = { t: string; cpu_pct: number | null; mem_bytes: number | null };
 export type UptimePoint = { t: string; up_ratio: number | null };
-export type BackupTarget = "world" | "supabase";
+export type BackupTarget = "world" | "supabase" | "bot";
 export type Backup = {
   id: string;
   target: BackupTarget;
@@ -119,13 +119,13 @@ export const parseUptime = (json: unknown): UptimePoint[] =>
     return { t, up_ratio: r === null ? null : Math.min(1, Math.max(0, r)) };
   });
 
-/** /backups: only the two contract targets; an unknown status reads as failed, never as ok. */
+/** /backups: only the three contract targets; an unknown status reads as failed, never as ok. */
 export function parseBackups(json: unknown): Backup[] {
   if (!Array.isArray(json)) return [];
   const out: Backup[] = [];
   for (const item of json) {
     if (out.length >= MAX_BACKUPS) break;
-    if (!isRecord(item) || typeof item.id !== "string" || (item.target !== "world" && item.target !== "supabase")) continue;
+    if (!isRecord(item) || typeof item.id !== "string" || (item.target !== "world" && item.target !== "supabase" && item.target !== "bot")) continue;
     out.push({
       id: item.id,
       target: item.target,

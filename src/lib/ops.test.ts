@@ -87,10 +87,12 @@ describe("parseBackups", () => {
       { id: "bk-1", target: "world", kind: "nightly", size_bytes: 10, created_at: "2026-10-22T09:01:20Z", status: "ok" },
       { id: "bk-2", target: "supabase", kind: "weird", size_bytes: "x", created_at: null, status: "exploded" },
       { id: 3, target: "world" },
-      { id: "bk-4", target: "/etc" }
+      { id: "bk-4", target: "/etc" },
+      { id: "bk-5", target: "bot", kind: "nightly", size_bytes: 5, created_at: null, status: "running" }
     ])).toEqual([
       { id: "bk-1", target: "world", kind: "nightly", size_bytes: 10, created_at: "2026-10-22T09:01:20Z", status: "ok" },
-      { id: "bk-2", target: "supabase", kind: "manual", size_bytes: null, created_at: null, status: "failed" }
+      { id: "bk-2", target: "supabase", kind: "manual", size_bytes: null, created_at: null, status: "failed" },
+      { id: "bk-5", target: "bot", kind: "nightly", size_bytes: 5, created_at: null, status: "running" }
     ]);
     expect(parseBackups({})).toEqual([]);
   });

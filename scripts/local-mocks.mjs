@@ -370,6 +370,8 @@ const state = {
   fail: { active: false, startedAt: 0, lastRestart: null, log: [] },
 };
 state.survival.lastRestart = new Date(state.survival.startedAt).toISOString();
+// Services with an action in flight; a second action on one answers 409.
+const busy = new Set();
 const backups = [
   { id: "bk-3", target: "world", kind: "nightly", size_bytes: 812_000_000, created_at: new Date(now0 - 3 * 3600 * 1000).toISOString(), status: "ok" },
   { id: "bk-2", target: "supabase", kind: "manual", size_bytes: 0, created_at: new Date(now0 - 27 * 3600 * 1000).toISOString(), status: "failed" },
@@ -509,12 +511,12 @@ function startManager() {
         return (async () => {
           if (denyOps(PERMISSION.BACKUP_RUN)) return;
           const { target } = await readBody();
-          if (target !== "world" && target !== "supabase") return json(400, { error: "target must be world or supabase" });
+          if (target !== "world" && target !== "supabase" && target !== "bot") return json(400, { error: "target must be world, supabase or bot" });
           if (backups.some((b) => b.target === target && b.status === "running")) return json(409, { error: "backup already running" });
           const entry = { id: `bk-${randomUUID().slice(0, 8)}`, target, kind: "manual", size_bytes: 0, created_at: new Date().toISOString(), status: "running" };
           backups.unshift(entry);
           // "Finishes" after 3 s so the UI can watch running -> ok.
-          setTimeout(() => { entry.status = "ok"; entry.size_bytes = target === "world" ? 815_000_000 : 4_300_000; }, 3000).unref();
+          setTimeout(() => { entry.status = "ok"; entry.size_bytes = target === "world" ? 815_000_000 : target === "bot" ? 12_000 : 4_300_000; }, 3000).unref();
           json(202, { id: entry.id });
         })();
       }
@@ -536,8 +538,12 @@ function startManager() {
         const max = Math.min(Number(url.searchParams.get("max_lines")) || 200, 500);
         return json(200, s.log.slice(-max).reverse().map(({ message }) => ({ message })));
       }
+      if (op === "update" && !meta.updatable) return json(404, { error: "not updatable" });
+      // An action holds its service for 0.75 s; a second one meanwhile answers 409, as the contract says.
+      if (busy.has(id)) return json(409, { error: "an action is already running" });
+      busy.add(id);
+      setTimeout(() => busy.delete(id), 750).unref();
       if (op === "update") {
-        if (!meta.updatable) return json(404, { error: "not updatable" });
         meta.image.current = meta.image.latest;
         log(id, `Pulled ${meta.image.latest} and recreated`);
         s.active = true; s.startedAt = Date.now(); s.lastRestart = new Date().toISOString();

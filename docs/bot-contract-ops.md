@@ -34,6 +34,8 @@ using the default the bot registered, so the bot only falls back to its own `.en
 
 ## Startup: `bot_register(p_settings jsonb, p_jobs jsonb)` → `void`
 
+If the call fails, the bot retries it on each 60 s poll until it succeeds.
+
 Call once on every start, before the first poll. It upserts the definitions and **never overwrites `value` or
 `enabled`**. Keys and tasks you no longer send get `retired_at` (shown folded at the bottom of the page); ones that
 come back are un-retired. Anything malformed raises `INVALID` and registers nothing.
@@ -141,7 +143,7 @@ doesn't move "last run".
 
 Add one check to `src/status-monitor.js`, next to Minecraft, the website, Supabase and the whitelist queue:
 
-- `GET https://chulacraft.com/api/ops/health` with `Authorization: Bearer <OPS_HEALTH_TOKEN>` (new value in the bot's
+- `GET https://www.chulacraft.com/api/ops/health` (the bare domain redirects to `www`, and `fetch` drops `Authorization` across that redirect, so the probe uses `redirect: "error"` and never follows one) with `Authorization: Bearer <OPS_HEALTH_TOKEN>` (new value in the bot's
   `.env`; the same secret is set on the website). The response is `{ ok, db: "ok" | "down", errors_5m, version }`.
 - **Down** when the request fails, times out, isn't 200, or `ok` is false. Same rule as the other checks: 🔴 after two
   failures, 🟢 on recovery.
