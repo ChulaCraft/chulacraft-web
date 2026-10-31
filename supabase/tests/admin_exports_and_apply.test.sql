@@ -1,7 +1,7 @@
 -- v1.1 T1.2: export RPCs, player id list, award skip-existing, staged apply,
--- gallery cover (migrations 20261101000001..4).
+-- gallery cover (migrations 20261101000001..5).
 begin;
-select plan(63);
+select plan(71);
 
 create function pg_temp.login(p_user uuid) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub', p_user, 'role', 'authenticated')::text, true);
@@ -196,6 +196,31 @@ select lives_ok($$ select public.admin_apply_player_changes('00000000-0000-0000-
 select ok((select guest_verified_at is not null from public.profiles where user_id = '00000000-0000-0000-0000-000000000008'), 'the result is a guest');
 select is((select count(*)::int from public.chula_claims where user_id = '00000000-0000-0000-0000-000000000008'), 0, 'the claim is gone');
 select is((pg_temp.logn() - (select n from l3))::int, 2, 'chula_reset 1 row for the claim + guest 1 row');
+
+-- Ownership: ids must belong to p_user_id (user 8 is a stranger to user 7's rows).
+select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000007', '[{"kind":"ban","reason":"again","public_note":null,"expires_at":null}]');
+create temporary table own_before as select
+  (select lifted_at is null from public.bans where user_id = '00000000-0000-0000-0000-000000000007' order by created_at desc limit 1) as ban_open,
+  (select desired_whitelisted from public.minecraft_registrations where user_id = '00000000-0000-0000-0000-000000000007') as wl;
+create temporary table l5 as select pg_temp.logn() as n;
+select is(pg_temp.detail_of(format($f$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000008',
+  '[{"kind":"guest"},{"kind":"lift_ban","ban_id":"%s"}]') $f$, (select id from public.bans where user_id = '00000000-0000-0000-0000-000000000007' and lifted_at is null))),
+  'lift_ban:' || (select id from public.bans where user_id = '00000000-0000-0000-0000-000000000007' and lifted_at is null), 'foreign ban_id: detail names kind and id');
+select throws_ok(format($f$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000008',
+  '[{"kind":"lift_ban","ban_id":"%s"}]') $f$, (select id from public.bans where user_id = '00000000-0000-0000-0000-000000000007' and lifted_at is null)),
+  'NOT_FOUND', 'foreign ban_id is refused');
+select ok(public.is_banned('00000000-0000-0000-0000-000000000007'), 'foreign ban_id: the other player stays banned');
+select is(pg_temp.detail_of(format($f$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000008',
+  '[{"kind":"whitelist","registration_id":"%s","value":false}]') $f$, (select id from public.minecraft_registrations where user_id = '00000000-0000-0000-0000-000000000007'))),
+  'whitelist:' || (select id from public.minecraft_registrations where user_id = '00000000-0000-0000-0000-000000000007'), 'foreign registration_id: detail names kind and id');
+select throws_ok(format($f$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000008',
+  '[{"kind":"whitelist","registration_id":"%s","value":false}]') $f$, (select id from public.minecraft_registrations where user_id = '00000000-0000-0000-0000-000000000007')),
+  'NOT_FOUND', 'foreign registration_id is refused');
+select is((select desired_whitelisted from public.minecraft_registrations where user_id = '00000000-0000-0000-0000-000000000007'), (select wl from own_before), 'foreign registration_id: whitelist unchanged');
+select is(pg_temp.logn(), (select n from l5), 'refused batches leave no log row');
+select lives_ok(format($f$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000007',
+  '[{"kind":"lift_ban","ban_id":"%s"}]') $f$, (select id from public.bans where user_id = '00000000-0000-0000-0000-000000000007' and lifted_at is null)),
+  'matching ban_id still works');
 
 select * from finish();
 rollback;
