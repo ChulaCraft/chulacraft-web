@@ -4,116 +4,81 @@ const m = vi.hoisted(() => ({ rpc: vi.fn(), revalidatePath: vi.fn() }));
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ rpc: m.rpc }) }));
 vi.mock("next/cache", () => ({ revalidatePath: m.revalidatePath }));
-// Next's redirect() signals control flow by throwing, so the mock must too.
-vi.mock("next/navigation", () => ({
-  redirect: vi.fn((to: string) => { throw new Error(`NEXT_REDIRECT:${to}`); })
-}));
 
-import { banUser, liftBan, markGuest, resetChula, saveProfileFor, setPrivacyFor, setRole, setWhitelisted } from "./actions";
+import { applyPlayerChanges } from "./actions";
 
 const USER_ID = "00000000-0000-0000-0000-0000000000a1";
-const REGISTRATION_ID = "00000000-0000-0000-0000-0000000000b2";
+const REG_ID = "00000000-0000-0000-0000-0000000000b2";
+const BAN_ID = "00000000-0000-0000-0000-0000000000c3";
 
-function form(fields: Record<string, string>) {
-  const data = new FormData();
-  for (const [key, value] of Object.entries(fields)) data.set(key, value);
-  return data;
-}
+const profile = { kind: "profile", first_name: "Ratchaphon", last_name: "P", nickname: "", faculty: "Faculty of Engineering", major: "Computer Engineering and Digital Technology (CEDT)", study_level: "undergraduate" };
+const privacy = { kind: "privacy", profile: "friends", minecraft: "private", achievements: "public", friends: "friends" };
+const ban = { kind: "ban", reason: "grief", public_note: "", expires_at: "2030-01-01T00:00:00.000Z" };
 
-const whitelisted = () => form({ userId: USER_ID, registrationId: REGISTRATION_ID, value: "true" });
-const target = () => `NEXT_REDIRECT:/admin/users/${USER_ID}`;
-const redirected = async (action: (data: FormData) => Promise<void>, data: FormData) =>
-  action(data).then(() => null, (error: Error) => error.message);
-
-describe("admin user actions", () => {
+describe("applyPlayerChanges", () => {
   beforeEach(() => {
     m.rpc.mockReset().mockResolvedValue({ error: null });
     m.revalidatePath.mockReset();
   });
 
-  it("never calls the database for an id that isn't a UUID", async () => {
-    for (const bad of ["r1", "0000-0000", "", "00000000-0000-0000-0000-00000000000z"]) {
-      expect(await redirected(setRole, form({ userId: bad, role: "admin" }))).toBe("NEXT_REDIRECT:/admin");
-      expect(await redirected(setWhitelisted, form({ userId: USER_ID, registrationId: bad, value: "true" }))).toBe("NEXT_REDIRECT:/admin");
-      expect(await redirected(resetChula, form({ userId: bad }))).toBe("NEXT_REDIRECT:/admin");
-      expect(await redirected(markGuest, form({ userId: bad }))).toBe("NEXT_REDIRECT:/admin");
-    }
+  it("sends the whole list to one RPC and refreshes the page", async () => {
+    const changes = [
+      { kind: "role", role: "admin" }, profile, privacy,
+      { kind: "banner", banner_id: "gold-1", grant: true },
+      { kind: "chula_reset" }, { kind: "guest" },
+      { kind: "lift_ban", ban_id: BAN_ID }, { kind: "whitelist", registration_id: REG_ID, value: false }, ban,
+    ];
+    expect(await applyPlayerChanges(USER_ID, changes)).toEqual({ ok: true });
+    expect(m.rpc).toHaveBeenCalledTimes(1);
+    expect(m.rpc).toHaveBeenCalledWith("admin_apply_player_changes", { p_user_id: USER_ID, p_changes: changes });
+    expect(m.revalidatePath).toHaveBeenCalledWith(`/admin/users/${USER_ID}`);
+  });
+
+  it("never calls the database for a bad id or an empty or oversized list", async () => {
+    expect(await applyPlayerChanges("nope", [{ kind: "guest" }])).toEqual({ ok: false, code: "INVALID", control: null });
+    expect(await applyPlayerChanges(USER_ID, [])).toEqual({ ok: false, code: "INVALID", control: null });
+    expect(await applyPlayerChanges(USER_ID, "x")).toEqual({ ok: false, code: "INVALID", control: null });
+    expect(await applyPlayerChanges(USER_ID, Array(61).fill({ kind: "guest" }))).toEqual({ ok: false, code: "INVALID", control: null });
     expect(m.rpc).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["unknown kind", { kind: "delete_everything" }],
+    ["role not allowed", { kind: "role", role: "superuser" }],
+    ["invalid profile", { ...profile, first_name: "" }],
+    ["bad privacy level", { ...privacy, friends: "everyone" }],
+    ["bad banner id", { kind: "banner", banner_id: "../x", grant: true }],
+    ["banner grant not boolean", { kind: "banner", banner_id: "gold-1", grant: "yes" }],
+    ["bad ban id", { kind: "lift_ban", ban_id: "1" }],
+    ["bad registration id", { kind: "whitelist", registration_id: "1", value: true }],
+    ["whitelist value not boolean", { kind: "whitelist", registration_id: REG_ID, value: "true" }],
+    ["empty ban reason", { ...ban, reason: "  " }],
+    ["bad ban expiry", { ...ban, expires_at: "soon" }],
+  ])("rejects %s without calling the database", async (_name, change) => {
+    expect(await applyPlayerChanges(USER_ID, [change])).toEqual({ ok: false, code: "INVALID", control: null });
+    expect(m.rpc).not.toHaveBeenCalled();
+  });
+
+  it("drops fields it doesn't know about", async () => {
+    await applyPlayerChanges(USER_ID, [{ kind: "guest", extra: 1 }, { kind: "role", role: "user", evil: true }]);
+    expect(m.rpc).toHaveBeenCalledWith("admin_apply_player_changes", { p_user_id: USER_ID, p_changes: [{ kind: "guest" }, { kind: "role", role: "user" }] });
+  });
+
+  it("allows a permanent ban", async () => {
+    await applyPlayerChanges(USER_ID, [{ kind: "ban", reason: "grief", public_note: "", expires_at: null }]);
+    expect(m.rpc.mock.lastCall![1].p_changes[0].expires_at).toBeNull();
+  });
+
+  it("names the failed control from the RPC detail", async () => {
+    m.rpc.mockResolvedValue({ error: { message: "ALREADY_VERIFIED", details: `guest:${USER_ID}` } });
+    expect(await applyPlayerChanges(USER_ID, [{ kind: "guest" }])).toEqual({ ok: false, code: "ALREADY_VERIFIED", control: { kind: "guest", target: USER_ID } });
     expect(m.revalidatePath).not.toHaveBeenCalled();
   });
 
-  it("reports a raised code as an error and a clean call as done", async () => {
-    m.rpc.mockResolvedValueOnce({ error: { message: "FORBIDDEN" } });
-    expect(await redirected(setRole, form({ userId: USER_ID, role: "admin" }))).toBe(`${target()}?error=FORBIDDEN`);
-    expect(m.revalidatePath).toHaveBeenCalledWith(`/admin/users/${USER_ID}`);
-
-    m.rpc.mockResolvedValueOnce({ error: null });
-    expect(await redirected(setRole, form({ userId: USER_ID, role: "admin" }))).toBe(`${target()}?done=role`);
-
-    m.rpc.mockResolvedValueOnce({ error: { message: "connection reset" } });
-    expect(await redirected(markGuest, form({ userId: USER_ID }))).toBe(`${target()}?error=FAILED`);
-  });
-
-  it("forwards each form to its own RPC", async () => {
-    await redirected(setWhitelisted, whitelisted());
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_whitelisted", { p_registration_id: REGISTRATION_ID, p_value: true });
-    await redirected(setWhitelisted, form({ userId: USER_ID, registrationId: REGISTRATION_ID, value: "false" }));
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_set_whitelisted", { p_registration_id: REGISTRATION_ID, p_value: false });
-    await redirected(resetChula, form({ userId: USER_ID }));
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_reset_chula", { p_user_id: USER_ID });
-    await redirected(markGuest, form({ userId: USER_ID }));
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_mark_guest", { p_user_id: USER_ID });
-    await redirected(liftBan, form({ userId: USER_ID, banId: REGISTRATION_ID }));
-    expect(m.rpc).toHaveBeenLastCalledWith("admin_lift_ban", { p_ban_id: REGISTRATION_ID });
-  });
-
-  it("turns the ban duration into an expiry, or none for permanent", async () => {
-    const before = Date.now();
-    expect(await redirected(banUser, form({ userId: USER_ID, reason: "grief", publicNote: "", duration: "7d" }))).toBe(`${target()}?done=banned`);
-    const expires = Date.parse(m.rpc.mock.lastCall![1].p_expires_at);
-    expect(expires - before).toBeGreaterThanOrEqual(7 * 86_400_000);
-    expect(expires - Date.now()).toBeLessThanOrEqual(7 * 86_400_000);
-
-    await redirected(banUser, form({ userId: USER_ID, reason: "grief", duration: "permanent" }));
-    expect(m.rpc.mock.lastCall![1].p_expires_at).toBeUndefined();
-
-    m.rpc.mockClear();
-    expect(await redirected(banUser, form({ userId: USER_ID, reason: "grief", duration: "forever-ish" }))).toBe(`${target()}?error=INVALID`);
-    expect(m.rpc).not.toHaveBeenCalled();
-  });
-
-  describe("customer support edits", () => {
-    const profile = (over: Record<string, string> = {}) =>
-      form({ first: "Ratchaphon", last: "P", nick: "Kai", level: "undergraduate", faculty: "Faculty of Engineering", major: "Computer Engineering and Digital Technology (CEDT)", ...over });
-
-    it("rejects an invalid profile without calling the database", async () => {
-      expect(await saveProfileFor(USER_ID, {}, profile({ first: "" }))).toEqual({ errors: { first: true } });
-      expect(m.rpc).not.toHaveBeenCalled();
-    });
-
-    it("never calls the database for a bad user id", async () => {
-      expect(await saveProfileFor("nope", {}, profile())).toEqual({ failed: true });
-      expect(m.rpc).not.toHaveBeenCalled();
-    });
-
-    it("saves the profile for that player and returns to their page", async () => {
-      expect(await saveProfileFor(USER_ID, {}, profile()).then(() => null, (e: Error) => e.message)).toBe(`${target()}?done=profile`);
-      expect(m.rpc).toHaveBeenCalledWith("admin_update_profile", {
-        p_user_id: USER_ID, p_first_name: "Ratchaphon", p_last_name: "P", p_nickname: "Kai",
-        p_faculty: "Faculty of Engineering", p_major: "Computer Engineering and Digital Technology (CEDT)", p_study_level: "undergraduate",
-      });
-    });
-
-    it("reports a database refusal", async () => {
-      m.rpc.mockResolvedValue({ error: { message: "FORBIDDEN" } });
-      expect(await saveProfileFor(USER_ID, {}, profile())).toEqual({ failed: true, code: "FORBIDDEN" });
-    });
-
-    it("sets privacy only with known levels", async () => {
-      expect(await redirected(setPrivacyFor, form({ userId: USER_ID, profile: "everyone", minecraft: "public", achievements: "public", friends: "public" }))).toBe(`${target()}?error=INVALID_LEVEL`);
-      expect(m.rpc).not.toHaveBeenCalled();
-      expect(await redirected(setPrivacyFor, form({ userId: USER_ID, profile: "friends", minecraft: "private", achievements: "public", friends: "friends" }))).toBe(`${target()}?done=privacy`);
-      expect(m.rpc).toHaveBeenCalledWith("admin_set_privacy", { p_user_id: USER_ID, p_profile: "friends", p_minecraft: "private", p_achievements: "public", p_friends: "friends" });
-    });
+  it("reports a failure with no code or detail as FAILED", async () => {
+    m.rpc.mockResolvedValue({ error: { message: "connection reset" } });
+    expect(await applyPlayerChanges(USER_ID, [{ kind: "guest" }])).toEqual({ ok: false, code: "FAILED", control: null });
+    m.rpc.mockRejectedValue(new Error("fetch failed"));
+    expect(await applyPlayerChanges(USER_ID, [{ kind: "guest" }])).toEqual({ ok: false, code: "FAILED", control: null });
   });
 });
