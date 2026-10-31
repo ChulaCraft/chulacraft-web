@@ -59,7 +59,7 @@ insert into expected values
   ('authenticated', 'admin_reset_chula(p_user_id uuid)'),
   ('authenticated', 'admin_resolve_identifiers(p_kind text, p_values text[])'),
   ('authenticated', 'admin_revoke_award(p_award_id uuid)'),
-  ('authenticated', 'admin_server_console_access(p_jti uuid, p_server text, p_action text)'),
+  ('authenticated', 'admin_ops_access(p_jti uuid, p_service text, p_action text)'),
   ('authenticated', 'admin_search_users(p_query text)'),
   ('authenticated', 'admin_set_role(p_user_id uuid, p_role text)'),
   ('authenticated', 'admin_stats_daily(p_days integer)'),
@@ -152,7 +152,19 @@ insert into expected values
   -- 20261029000001_notifications.sql
   ('authenticated', 'my_unread_notifications()'),
   ('authenticated', 'my_notifications(p_limit integer)'),
-  ('authenticated', 'mark_my_notifications_read()');
+  ('authenticated', 'mark_my_notifications_read()'),
+  -- 20261030000001_insights.sql
+  ('authenticated', 'insights_players(p_days integer)'),
+  ('authenticated', 'insights_funnel(p_days integer)'),
+  ('authenticated', 'insights_events(p_days integer)'),
+  ('authenticated', 'insights_community(p_days integer)'),
+  ('authenticated', 'insights_staff(p_days integer)'),
+  -- 20261031000001_app_errors.sql (record_app_error and app_errors_recent are service_role only)
+  ('authenticated', 'admin_app_errors(p_hours integer)'),
+  -- 20261031000003_bot_admin.sql (bot_* are service_role only)
+  ('authenticated', 'admin_bot_overview()'),
+  ('authenticated', 'admin_set_bot_setting(p_key text, p_value text)'),
+  ('authenticated', 'admin_set_bot_job_enabled(p_name text, p_enabled boolean)');
 
 -- Everything the two roles can execute right now, one row per role/function.
 -- A function both roles hold must appear twice, so the roles are unnested

@@ -117,6 +117,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"app_errors": {
+                  Row: {
+                    "at": string,"digest": string | null,"fingerprint": string,"id": number,"kind": string,"message": string,"route": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "at"?: string,"digest"?: string | null,"fingerprint": string,"id"?: never,"kind": string,"message": string,"route": string
+                  }
+                  Update: {
+                    "at"?: string,"digest"?: string | null,"fingerprint"?: string,"id"?: never,"kind"?: string,"message"?: string,"route"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"appeals": {
                   Row: {
                     "admin_response": string | null,"ban_id": string,"created_at": string,"decided_at": string | null,"decided_by": string | null,"id": string,"message": string,"status": string,"user_id": string
@@ -195,6 +209,54 @@ isOneToOne: false
                   }
                   Update: {
                     "blocked_id"?: string,"blocker_id"?: string,"created_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"bot_job_runs": {
+                  Row: {
+                    "error": string | null,"finished_at": string | null,"id": number,"items": number | null,"job": string,"ok": boolean,"started_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "error"?: string | null,"finished_at"?: string | null,"id"?: never,"items"?: number | null,"job": string,"ok": boolean,"started_at": string
+                  }
+                  Update: {
+                    "error"?: string | null,"finished_at"?: string | null,"id"?: never,"items"?: number | null,"job"?: string,"ok"?: boolean,"started_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bot_job_runs_job_fkey"
+      columns: ["job"]
+isOneToOne: false
+      referencedRelation: "bot_jobs"
+      referencedColumns: ["name"]
+    }
+                  ]
+                },"bot_jobs": {
+                  Row: {
+                    "consecutive_failures": number,"enabled": boolean,"interval_seconds": number | null,"label": string,"last_error": string | null,"last_finished_at": string | null,"last_items": number | null,"last_ok": boolean | null,"last_started_at": string | null,"name": string,"registered_at": string,"retired_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "consecutive_failures"?: number,"enabled"?: boolean,"interval_seconds"?: number | null,"label": string,"last_error"?: string | null,"last_finished_at"?: string | null,"last_items"?: number | null,"last_ok"?: boolean | null,"last_started_at"?: string | null,"name": string,"registered_at"?: string,"retired_at"?: string | null
+                  }
+                  Update: {
+                    "consecutive_failures"?: number,"enabled"?: boolean,"interval_seconds"?: number | null,"label"?: string,"last_error"?: string | null,"last_finished_at"?: string | null,"last_items"?: number | null,"last_ok"?: boolean | null,"last_started_at"?: string | null,"name"?: string,"registered_at"?: string,"retired_at"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"bot_settings": {
+                  Row: {
+                    "applies": string,"bot_error": string | null,"bot_status": string | null,"checked_at": string | null,"default_value": string | null,"description": string,"key": string,"kind": string,"label": string,"max_value": number | null,"min_value": number | null,"registered_at": string,"retired_at": string | null,"updated_at": string | null,"updated_by": string | null,"value": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "applies"?: string,"bot_error"?: string | null,"bot_status"?: string | null,"checked_at"?: string | null,"default_value"?: string | null,"description"?: string,"key": string,"kind": string,"label": string,"max_value"?: number | null,"min_value"?: number | null,"registered_at"?: string,"retired_at"?: string | null,"updated_at"?: string | null,"updated_by"?: string | null,"value"?: string | null
+                  }
+                  Update: {
+                    "applies"?: string,"bot_error"?: string | null,"bot_status"?: string | null,"checked_at"?: string | null,"default_value"?: string | null,"description"?: string,"key"?: string,"kind"?: string,"label"?: string,"max_value"?: number | null,"min_value"?: number | null,"registered_at"?: string,"retired_at"?: string | null,"updated_at"?: string | null,"updated_by"?: string | null,"value"?: string | null
                   }
                   Relationships: [
                     
@@ -351,6 +413,20 @@ isOneToOne: false
                   }
                   Update: {
                     "addressee_id"?: string,"created_at"?: string,"requester_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"funnel_failures": {
+                  Row: {
+                    "code": string,"count": number,"day": string,"step": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "code": string,"count"?: number,"day": string,"step": string
+                  }
+                  Update: {
+                    "code"?: string,"count"?: number,"day"?: string,"step"?: string
                   }
                   Relationships: [
                     
@@ -611,6 +687,11 @@ isOneToOne: false
               "created": boolean,"desired_whitelisted": boolean,"id": string,"minecraft_username": string,"sync_status": string,"updated_at": string
             }[]
                            },
+"admin_app_errors":
+{ Args: { "p_hours"?: number }; Returns: {
+              "fingerprint": string,"first_at": string,"kind": string,"last_at": string,"message": string,"n": number,"route": string
+            }[]
+                           },
 "admin_audit_log":
 { Args: { "p_actor"?: string,"p_before_at"?: string,"p_before_id"?: string,"p_entity"?: string,"p_from"?: string,"p_limit"?: number,"p_target"?: string,"p_to"?: string }; Returns: {
               "actor_name": string,"actor_user_id": string,"created_at": string,"entity": string,"entity_id": string,"field": string,"id": string,"new_value": string,"old_value": string,"target_name": string,"target_user_id": string
@@ -624,6 +705,9 @@ isOneToOne: false
                            },
 "admin_ban_user":
 { Args: { "p_expires_at"?: string,"p_public_note"?: string,"p_reason": string,"p_user_id": string }; Returns: string
+                           },
+"admin_bot_overview":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "admin_check_in_player":
 { Args: { "p_code": string,"p_event_id": string }; Returns: {
@@ -766,6 +850,9 @@ isOneToOne: false
               "created_at": string,"display_name": string,"handle": string,"user_id": string,"verification_kind": string
             }[]
                            },
+"admin_ops_access":
+{ Args: { "p_action": string,"p_jti": string,"p_service": string }; Returns: string
+                           },
 "admin_overview_stats":
 { Args: Record<PropertyKey, never>; Returns: {
               "guests": number,"oldest_failing_since": string,"pending_sync": number,"players": number,"removed_accounts": number,"retrying_sync": number,"unverified": number,"verified": number,"whitelisted_accounts": number
@@ -827,14 +914,17 @@ isOneToOne: false
               "chula_email": string,"created_at": string,"discord_username": string,"email": string,"minecraft_usernames": string,"role": string,"user_id": string,"verification_kind": string
             }[]
                            },
-"admin_server_console_access":
-{ Args: { "p_action": string,"p_jti": string,"p_server": string }; Returns: string
-                           },
 "admin_set_achievement_meta":
 { Args: { "p_discord_role_id": string,"p_id": string,"p_tier": string }; Returns: undefined
                            },
 "admin_set_announcement_image":
 { Args: { "p_id": string,"p_path": string }; Returns: string
+                           },
+"admin_set_bot_job_enabled":
+{ Args: { "p_enabled": boolean,"p_name": string }; Returns: undefined
+                           },
+"admin_set_bot_setting":
+{ Args: { "p_key": string,"p_value": string }; Returns: undefined
                            },
 "admin_set_event_banner":
 { Args: { "p_banner_id": string,"p_id": string }; Returns: undefined
@@ -907,6 +997,9 @@ isOneToOne: false
               "body": string,"deleted": boolean,"discord_message_id": string,"id": string,"revision": number,"severity": string,"title": string
             }[]
                            },
+"app_errors_recent":
+{ Args: { "p_minutes": number }; Returns: number
+                           },
 "are_friends":
 { Args: { "p_a": string,"p_b": string }; Returns: boolean
                            },
@@ -923,6 +1016,21 @@ isOneToOne: false
                            },
 "block_player":
 { Args: { "p_other": string }; Returns: number
+                           },
+"bot_config":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"bot_job_report":
+{ Args: { "p_error": string,"p_finished_at": string,"p_items": number,"p_job": string,"p_ok": boolean,"p_started_at": string }; Returns: undefined
+                           },
+"bot_register":
+{ Args: { "p_jobs": Json,"p_settings": Json }; Returns: undefined
+                           },
+"bot_setting_ids":
+{ Args: { "p_value": string }; Returns: (string)[]
+                           },
+"bot_settings_report":
+{ Args: { "p_items": Json }; Returns: number
                            },
 "can_view":
 { Args: { "p_field": string,"p_target": string,"p_viewer": string }; Returns: boolean
@@ -949,6 +1057,12 @@ isOneToOne: false
                            },
 "claim_chula":
 { Args: { "p_email": string,"p_google_sub": string,"p_user_id": string }; Returns: undefined
+                           },
+"cleanup_app_errors":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"cleanup_bot_job_runs":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "cleanup_notifications":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -1023,6 +1137,24 @@ isOneToOne: false
                            },
 "hook_only_discord_signups":
 { Args: { "event": Json }; Returns: Json
+                           },
+"insights_community":
+{ Args: { "p_days": number }; Returns: Json
+                           },
+"insights_events":
+{ Args: { "p_days": number }; Returns: Json
+                           },
+"insights_funnel":
+{ Args: { "p_days": number }; Returns: Json
+                           },
+"insights_players":
+{ Args: { "p_days": number }; Returns: Json
+                           },
+"insights_since":
+{ Args: { "p_days": number }; Returns: string
+                           },
+"insights_staff":
+{ Args: { "p_days": number }; Returns: Json
                            },
 "is_banned":
 { Args: { "p_user_id": string }; Returns: boolean
@@ -1133,6 +1265,12 @@ isOneToOne: false
                            },
 "privacy_level":
 { Args: { "p_field": string,"p_user": string }; Returns: string
+                           },
+"record_app_error":
+{ Args: { "p_digest": string,"p_kind": string,"p_message": string,"p_route": string }; Returns: undefined
+                           },
+"record_funnel_failure":
+{ Args: { "p_code": string,"p_step": string }; Returns: undefined
                            },
 "remove_friend":
 { Args: { "p_other": string }; Returns: number
