@@ -63,7 +63,7 @@ export default function playerEdit({ request, response, url, json, readJson, sta
         for (const c of list) {
           if (c.kind === "role") player.role = c.role;
           if (c.kind === "profile") player.profile = { first_name: c.first_name, last_name: c.last_name, nickname: c.nickname, faculty: c.faculty, major: c.major, study_level: c.study_level };
-          if (c.kind === "privacy") { const { kind, ...levels } = c; player.privacy = levels; }
+          if (c.kind === "privacy") player.privacy = Object.fromEntries(Object.entries(c).filter(([key]) => key !== "kind"));
           if (c.kind === "banner") player.granted = c.grant;
           if (c.kind === "whitelist") player.whitelisted = c.value;
           if (c.kind === "guest") player.guest = true;
