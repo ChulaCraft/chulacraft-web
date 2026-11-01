@@ -305,6 +305,9 @@ const server = createServer((request, response) => {
     return;
   }
 
+  const ctx = { request, response, url, json, readJson, state: { get authenticated() { return authenticated; }, get role() { return role; } } };
+  // A task stub may take over these two before the one-row defaults below (it hands back anything it is not set up for).
+  if (["/rest/v1/rpc/admin_list_players", "/rest/v1/rpc/admin_list_achievements"].includes(url.pathname) && extraStubs.some((handle) => handle(ctx))) return;
   // The /admin/players table: one row for any staff role, so the page renders.
   if (request.method === "POST" && url.pathname === "/rest/v1/rpc/admin_list_players") {
     if (!authenticated || !(AREAS[role] ?? []).includes("players_read")) {
@@ -398,7 +401,6 @@ const server = createServer((request, response) => {
     return;
   }
 
-  const ctx = { request, response, url, json, readJson, state: { get authenticated() { return authenticated; }, get role() { return role; } } };
   if (extraStubs.some((handle) => handle(ctx))) return;
 
   response.writeHead(405, { "content-type": "application/json" });
