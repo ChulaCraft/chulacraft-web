@@ -20,7 +20,7 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn((to: string) => { throw new Error(`NEXT_REDIRECT:${to}`); })
 }));
 
-import { deleteAchievement, revokeAward, saveAchievement } from "./actions";
+import { createAchievement, deleteAchievement, revokeAward, saveAchievement } from "./actions";
 
 const ID = "00000000-0000-0000-0000-0000000000a1";
 const AWARD_ID = "00000000-0000-0000-0000-0000000000b2";
@@ -214,5 +214,68 @@ describe("admin achievement actions", () => {
     m.rpc.mockResolvedValueOnce({ data: null, error: { message: "NOT_FOUND" } });
     expect(await redirected(deleteAchievement, form({ achievementId: ID }))).toBe("NEXT_REDIRECT:/admin/commu/achievements?error=NOT_FOUND");
     expect(m.remove).not.toHaveBeenCalled();
+  });
+
+  describe("createAchievement (D11)", () => {
+    const START = { code: null, values: { name: "", description: "", status: "draft", tier: "common", discordRoleId: "" } };
+    const fresh = (extra: Record<string, string> = {}) => form({ name: "Miner", description: "Dug deep.", status: "published", tier: "rare", discordRoleId: "123456789012345678", ...extra });
+    // A failure stays on /new: no redirect, the error code and the typed text come back as state.
+    const kept = { name: "Miner", description: "Dug deep.", status: "published", tier: "rare", discordRoleId: "123456789012345678" };
+
+    it("stays on the form with the typed text when the name is blank", async () => {
+      const state = await createAchievement(START, fresh({ name: "   " }));
+      expect(state).toEqual({ code: "NAME_INVALID", values: { ...kept, name: "" } });
+      expect(m.rpc).not.toHaveBeenCalled();
+      expect(m.upload).not.toHaveBeenCalled();
+    });
+
+    it("stays on the form when the image type is wrong", async () => {
+      const data = fresh();
+      data.set("image", image("text/plain"));
+      expect(await createAchievement(START, data)).toEqual({ code: "BAD_IMAGE_TYPE", values: kept });
+      expect(m.upload).not.toHaveBeenCalled();
+      expect(m.rpc).not.toHaveBeenCalled();
+    });
+
+    it("stays on the form when the image is over 2 MB", async () => {
+      const data = fresh();
+      data.set("image", image("image/png", 2097153));
+      expect(await createAchievement(START, data)).toEqual({ code: "IMAGE_TOO_LARGE", values: kept });
+      expect(m.upload).not.toHaveBeenCalled();
+      expect(m.rpc).not.toHaveBeenCalled();
+    });
+
+    it("stays on the form when the upload fails, creating nothing", async () => {
+      m.upload.mockResolvedValueOnce({ error: { message: "boom" } });
+      const data = fresh();
+      data.set("image", image("image/png"));
+      expect(await createAchievement(START, data)).toEqual({ code: "UPLOAD_FAILED", values: kept });
+      expect(m.rpc).not.toHaveBeenCalled();
+    });
+
+    it("stays on the form when the save is refused, removing the uploaded image", async () => {
+      m.rpc.mockResolvedValueOnce({ data: null, error: { message: "FORBIDDEN" } });
+      const data = fresh();
+      data.set("image", image("image/png"));
+      expect(await createAchievement(START, data)).toEqual({ code: "FORBIDDEN", values: kept });
+      const [key] = m.upload.mock.calls[0];
+      expect(m.remove).toHaveBeenCalledExactlyOnceWith([key]);
+      expect(m.rpc).toHaveBeenCalledTimes(1);
+    });
+
+    it("deletes the new row and its image when the tier or role is refused, so a resubmit can't duplicate it", async () => {
+      m.rpc
+        .mockImplementationOnce(async (...args: unknown[]) => ({ data: (args[1] as Record<string, unknown>).p_id, error: null }))
+        .mockResolvedValueOnce({ error: { message: "ROLE_NOT_ALLOWED" } })
+        .mockResolvedValueOnce({ data: [{ removed: 0, image_path: "" }], error: null });
+      const data = fresh();
+      data.set("image", image("image/png"));
+      expect(await createAchievement(START, data)).toEqual({ code: "ROLE_NOT_ALLOWED", values: kept });
+      const upsertId = (m.rpc.mock.calls[0][1] as Record<string, string>).p_id;
+      expect(m.rpc.mock.calls.map((call) => call[0])).toEqual(["admin_upsert_achievement", "admin_set_achievement_meta", "admin_delete_achievement"]);
+      expect(m.rpc).toHaveBeenLastCalledWith("admin_delete_achievement", { p_id: upsertId });
+      const [key] = m.upload.mock.calls[0];
+      expect(m.remove).toHaveBeenCalledExactlyOnceWith([key]);
+    });
   });
 });
