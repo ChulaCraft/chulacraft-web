@@ -291,6 +291,8 @@ const server = createServer((request, response) => {
         const s = bot.settings.find((x) => x.key === args.p_key);
         if (!s) return refuse("NOT_FOUND");
         if (s.retired_at) return refuse("RETIRED");
+        // A role a badge may give (the Builder crew role in stubs/00-phase5.mjs) is refused for the bot.
+        if (s.kind === "role" && args.p_value === "100000000000000011") return refuse("ROLE_IN_USE_BY_BADGE");
         const value = typeof args.p_value === "string" && args.p_value.trim() ? args.p_value.trim() : null;
         Object.assign(s, { value, updated_by_name: NAMES[role], updated_at: new Date().toISOString(), bot_status: null, bot_error: null, checked_at: null, checkAt: Date.now() + 2000 });
         json(response, 200, null);
@@ -307,7 +309,7 @@ const server = createServer((request, response) => {
 
   const ctx = { request, response, url, json, readJson, state: { get authenticated() { return authenticated; }, get role() { return role; } } };
   // A task stub may take over these two before the one-row defaults below (it hands back anything it is not set up for).
-  if (["/rest/v1/rpc/admin_list_players", "/rest/v1/rpc/admin_list_achievements"].includes(url.pathname) && extraStubs.some((handle) => handle(ctx))) return;
+  if (["/rest/v1/rpc/admin_list_players", "/rest/v1/rpc/admin_list_achievements", "/rest/v1/rpc/admin_list_discord_roles", "/rest/v1/rpc/get_player_profile"].includes(url.pathname) && extraStubs.some((handle) => handle(ctx))) return;
   // The /admin/players table: one row for any staff role, so the page renders.
   if (request.method === "POST" && url.pathname === "/rest/v1/rpc/admin_list_players") {
     if (!authenticated || !(AREAS[role] ?? []).includes("players_read")) {
