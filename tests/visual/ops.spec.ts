@@ -104,7 +104,7 @@ test("discord-bot detail offers Pull & restart to the owner", async ({ page }) =
   await signInAs(page, "owner");
   await page.goto("/admin/ops/discord-bot");
   await expect(heading(page, "Discord bot")).toBeVisible();
-  await expect(page.getByText("ghcr.io/chulacraft/discord-bot:latest@sha256:1a2b3c4d")).toBeVisible();
+  await expect(page.getByText("ghcr.io/chulacraft/discord-bot:latest@1a2b3c4d")).toBeVisible();
   await expect(page.getByRole("button", { name: /Pull & restart/ })).toBeVisible();
 });
 
@@ -112,7 +112,7 @@ test("admin sees the image tags but no Pull & restart", async ({ page }) => {
   await signInAs(page, "admin");
   await page.goto("/admin/ops/discord-bot");
   await expect(heading(page, "Discord bot")).toBeVisible();
-  await expect(page.getByText("ghcr.io/chulacraft/discord-bot:latest@sha256:1a2b3c4d")).toBeVisible();
+  await expect(page.getByText("ghcr.io/chulacraft/discord-bot:latest@1a2b3c4d")).toBeVisible();
   await expect(page.getByRole("button", { name: /Pull & restart/ })).toHaveCount(0);
   // Admin may restart but never start or stop.
   await expect(page.getByRole("button", { name: /Restart/ })).toBeVisible();

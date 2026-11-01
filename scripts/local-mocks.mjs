@@ -358,9 +358,9 @@ let servicesMode = "ok";
 // the UI can show one broken panel; /services and /backups still work.
 const SERVICE_META = {
   survival: { name: "Survival", kind: "systemd", console: true, backups: true, updatable: false, image: null },
-  "discord-bot": { name: "Discord bot", kind: "docker", console: false, backups: false, updatable: true, image: { current: "ghcr.io/chulacraft/discord-bot:latest@sha256:1a2b3c4d", latest: "ghcr.io/chulacraft/discord-bot:latest@sha256:9f3c1a2b" } },
-  "whitelist-worker": { name: "Whitelist worker", kind: "docker", console: false, backups: false, updatable: true, image: { current: "ghcr.io/chulacraft/whitelist-worker:latest@sha256:5e6f7a8b", latest: "ghcr.io/chulacraft/whitelist-worker:latest@sha256:5e6f7a8b" } },
-  fail: { name: "Broken service", kind: "docker", console: false, backups: false, updatable: true, image: { current: "example/fail:latest@sha256:00000000", latest: "example/fail:latest@sha256:00000000" } },
+  "discord-bot": { name: "Discord bot", kind: "docker", console: false, backups: false, updatable: true, image: { current: "ghcr.io/chulacraft/discord-bot:latest@1a2b3c4d", latest: "ghcr.io/chulacraft/discord-bot:latest@9f3c1a2b" } },
+  "whitelist-worker": { name: "Whitelist worker", kind: "docker", console: false, backups: false, updatable: true, image: { current: "ghcr.io/chulacraft/whitelist-worker:latest@5e6f7a8b", latest: "ghcr.io/chulacraft/whitelist-worker:latest@5e6f7a8b" } },
+  fail: { name: "Broken service", kind: "docker", console: false, backups: false, updatable: true, image: { current: "example/fail:latest@00000000", latest: "example/fail:latest@00000000" } },
 };
 const now0 = Date.now();
 const state = {
@@ -372,10 +372,12 @@ const state = {
 state.survival.lastRestart = new Date(state.survival.startedAt).toISOString();
 // Services with an action in flight; a second action on one answers 409.
 const busy = new Set();
+// Contract ids: bk-<utc>-<target> (what the manager writes and the backup script validates).
+const bkId = (hoursAgo, target) => `bk-${new Date(now0 - hoursAgo * 3600 * 1000).toISOString().replace(/[-:]|\.\d+/g, "")}-${target}`;
 const backups = [
-  { id: "bk-3", target: "world", kind: "nightly", size_bytes: 812_000_000, created_at: new Date(now0 - 3 * 3600 * 1000).toISOString(), status: "ok" },
-  { id: "bk-2", target: "supabase", kind: "manual", size_bytes: 0, created_at: new Date(now0 - 27 * 3600 * 1000).toISOString(), status: "failed" },
-  { id: "bk-1", target: "supabase", kind: "nightly", size_bytes: 4_200_000, created_at: new Date(now0 - 51 * 3600 * 1000).toISOString(), status: "ok" },
+  { id: bkId(3, "world"), target: "world", kind: "nightly", size_bytes: 812_000_000, created_at: new Date(now0 - 3 * 3600 * 1000).toISOString(), status: "ok" },
+  { id: bkId(27, "supabase"), target: "supabase", kind: "manual", size_bytes: 0, created_at: new Date(now0 - 27 * 3600 * 1000).toISOString(), status: "failed" },
+  { id: bkId(51, "supabase"), target: "supabase", kind: "nightly", size_bytes: 4_200_000, created_at: new Date(now0 - 51 * 3600 * 1000).toISOString(), status: "ok" },
 ];
 
 function log(name, message) {
@@ -462,7 +464,7 @@ function startManager() {
     const url = new URL(req.url, "http://127.0.0.1");
     const json = (code, body) => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(body)); };
     const token = (req.headers.authorization ?? "").replace(/^Bearer /, "");
-    const deny = (need) => { const why = checkToken(token, need, publicKey); if (why) json(401, { error: why }); return why; };
+    const deny = (need) => { const why = checkToken(token, need, publicKey); if (why) json(why === "missing permission" ? 403 : 401, { error: why }); return why; };
     // Ops contract routes: 401 for a bad token, 403 for a good token without the bit.
     const denyOps = (need) => {
       const why = checkToken(token, need, publicKey);
@@ -513,7 +515,7 @@ function startManager() {
           const { target } = await readBody();
           if (target !== "world" && target !== "supabase" && target !== "bot") return json(400, { error: "target must be world, supabase or bot" });
           if (backups.some((b) => b.target === target && b.status === "running")) return json(409, { error: "backup already running" });
-          const entry = { id: `bk-${randomUUID().slice(0, 8)}`, target, kind: "manual", size_bytes: 0, created_at: new Date().toISOString(), status: "running" };
+          const entry = { id: `bk-${new Date().toISOString().replace(/[-:]|\.\d+/g, "")}-${target}`, target, kind: "manual", size_bytes: 0, created_at: new Date().toISOString(), status: "running" };
           backups.unshift(entry);
           // "Finishes" after 3 s so the UI can watch running -> ok.
           setTimeout(() => { entry.status = "ok"; entry.size_bytes = target === "world" ? 815_000_000 : target === "bot" ? 12_000 : 4_300_000; }, 3000).unref();
@@ -524,6 +526,13 @@ function startManager() {
       if (!m || !SERVICE_META[m[1]]) return json(404, { error: "not found" });
       const [, id, op] = m;
       const meta = SERVICE_META[id], s = state[id];
+      // Query values outside the contract's range are a 400, not a clamp.
+      const ranged = (key, fallback, min, max) => {
+        const raw = url.searchParams.get(key);
+        if (raw === null) return fallback;
+        const n = /^\d+$/.test(raw) ? Number(raw) : NaN;
+        return n >= min && n <= max ? n : null;
+      };
       const reads = { status: PERMISSION.STATUS, metrics: PERMISSION.STATUS, uptime: PERMISSION.STATUS, image: PERMISSION.STATUS, rlog: PERMISSION.LOGS };
       const isRead = req.method === "GET" && op in reads;
       const isAction = req.method === "POST" && (ACTION_BITS[op] || op === "update");
@@ -532,11 +541,20 @@ function startManager() {
       if (id === "fail") return json(500, { error: "mock failure" });
       if (isRead) {
         if (op === "status") return json(200, serviceStatus(id));
-        if (op === "metrics") return json(200, serviceMetrics(id, Math.min(Math.max(Number(url.searchParams.get("hours")) || 24, 1), 168)));
-        if (op === "uptime") return json(200, serviceUptime(id, Math.min(Math.max(Number(url.searchParams.get("days")) || 7, 1), 7)));
+        if (op === "metrics") {
+          const hours = ranged("hours", 24, 1, 168);
+          return hours === null ? json(400, { error: "hours must be an integer from 1 to 168" }) : json(200, serviceMetrics(id, hours));
+        }
+        if (op === "uptime") {
+          const days = ranged("days", 7, 1, 7);
+          return days === null ? json(400, { error: "days must be an integer from 1 to 7" }) : json(200, serviceUptime(id, days));
+        }
         if (op === "image") return meta.image ? json(200, { ...meta.image, checked_at: new Date(now0 - 600_000).toISOString() }) : json(404, { error: "no image" });
         const max = Math.min(Number(url.searchParams.get("max_lines")) || 200, 500);
-        return json(200, s.log.slice(-max).reverse().map(({ message }) => ({ message })));
+        const untilParam = url.searchParams.get("until");
+        const until = untilParam === null ? Infinity : /^\d{4}-\d{2}-\d{2}T[\d:.]+(Z|[+-]\d{2}:\d{2})$/.test(untilParam) ? Date.parse(untilParam) : NaN;
+        if (Number.isNaN(until)) return json(400, { error: "until must be an RFC 3339 timestamp" });
+        return json(200, s.log.filter((l) => l.at / 1000 <= until).slice(-max).reverse().map(({ message }) => ({ message })));
       }
       if (op === "update" && !meta.updatable) return json(404, { error: "not updatable" });
       // An action holds its service for 0.75 s; a second one meanwhile answers 409, as the contract says.
@@ -547,11 +565,11 @@ function startManager() {
         meta.image.current = meta.image.latest;
         log(id, `Pulled ${meta.image.latest} and recreated`);
         s.active = true; s.startedAt = Date.now(); s.lastRestart = new Date().toISOString();
-        return json(202, { ok: true });
+        return json(202, {});
       }
       if (op === "stop") { s.active = false; s.stoppedAt = Date.now(); log(id, "Stopping"); }
       else { s.active = true; s.startedAt = Date.now(); if (op === "restart") s.lastRestart = new Date().toISOString(); log(id, op === "restart" ? "Restarting" : "Starting"); }
-      json(202, { ok: true });
+      json(202, {});
     }
   });
 
