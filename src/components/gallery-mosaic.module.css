@@ -1,0 +1,70 @@
+.mosaic {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  grid-auto-rows: 190px;
+  grid-auto-flow: dense;
+  gap: 12px;
+}
+
+.tile {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.tile[data-wide] {
+  grid-column: span 2;
+}
+
+/* A tall tile every so often breaks the rows up; wide ones keep two columns. */
+.tile:nth-child(7n + 3):not([data-wide]) {
+  grid-row: span 2;
+}
+
+@media (max-width: 599px) {
+  .mosaic {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: 140px;
+    gap: 8px;
+  }
+}
+
+.open {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.open img {
+  object-fit: cover;
+  transition: transform 260ms ease, filter 260ms ease;
+}
+
+.open:hover img {
+  transform: scale(1.04);
+  filter: brightness(1.08);
+}
+
+.open:focus-visible {
+  outline: 3px solid var(--pink);
+  outline-offset: -3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .open img {
+    transition: none;
+  }
+
+  .open:hover img {
+    transform: none;
+  }
+}

@@ -1,0 +1,132 @@
+.viewer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--text);
+  background: color-mix(in oklab, var(--night) 96%, black);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: 1fr;
+  animation: veil 180ms ease-out;
+}
+
+.viewer:not([open]) {
+  display: none;
+}
+
+.viewer::backdrop {
+  background: black;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px var(--gutter);
+}
+
+.count {
+  margin: 0;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.close,
+.nav {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.close {
+  min-height: 44px;
+  padding: 0 18px;
+}
+
+.close:hover,
+.nav:hover {
+  background: var(--surface-hover);
+  border-color: var(--pink);
+}
+
+.close:focus-visible,
+.nav:focus-visible {
+  outline: 3px solid var(--pink);
+  outline-offset: 2px;
+}
+
+.stage {
+  position: relative;
+  min-height: 0;
+  margin-inline: clamp(0px, 8vw, 96px);
+}
+
+.picture {
+  object-fit: contain;
+  animation: rise 220ms ease-out;
+}
+
+.caption {
+  margin: 0;
+  padding: 14px var(--gutter) 20px;
+  text-align: center;
+  color: var(--text-2);
+}
+
+.nav {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  width: 52px;
+  height: 52px;
+  font-size: 24px;
+}
+
+.prev {
+  left: clamp(4px, 1.5vw, 20px);
+}
+
+.next {
+  right: clamp(4px, 1.5vw, 20px);
+}
+
+@media (max-width: 599px) {
+  .stage {
+    margin-inline: 0;
+  }
+
+  .nav {
+    top: auto;
+    bottom: 64px;
+    translate: none;
+    background: color-mix(in oklab, var(--night) 80%, transparent);
+  }
+}
+
+@keyframes veil {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewer,
+  .picture {
+    animation: none;
+  }
+}
