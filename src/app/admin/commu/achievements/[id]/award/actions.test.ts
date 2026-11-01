@@ -12,7 +12,8 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn((to: string) => { throw new Error(`NEXT_REDIRECT:${to}`); })
 }));
 
-import { addPlayers, confirmAward, prefillInterested, previewAward } from "./actions";
+import { AWARD_PAGE_SIZE } from "../../selection";
+import { confirmAward, listFilteredIds, loadAwardPlayers, prefillInterested, previewAward } from "./actions";
 
 const ID = "00000000-0000-0000-0000-0000000000e1";
 const USER = "00000000-0000-0000-0000-0000000000f1";
@@ -29,8 +30,6 @@ const target = (query = "") => `NEXT_REDIRECT:/admin/commu/achievements/${ID}/aw
 const redirected = async (action: (data: FormData) => Promise<void>, data: FormData) =>
   action(data).then(() => null, (error: Error) => error.message);
 
-const ticked = (data: FormData, ids: string[]) => ids.forEach((id) => data.append("playerId", id));
-
 describe("admin award actions", () => {
   beforeEach(() => {
     m.rpc.mockReset().mockResolvedValue({ data: [], error: null });
@@ -39,68 +38,85 @@ describe("admin award actions", () => {
 
   it("never reaches the database for an achievement id that isn't a UUID", async () => {
     for (const bad of ["", "e1", "0000-0000"]) {
-      expect(await redirected(addPlayers, form({ achievementId: bad }))).toBe("NEXT_REDIRECT:/admin/commu/achievements");
-      expect(await redirected(previewAward, form({ achievementId: bad, csv: "a" }))).toBe("NEXT_REDIRECT:/admin/commu/achievements");
       expect(await redirected(confirmAward, form({ achievementId: bad }))).toBe("NEXT_REDIRECT:/admin/commu/achievements");
     }
     expect(m.rpc).not.toHaveBeenCalled();
     expect(m.revalidatePath).not.toHaveBeenCalled();
   });
 
-  it("adds ticked players to the existing selection, deduped", async () => {
-    const data = form({ achievementId: ID, q: "steve", sel: `${OTHER},not-a-uuid` });
-    ticked(data, [USER, OTHER]);
-    const redirect = await redirected(addPlayers, data);
-    expect(redirect).toBe(`NEXT_REDIRECT:/admin/commu/achievements/${ID}/award?q=steve&sel=${OTHER}%2C${USER}`);
-    expect(m.rpc).not.toHaveBeenCalled();
+  it("loads one page of players for the typed filter and maps the rows", async () => {
+    m.rpc.mockResolvedValueOnce({
+      data: [
+        { user_id: USER, display_name: "Steve", email: "s@x.test", minecraft_usernames: "SteveMC", total: 120 },
+        { user_id: OTHER, display_name: "", email: "o@x.test", minecraft_usernames: "", total: 120 }
+      ],
+      error: null
+    });
+    const result = await loadAwardPlayers("  steve ", 50);
+    expect(m.rpc).toHaveBeenCalledWith("admin_list_players", { p_query: "steve", p_offset: 50, p_limit: AWARD_PAGE_SIZE });
+    expect(result).toEqual({
+      rows: [
+        { id: USER, name: "Steve", minecraft: "SteveMC" },
+        { id: OTHER, name: "o@x.test", minecraft: "" }
+      ],
+      total: 120
+    });
   });
 
-  it("keeps the query when no search term was posted", async () => {
-    const data = form({ achievementId: ID });
-    ticked(data, [USER]);
-    expect(await redirected(addPlayers, data)).toBe(`NEXT_REDIRECT:/admin/commu/achievements/${ID}/award?sel=${USER}`);
+  it("clamps a bad offset and reports a failed lookup without throwing", async () => {
+    await loadAwardPlayers("", -5);
+    expect(m.rpc).toHaveBeenCalledWith("admin_list_players", expect.objectContaining({ p_offset: 0 }));
+    m.rpc.mockResolvedValueOnce({ data: null, error: { message: "FORBIDDEN" } });
+    expect(await loadAwardPlayers("x", 0)).toEqual({ error: "FORBIDDEN" });
   });
 
-  it("resolves the list and previews it without writing anything", async () => {
+  it("returns every id the filter matches and flags the 5000 cap", async () => {
+    m.rpc.mockResolvedValueOnce({ data: [USER, OTHER], error: null });
+    expect(await listFilteredIds(" steve ")).toEqual({ ids: [USER, OTHER], capped: false });
+    expect(m.rpc).toHaveBeenCalledWith("admin_list_player_ids", { p_query: "steve" });
+
+    m.rpc.mockResolvedValueOnce({ data: Array.from({ length: 5000 }, (_, i) => `id${i}`), error: null });
+    expect(await listFilteredIds("")).toMatchObject({ capped: true });
+
+    m.rpc.mockResolvedValueOnce({ data: null, error: { message: "FORBIDDEN" } });
+    expect(await listFilteredIds("")).toEqual({ error: "FORBIDDEN" });
+  });
+
+  it("resolves the pasted list and reports matched, unmatched and duplicates without writing", async () => {
     m.rpc.mockResolvedValueOnce({ data: [{ value: "alice", user_id: USER }, { value: "nobody", user_id: null }], error: null });
-    const data = form({ achievementId: ID, kind: "discord", csv: "alice\nnobody\nALICE", sel: OTHER });
-    const redirect = await redirected(previewAward, data);
-    const url = new URL(`http://x${redirect!.replace("NEXT_REDIRECT:", "")}`);
-    const preview = new URLSearchParams(url.searchParams.get("preview") ?? "");
-    expect(preview.get("kind")).toBe("discord");
-    expect(preview.getAll("matched")).toEqual([`alice|${USER}`]);
-    expect(preview.getAll("unmatched")).toEqual(["nobody"]);
-    expect(preview.getAll("duplicate")).toEqual(["ALICE"]);
-    // The selection survives the preview step.
-    expect(url.searchParams.get("sel")).toBe(OTHER);
+    const result = await previewAward("discord", "alice\nnobody\nALICE");
+    expect(result).toEqual({
+      kind: "discord",
+      matched: [{ value: "alice", userId: USER }],
+      unmatched: ["nobody"],
+      duplicates: ["ALICE"]
+    });
     expect(m.rpc).toHaveBeenCalledWith("admin_resolve_identifiers", { p_kind: "discord", p_values: ["alice", "nobody"] });
     expect(m.revalidatePath).not.toHaveBeenCalled();
   });
 
   it("takes the kind from the list header over the dropdown", async () => {
-    m.rpc.mockResolvedValueOnce({ data: [], error: null });
-    await redirected(previewAward, form({ achievementId: ID, kind: "discord", csv: "Minecraft\nsteve" }));
+    await previewAward("discord", "Minecraft\nsteve");
     expect(m.rpc).toHaveBeenCalledWith("admin_resolve_identifiers", { p_kind: "minecraft", p_values: ["steve"] });
   });
 
   it("refuses a list over the row cap before calling the resolver", async () => {
     const rows = Array.from({ length: 1001 }, (_, i) => `p${i}`);
-    expect(await redirected(previewAward, form({ achievementId: ID, kind: "discord", csv: rows.join("\n") })))
-      .toBe(`${target()}?error=TOO_MANY`);
+    expect(await previewAward("discord", rows.join("\n"))).toEqual({ error: "TOO_MANY" });
     expect(m.rpc).not.toHaveBeenCalled();
   });
 
   it("reports a resolver failure as an error code", async () => {
     m.rpc.mockResolvedValueOnce({ data: null, error: { message: "FORBIDDEN" } });
-    expect(await redirected(previewAward, form({ achievementId: ID, kind: "discord", csv: "alice" })))
-      .toBe(`${target()}?error=FORBIDDEN`);
+    expect(await previewAward("discord", "alice")).toEqual({ error: "FORBIDDEN" });
   });
 
-  it("awards the union of ticked and matched players, deduped", async () => {
+  it("awards the union of ticked and matched players, deduped, and reports what was really added", async () => {
+    m.rpc.mockResolvedValueOnce({ data: 1, error: null });
     const data = form({ achievementId: ID, sel: `${USER},${OTHER},junk`, awardedOn: "2026-10-20", eventId: "" });
     data.append("matchedId", USER);
-    data.append("matchedId", OTHER);
-    expect(await redirected(confirmAward, data)).toBe(`${target()}?done=awarded&count=2`);
+    // One of the two already held it, so the database skipped them: the page says 1, not 2.
+    expect(await redirected(confirmAward, data)).toBe(`${target()}?done=awarded&count=1`);
     expect(m.rpc).toHaveBeenCalledWith("admin_award", {
       p_achievement_id: ID, p_event_id: null, p_awarded_on: "2026-10-20", p_user_ids: [USER, OTHER]
     });
@@ -108,6 +124,7 @@ describe("admin award actions", () => {
   });
 
   it("lets an event set the award date and keeps the date otherwise", async () => {
+    m.rpc.mockResolvedValue({ data: 1, error: null });
     const data = form({ achievementId: ID, sel: USER, awardedOn: "2026-10-20", eventId: EVENT });
     expect(await redirected(confirmAward, data)).toBe(`${target()}?done=awarded&count=1`);
     expect(m.rpc).toHaveBeenCalledWith("admin_award", expect.objectContaining({ p_event_id: EVENT, p_awarded_on: "2026-10-20" }));
@@ -134,25 +151,19 @@ describe("admin award actions", () => {
     expect(m.revalidatePath).toHaveBeenCalledWith(`/admin/commu/achievements/${ID}`);
   });
 
-  it("ticks the event's interested players without awarding anyone", async () => {
+  it("returns the event's interested players without awarding anyone", async () => {
     m.rpc.mockResolvedValueOnce({ data: [{ user_id: USER }, { user_id: OTHER }], error: null });
-    const redirect = await redirected(prefillInterested, form({ achievementId: ID, q: "steve", eventId: EVENT, sel: USER }));
-    // USER was already selected, so it is listed once, and keeps its place.
-    expect(redirect).toBe(`${target()}?q=steve&eventId=${EVENT}&sel=${USER}%2C${OTHER}`);
+    expect(await prefillInterested(EVENT)).toEqual({ ids: [USER, OTHER] });
     expect(m.rpc).toHaveBeenCalledWith("admin_list_event_interests", { p_event_id: EVENT });
     // Interest is a maybe: nothing was written.
     expect(m.revalidatePath).not.toHaveBeenCalled();
   });
 
   it("refuses to prefill without a real event, and reports a lookup failure", async () => {
-    for (const bad of ["", "nope"]) {
-      expect(await redirected(prefillInterested, form({ achievementId: ID, eventId: bad })))
-        .toBe(`${target()}?error=PICK_EVENT`);
-    }
+    for (const bad of ["", "nope"]) expect(await prefillInterested(bad)).toEqual({ error: "PICK_EVENT" });
     expect(m.rpc).not.toHaveBeenCalled();
 
     m.rpc.mockResolvedValueOnce({ data: null, error: { message: "FORBIDDEN" } });
-    expect(await redirected(prefillInterested, form({ achievementId: ID, eventId: EVENT })))
-      .toBe(`${target()}?eventId=${EVENT}&error=FORBIDDEN`);
+    expect(await prefillInterested(EVENT)).toEqual({ error: "FORBIDDEN" });
   });
 });

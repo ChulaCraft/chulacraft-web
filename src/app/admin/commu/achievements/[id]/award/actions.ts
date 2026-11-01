@@ -6,7 +6,7 @@ import { MAX_CSV_ROWS, parseAwardCsv, toAwardKind } from "@/lib/award-csv";
 import { dbErrorCode } from "@/lib/db-error";
 import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
-import { selectionIds, selectionParam } from "../../selection";
+import { AWARD_PAGE_SIZE, MAX_SELECT_ALL, selectionIds } from "../../selection";
 
 function awardId(formData: FormData) {
   const id = String(formData.get("achievementId") ?? "");
@@ -18,82 +18,63 @@ function unique(values: string[]) {
   return [...new Set(values)];
 }
 
-function fail(achievementId: string, code: string, query: URLSearchParams): never {
-  query.set("error", code);
-  query.delete("preview");
-  redirect(`/admin/commu/achievements/${achievementId}/award?${query}`);
+export type AwardPlayer = { id: string; name: string; minecraft: string };
+
+/** One page of players for the typed filter; the picker pages with `offset`. */
+export async function loadAwardPlayers(query: string, offset: number): Promise<{ rows: AwardPlayer[]; total: number } | { error: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_list_players", {
+    p_query: query.trim(), p_offset: Math.max(0, Math.floor(offset) || 0), p_limit: AWARD_PAGE_SIZE
+  });
+  if (error) return { error: dbErrorCode(error) ?? "FAILED" };
+  return {
+    rows: data.map((row) => ({ id: row.user_id, name: row.display_name || row.email || row.user_id, minecraft: row.minecraft_usernames ?? "" })),
+    total: Number(data[0]?.total ?? 0)
+  };
 }
 
-/** Search results are ticked with checkboxes; this adds them to whatever is
- *  already selected rather than replacing it. */
-export async function addPlayers(formData: FormData) {
-  const id = awardId(formData);
-  if (!id) redirect("/admin/commu/achievements");
-  const query = new URLSearchParams();
-  const search = String(formData.get("q") ?? "").trim();
-  if (search) query.set("q", search);
-  const ticked = unique([...selectionIds(String(formData.get("sel") ?? "")), ...formData.getAll("playerId").map(String)]).filter((value) => UUID.test(value));
-  if (ticked.length) query.set("sel", selectionParam(ticked));
-  redirect(`/admin/commu/achievements/${id}/award?${query}`);
+/** Every player the filter matches, for "Select all filtered". */
+export async function listFilteredIds(query: string): Promise<{ ids: string[]; capped: boolean } | { error: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_list_player_ids", { p_query: query.trim() });
+  if (error) return { error: dbErrorCode(error) ?? "FAILED" };
+  const ids = data ?? [];
+  return { ids, capped: ids.length >= MAX_SELECT_ALL };
 }
 
-/** Turns the pasted list into accounts, then shows what matched before
- *  anything is written. */
-export async function previewAward(formData: FormData) {
-  const id = awardId(formData);
-  if (!id) redirect("/admin/commu/achievements");
+export type AwardPreview = {
+  kind: string;
+  matched: { value: string; userId: string }[];
+  unmatched: string[];
+  duplicates: string[];
+};
 
-  const csv = String(formData.get("csv") ?? "");
+/** Turns the pasted list into accounts so the picker can tick them. Nothing is written. */
+export async function previewAward(selectedKind: string, csv: string): Promise<AwardPreview | { error: string }> {
   const parsed = parseAwardCsv(csv);
-  const kind = parsed.header ?? toAwardKind(String(formData.get("kind") ?? "")) ?? "discord";
-
-  const query = new URLSearchParams();
-  const ticked = selectionIds(String(formData.get("sel") ?? ""));
-  if (ticked.length) query.set("sel", selectionParam(ticked));
-  if (parsed.values.length > MAX_CSV_ROWS) fail(id, "TOO_MANY", query);
+  const kind = parsed.header ?? toAwardKind(selectedKind) ?? "discord";
+  if (parsed.values.length > MAX_CSV_ROWS) return { error: "TOO_MANY" };
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_resolve_identifiers", { p_kind: kind, p_values: parsed.values });
-  if (error) fail(id, dbErrorCode(error) ?? "FAILED", query);
+  if (error) return { error: dbErrorCode(error) ?? "FAILED" };
 
-  const preview = new URLSearchParams({ kind, csv });
+  const matched: AwardPreview["matched"] = [];
+  const unmatched: string[] = [];
   for (const row of data ?? []) {
-    if (row.user_id) preview.append("matched", `${row.value}|${row.user_id}`);
-    else preview.append("unmatched", row.value);
+    if (row.user_id) matched.push({ value: row.value, userId: row.user_id });
+    else unmatched.push(row.value);
   }
-  for (const value of parsed.duplicates) preview.append("duplicate", value);
-  query.set("preview", preview.toString());
-  redirect(`/admin/commu/achievements/${id}/award?${query}`);
+  return { kind, matched, unmatched, duplicates: parsed.duplicates };
 }
 
-export async function prefillInterested(formData: FormData) {
-  const id = awardId(formData);
-  if (!id) redirect("/admin/commu/achievements");
-
-  const eventRaw = String(formData.get("eventId") ?? "");
-  const query = new URLSearchParams();
-  const search = String(formData.get("q") ?? "").trim();
-  if (search) query.set("q", search);
-  if (!UUID.test(eventRaw)) {
-    // Nothing chosen means nothing to prefill from; send the admin back with a
-    // code the page turns into copy rather than silently doing nothing.
-    query.set("error", "PICK_EVENT");
-    redirect(`/admin/commu/achievements/${id}/award?${query}`);
-  }
-  query.set("eventId", eventRaw);
-
+/** D7: interest is a maybe. The ids are only ticked; the admin still decides who came. */
+export async function prefillInterested(eventId: string): Promise<{ ids: string[] } | { error: string }> {
+  if (!UUID.test(eventId)) return { error: "PICK_EVENT" };
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_list_event_interests", { p_event_id: eventRaw });
-  if (error) {
-    query.set("error", dbErrorCode(error) ?? "FAILED");
-    redirect(`/admin/commu/achievements/${id}/award?${query}`);
-  }
-
-  // D7: interest is a maybe. Ticked, not awarded — the confirm step still runs
-  // and the admin still decides who actually came.
-  const ticked = unique([...selectionIds(String(formData.get("sel") ?? "")), ...(data ?? []).map((row) => row.user_id)]);
-  if (ticked.length) query.set("sel", selectionParam(ticked));
-  redirect(`/admin/commu/achievements/${id}/award?${query}`);
+  const { data, error } = await supabase.rpc("admin_list_event_interests", { p_event_id: eventId });
+  if (error) return { error: dbErrorCode(error) ?? "FAILED" };
+  return { ids: unique((data ?? []).map((row) => row.user_id)) };
 }
 
 export async function confirmAward(formData: FormData) {
@@ -111,7 +92,7 @@ export async function confirmAward(formData: FormData) {
 
   const raw = String(formData.get("awardedOn") ?? "").trim();
   const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_award", {
+  const { data: added, error } = await supabase.rpc("admin_award", {
     p_achievement_id: id,
     // The generated type does not mark the two optional arguments as nullable.
     p_event_id: (UUID.test(eventRaw) ? eventRaw : null)!,
@@ -123,5 +104,5 @@ export async function confirmAward(formData: FormData) {
   revalidatePath("/admin/commu/achievements");
   revalidatePath(`/admin/commu/achievements/${id}`);
   if (error) redirect(`/admin/commu/achievements/${id}/award?error=${dbErrorCode(error) ?? "FAILED"}`);
-  redirect(`/admin/commu/achievements/${id}/award?done=awarded&count=${ids.length}`);
+  redirect(`/admin/commu/achievements/${id}/award?done=awarded&count=${added ?? 0}`);
 }
