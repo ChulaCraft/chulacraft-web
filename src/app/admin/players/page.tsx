@@ -15,6 +15,8 @@ import { loadPlayers } from "./actions";
 import { activeView, BASE, COLUMNS, hrefFor, readPlayers, VIEWS } from "./params";
 import { PlayerTable } from "./player-table";
 import { timed } from "@/lib/perf";
+import { RowExport } from "@/components/row-export";
+import local from "../export-ui.module.css";
 
 export const metadata: Metadata = { title: "Players" };
 
@@ -76,7 +78,7 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
           <FilterPanel key={hrefFor(state)} columns={COLUMNS} {...ctx} />
           <p className={styles.tableCount} aria-live="polite"><strong>{first.total.toLocaleString("en-GB")}</strong> {first.total === 1 ? "player" : "players"}</p>
           <FilterChips columns={COLUMNS} {...ctx} />
-          {isAdmin && <a href={hrefFor(state).replace(BASE, `${BASE}/export`)} className="btn btn-sm" download><PixelIcon name="arrow" />Export CSV</a>}
+          {isAdmin && <div className={`${local.bar} ${local.push}`}><RowExport href={`${BASE}/export`} className="btn btn-sm" filters={[...new URLSearchParams(hrefFor(state).split("?")[1] ?? "")]} /></div>}
         </div>
         <PlayerTable key={hrefFor(state)} initial={first.rows} total={first.total} search={search} achievements={achievements} can={can} />
       </>}

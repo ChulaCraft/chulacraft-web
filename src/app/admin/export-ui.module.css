@@ -1,0 +1,9 @@
+/* Row checkboxes and the export buttons (T2.1). Admin pages that export share this file. */
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tick { flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--accent, currentColor); }
+.head { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.withTick { display: flex; align-items: center; gap: 12px; padding-left: 16px; }
+.withTick > a { flex: 1 1 0; min-width: 0; }
+.logTick { margin-top: 4px; }
+.tickCol { width: 1%; }
+.push { margin-left: auto; }

@@ -7,6 +7,8 @@ import styles from "@/app/admin/admin.module.css";
 import { when } from "@/app/admin/overview";
 import { publicImageUrl } from "./images";
 import { timed } from "@/lib/perf";
+import local from "@/app/admin/export-ui.module.css";
+import { RowExport } from "@/components/row-export";
 
 export const metadata: Metadata = { title: "Achievements" };
 
@@ -29,7 +31,10 @@ export default async function AdminAchievementsPage({ searchParams }: { searchPa
   return <>
     <div className={styles.titleRow}>
       <h1 className={styles.title}>Achievements</h1>
-      <Link href="/admin/commu/achievements/new" className="btn btn-sm"><PixelIcon name="plus" />New achievement</Link>
+      <div className={local.bar}>
+        <RowExport href="/admin/commu/achievements/export" className="btn btn-sm" />
+        <Link href="/admin/commu/achievements/new" className="btn btn-sm"><PixelIcon name="plus" />New achievement</Link>
+      </div>
     </div>
 
     <div aria-live="polite">
@@ -48,7 +53,8 @@ export default async function AdminAchievementsPage({ searchParams }: { searchPa
         </div> : (
           <ul className={styles.catalog} aria-label="Achievements">
             {rows.map((row) => (
-              <li key={row.id}>
+              <li key={row.id} className={local.withTick}>
+                <input type="checkbox" className={local.tick} name="id" value={row.id} form="export-rows" aria-label={`Select ${row.name} for export`} />
                 <Link href={`/admin/commu/achievements/${row.id}`}>
                   <Image className={`pixel-4 ${styles.catalogThumb}`} src={publicImageUrl(row.image_path)} alt="" width={56} height={56} />
                   <span className={styles.catalogText}>

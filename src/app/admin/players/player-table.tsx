@@ -75,7 +75,7 @@ export function PlayerTable({ initial, total, search, achievements, can }: { ini
             const [wlLabel, wlClass] = WHITELIST[r.whitelist] ?? WHITELIST.none;
             return (
               <tr key={r.user_id} aria-selected={selected.has(r.user_id)}>
-                {selectable && <td><input type="checkbox" aria-label={`Select ${r.display_name ?? r.handle}`} checked={selected.has(r.user_id)} onChange={() => toggle(r.user_id)} /></td>}
+                {selectable && <td><input type="checkbox" name="id" value={r.user_id} form="export-rows" aria-label={`Select ${r.display_name ?? r.handle}`} checked={selected.has(r.user_id)} onChange={() => toggle(r.user_id)} /></td>}
                 <td>
                   <Link href={`/admin/users/${r.user_id}`}><strong>{r.display_name ?? r.handle}</strong></Link><br />
                   <Link href={`/admin/users/${r.user_id}`} className={styles.small}>{r.handle}</Link>

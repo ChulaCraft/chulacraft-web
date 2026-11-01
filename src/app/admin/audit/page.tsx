@@ -8,36 +8,16 @@ import type { Database } from "@/lib/supabase/database.types";
 import styles from "../admin.module.css";
 import { when } from "../overview";
 import { timed } from "@/lib/perf";
+import { bangkokDay, ENTITIES } from "./filters";
+import { RowExport } from "@/components/row-export";
+import local from "../export-ui.module.css";
 
 export const metadata: Metadata = { title: "Audit log" };
 
 type Entry = Database["public"]["Functions"]["admin_audit_log"]["Returns"][number];
 type Params = { actor?: string; target?: string; entity?: string; from?: string; to?: string; before?: string };
 
-const ENTITIES: Record<string, string> = {
-  minecraft_registrations: "Minecraft accounts",
-  profiles: "Profiles and roles",
-  chula_claims: "Chula verification",
-  identities: "Linked accounts",
-  achievements: "Achievements",
-  events: "Events",
-  achievement_awards: "Awards",
-  announcements: "Announcements",
-  server_console: "Server console",
-  ops: "Ops console",
-  bot_settings: "Discord bot settings",
-  bot_jobs: "Discord bot tasks",
-  bans: "Bans",
-  appeals: "Appeals",
-  reports: "Reports",
-};
 const PAGE = 50;
-const DAY = /^\d{4}-\d{2}-\d{2}$/;
-
-/** Midnight in Bangkok for a yyyy-mm-dd from a date input, as ISO; null if malformed. */
-const bangkokDay = (day: string | undefined, plusDays = 0) =>
-  day && DAY.test(day) ? new Date(Date.parse(`${day}T00:00:00+07:00`) + plusDays * 86_400_000).toISOString() : null;
-
 export default async function AdminAuditPage({ searchParams }: { searchParams: Promise<Params> }) {
   const p = await searchParams;
   const actor = p.actor && UUID.test(p.actor) ? p.actor : undefined;
@@ -69,10 +49,12 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
   const actorName = actor && log.find((e) => e.actor_user_id === actor)?.actor_name;
   const targetName = target && log.find((e) => e.target_user_id === target)?.target_name;
   const last = log.at(-1);
+  const exportFilters = Object.entries({ actor, target, entity, from: p.from, to: p.to }).filter((e): e is [string, string] => Boolean(e[1]));
 
   return <>
     <div className={styles.titleRow}>
       <h1 className={styles.title}>Audit log</h1>
+      <div className={local.bar}><RowExport href="/admin/audit/export" filters={exportFilters} /></div>
     </div>
 
     <form className={`panel pixel-4 ${styles.search}`}>
@@ -115,6 +97,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: P
         <ol className={styles.log}>
           {log.map((entry) => (
             <li key={entry.id}>
+              <input type="checkbox" className={`${local.tick} ${local.logTick}`} name="id" value={entry.id} form="export-rows" aria-label={`Select ${describeChange(entry.field, entry.old_value, entry.new_value)} for export`} />
               <time dateTime={entry.created_at}>{when(entry.created_at)}</time>
               <span>
                 <Link href={href({ actor: entry.actor_user_id ?? undefined, before: undefined })}><strong>{entry.actor_name ?? "A removed admin"}</strong></Link>{" "}

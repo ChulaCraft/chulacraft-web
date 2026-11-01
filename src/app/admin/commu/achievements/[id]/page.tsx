@@ -13,6 +13,8 @@ import { MetaFields } from "../meta-fields";
 import { deleteAchievement, revokeAward, saveAchievement } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
 import { timed } from "@/lib/perf";
+import local from "@/app/admin/export-ui.module.css";
+import { RowExport } from "@/components/row-export";
 
 export const metadata: Metadata = { title: "Achievement" };
 
@@ -127,14 +129,18 @@ export default async function AdminAchievementPage({ params, searchParams }: {
         </section>
 
         <section className={`panel ${styles.flush}`} aria-labelledby="awards-title">
-          <h2 id="awards-title" className={`${styles.sectionTitle} ${styles.flushTitle}`}>Awards ({rows.length})</h2>
+          <div className={`${styles.listHead} ${styles.flushTitle}`}>
+            <h2 id="awards-title" className={styles.sectionTitle}>Awards ({rows.length})</h2>
+            <div className={local.bar}><RowExport href={`/admin/commu/achievements/${achievement.id}/export`} className="btn btn-sm" /></div>
+          </div>
           {rows.length === 0 ? <p className={`muted ${styles.flushTitle}`}>Nobody has this achievement yet.</p> : (
             <div className={styles.tableWrap}>
               <table className={styles.table}>
-                <thead><tr><th scope="col">Player</th><th scope="col">Date</th><th scope="col">Event</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
+                <thead><tr><th scope="col" className={local.tickCol}><span className="sr-only">Export</span></th><th scope="col">Player</th><th scope="col">Date</th><th scope="col">Event</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
                 <tbody>
                   {rows.map((award) => (
                     <tr key={award.id}>
+                      <td><input type="checkbox" className={local.tick} name="id" value={award.id} form="export-rows" aria-label={`Select ${award.display_name} for export`} /></td>
                       <td><Link href={`/admin/users/${award.user_id}`}>{award.display_name}</Link></td>
                       <td className="mono">{new Date(award.awarded_on).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok", dateStyle: "medium" })}</td>
                       <td data-dim={!award.event_name || undefined}>{award.event_name ?? "—"}</td>

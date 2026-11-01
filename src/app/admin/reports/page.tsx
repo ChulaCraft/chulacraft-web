@@ -7,6 +7,8 @@ import { when } from "../overview";
 import { handleReport } from "./actions";
 import { SubmitButton } from "@/components/submit-button";
 import { timed } from "@/lib/perf";
+import local from "../export-ui.module.css";
+import { RowExport } from "@/components/row-export";
 
 export const metadata: Metadata = { title: "Reports" };
 
@@ -36,6 +38,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
           {s === status ? <strong>{s}</strong> : <Link href={s === "open" ? "/admin/reports" : `/admin/reports?status=${s}`}>{s}</Link>}
         </span>)}
       </nav>
+      <div className={local.bar}><RowExport href="/admin/reports/export" filters={[["status", status]]} /></div>
     </div>
 
     <div aria-live="polite">
@@ -50,11 +53,14 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
     ) : reports.map((r) => (
       <section key={r.id} className="panel stack gap-10" aria-label={`Report about ${r.target_name ?? "a player"}`}>
         <div className={styles.listHead}>
+          <div className={local.head}>
+          <input type="checkbox" className={local.tick} name="id" value={r.id} form="export-rows" aria-label={`Select report about ${r.target_name ?? "a player"} for export`} />
           <h2>
             <Link href={`/admin/users/${r.target_user_id}`}>{r.target_name ?? "A player"}</Link>{" "}
             <span className="badge badge-muted">{CATEGORIES[r.category] ?? r.category}</span>{" "}
             {r.target_banned && <span className="badge badge-danger">Banned</span>}
           </h2>
+          </div>
           <time className="hint" dateTime={r.created_at}>{when(r.created_at)}</time>
         </div>
         <p className="hint">

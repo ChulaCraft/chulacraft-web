@@ -14,6 +14,8 @@ import { CheckinQr, type WindowState } from "./checkin-qr";
 import { Scanner } from "./scanner";
 import local from "./check-in.module.css";
 import { timed } from "@/lib/perf";
+import exportUi from "@/app/admin/export-ui.module.css";
+import { RowExport } from "@/components/row-export";
 
 export const metadata: Metadata = { title: "Check-in" };
 
@@ -114,6 +116,7 @@ export default async function AdminCheckInPage({ params, searchParams }: {
       <div className={styles.listHead}>
         <h2 id="attendance-title" className={styles.sectionTitle}>Checked in</h2>
         <span className="hint">{attendees.length}</span>
+        <div className={exportUi.bar}><RowExport href={`/admin/commu/events/${id}/check-in/export`} className="btn btn-sm" /></div>
       </div>
       {attendance.error ? (
         <p className="muted">The attendance list didn&apos;t load.</p>
@@ -123,6 +126,7 @@ export default async function AdminCheckInPage({ params, searchParams }: {
         <ul className={local.people} aria-label="Checked-in players">
           {attendees.map((row) => (
             <li key={row.user_id}>
+              <input type="checkbox" className={exportUi.tick} name="id" value={row.user_id} form="export-rows" aria-label={`Select ${row.display_name} for export`} />
               <Avatar src={row.avatar_url} name={row.display_name} />
               <span className={local.person}>
                 <strong className={local.wrap}>{row.display_name}</strong>

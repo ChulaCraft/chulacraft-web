@@ -11,3 +11,30 @@ select '00000000-0000-0000-0000-000000000000', md5('paging-' || n)::uuid,
   now() - (n || ' seconds')::interval, now(), '', '', '', ''
 from generate_series(1, 2500) n
 on conflict (id) do nothing;
+
+-- Rows for the other exports: 1500 each, so every list crosses max_rows = 1000.
+-- Everything is tagged 'paging-seed' (names, reasons, messages) for the cleanup script.
+insert into public.reports (reporter_id, target_user_id, category, details, status, created_at)
+select md5('paging-' || n)::uuid, md5('paging-1')::uuid, 'other',
+  'paging-seed report number ' || n, 'actioned', now() - (n || ' minutes')::interval
+from generate_series(1, 1500) n;
+
+insert into public.bans (id, user_id, reason, created_by, created_at, lifted_at)
+select md5('paging-ban-' || n)::uuid, md5('paging-' || n)::uuid, 'paging-seed ban', null, now() - (n || ' minutes')::interval, now()
+from generate_series(1, 1500) n;
+insert into public.appeals (ban_id, user_id, message, status, created_at)
+select md5('paging-ban-' || n)::uuid, md5('paging-' || n)::uuid, 'paging-seed appeal number ' || n, 'rejected', now() - (n || ' minutes')::interval
+from generate_series(1, 1500) n;
+
+alter table public.account_change_log disable trigger user;
+insert into public.account_change_log (actor_user_id, target_user_id, entity, field, old_value, new_value, source, created_at)
+select md5('paging-1')::uuid, md5('paging-' || n)::uuid, 'profiles', 'paging-seed', 'a', 'b', 'admin', now() - (n || ' seconds')::interval
+from generate_series(1, 1500) n;
+alter table public.account_change_log enable trigger user;
+
+insert into public.achievements (id, name, image_path, status) values ('00000000-0000-4000-8000-0000000fa001', 'paging-seed achievement', 'paging-seed.png', 'draft');
+insert into public.events (id, name, starts_at, status) values ('00000000-0000-4000-8000-0000000fa002', 'paging-seed event', now(), 'draft');
+insert into public.achievement_awards (user_id, achievement_id, awarded_on)
+select md5('paging-' || n)::uuid, '00000000-0000-4000-8000-0000000fa001', current_date from generate_series(1, 1500) n;
+insert into public.event_attendance (event_id, user_id, method)
+select '00000000-0000-4000-8000-0000000fa002', md5('paging-' || n)::uuid, 'staff' from generate_series(1, 1500) n;
