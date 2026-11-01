@@ -73,6 +73,14 @@ export const gallery = cache(
   }
 );
 
+/** Groups in admin order with their pictures; a group with none is left out. */
+export const galleryAlbums = cache(async () => {
+  const { groups, images } = await gallery();
+  return groups
+    .map((g) => ({ ...g, images: images.filter((i) => i.group_id === g.id) }))
+    .filter((g) => g.images.length > 0);
+});
+
 export const team = cache(
   async (): Promise<{ generations: TeamGeneration[]; members: TeamMember[] }> => {
     const client = anonClient();

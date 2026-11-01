@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { GalleryGrid } from "@/components/gallery-grid";
-import { gallery } from "@/lib/site-content";
+import Image from "next/image";
+import Link from "next/link";
+import { galleryAlbums } from "@/lib/site-content";
 import { publicImageUrl } from "@/app/admin/commu/achievements/images";
-import styles from "../team/team.module.css";
+import team from "../team/team.module.css";
+import styles from "./gallery.module.css";
 
 export const metadata: Metadata = {
   title: "Gallery",
@@ -11,13 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default async function GalleryPage() {
-  const result = await gallery().then((data) => ({ ...data, failed: false }), () => ({ groups: [], images: [], failed: true }));
-  const groups = result.groups
-    .map((g) => ({ ...g, images: result.images.filter((i) => i.group_id === g.id) }))
-    .filter((g) => g.images.length > 0);
+  const result = await galleryAlbums().then((albums) => ({ albums, failed: false }), () => ({ albums: [], failed: true }));
 
   return (
-    <main className={`container ${styles.main}`}>
+    <main className={`container ${team.main}`}>
       <div className="stack gap-10">
         <span className="kicker" aria-hidden="true" />
         <h1 className="page-title">Gallery</h1>
@@ -26,15 +25,29 @@ export default async function GalleryPage() {
 
       {result.failed ? (
         <p className="alert alert-error" role="alert">The gallery couldn&apos;t be loaded. Please try again in a moment.</p>
-      ) : groups.length === 0 ? (
+      ) : result.albums.length === 0 ? (
         <p className="muted">No pictures yet. Check back after the next event.</p>
-      ) : groups.map((g) => (
-        <section key={g.id} aria-labelledby={`g-${g.id}`} className={styles.section}>
-          <h2 id={`g-${g.id}`} className={styles.sectionTitle}>{g.name}</h2>
-          {g.description && <p className="muted">{g.description}</p>}
-          <GalleryGrid shots={g.images.map((i) => ({ key: i.id, src: publicImageUrl(i.image_path), alt: i.alt, wide: i.wide }))} />
-        </section>
-      ))}
+      ) : (
+        <ul className={styles.cards}>
+          {result.albums.map((g) => {
+            const cover = g.cover_path || g.images[0].image_path;
+            return (
+              <li key={g.id} className={styles.card}>
+                <Link href={`/gallery/${g.id}`} className={styles.link}>
+                  <span className={`pixel-8 ${styles.frame}`}>
+                    <Image src={publicImageUrl(cover)} alt="" fill sizes="(min-width: 1100px) 380px, (min-width: 600px) 50vw, 100vw" />
+                  </span>
+                  <span className={styles.text}>
+                    <span className={styles.topic}>{g.name}</span>
+                    {g.description && <span className={styles.detail}>{g.description}</span>}
+                    <span className={styles.count}>{g.images.length} {g.images.length === 1 ? "picture" : "pictures"}</span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </main>
   );
 }
