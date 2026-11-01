@@ -1,136 +1,75 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { dbErrorCode } from "@/lib/db-error";
 import { UUID } from "@/lib/registration";
-import { validateProfile, type ProfileDetails, type ProfileErrors } from "@/lib/faculties";
+import { validateProfile, type ProfileDetails } from "@/lib/faculties";
+import type { Json } from "@/lib/supabase/database.types";
 
-// The RPCs enforce every role rule; these actions only forward the request and
-// send the outcome back to the page as a known error code. Ids are checked here
-// so a malformed form never reaches the database at all.
-function id(formData: FormData, field: string) {
-  const value = String(formData.get(field));
-  return UUID.test(value) ? value : null;
+// The RPC enforces every role rule and applies the whole list in one
+// transaction. This action only checks the shape of what the browser staged, so a
+// malformed request never reaches the database, and rebuilds each entry from
+// known fields only.
+const MAX_CHANGES = 60;
+const ROLES = ["user", "moderator", "event_staff", "admin", "owner"];
+const LEVELS = ["public", "friends", "private"];
+const BANNER_ID = /^[a-z0-9-]{2,32}$/;
+
+type Obj = Record<string, unknown>;
+const isObj = (v: unknown): v is Obj => typeof v === "object" && v !== null && !Array.isArray(v);
+const str = (v: unknown) => (typeof v === "string" ? v : "");
+const uuid = (v: unknown) => (typeof v === "string" && UUID.test(v) ? v : null);
+
+/** One staged entry as the RPC wants it, or null when it isn't valid. */
+function clean(c: unknown): Json | null {
+  if (!isObj(c)) return null;
+  switch (c.kind) {
+    case "role": return ROLES.includes(str(c.role)) ? { kind: "role", role: c.role as string } : null;
+    case "profile": {
+      const v: ProfileDetails = { first: str(c.first_name).trim(), last: str(c.last_name).trim(), nick: str(c.nickname).trim(), level: str(c.study_level) as ProfileDetails["level"], faculty: str(c.faculty), major: str(c.major) };
+      if (Object.keys(validateProfile(v)).length) return null;
+      return { kind: "profile", first_name: v.first, last_name: v.last, nickname: v.nick, faculty: v.faculty, major: v.major, study_level: v.level };
+    }
+    case "privacy": {
+      const levels = ["profile", "minecraft", "achievements", "friends"].map((f) => str(c[f]));
+      if (!levels.every((l) => LEVELS.includes(l))) return null;
+      return { kind: "privacy", profile: levels[0], minecraft: levels[1], achievements: levels[2], friends: levels[3] };
+    }
+    case "banner": return BANNER_ID.test(str(c.banner_id)) && typeof c.grant === "boolean" ? { kind: "banner", banner_id: c.banner_id as string, grant: c.grant } : null;
+    case "chula_reset": return { kind: "chula_reset" };
+    case "guest": return { kind: "guest" };
+    case "lift_ban": { const id = uuid(c.ban_id); return id ? { kind: "lift_ban", ban_id: id } : null; }
+    case "whitelist": { const id = uuid(c.registration_id); return id && typeof c.value === "boolean" ? { kind: "whitelist", registration_id: id, value: c.value } : null; }
+    case "ban": {
+      const reason = str(c.reason).trim(), note = str(c.public_note).trim();
+      const expires = c.expires_at === null || c.expires_at === undefined ? null : str(c.expires_at);
+      if (!reason || reason.length > 1000 || note.length > 1000 || (expires !== null && Number.isNaN(Date.parse(expires)))) return null;
+      return { kind: "ban", reason, public_note: note, expires_at: expires };
+    }
+    default: return null;
+  }
 }
 
-function finish(userId: string | null, error: { message: string } | null, done: string) {
-  if (!userId) redirect("/admin");
-  const code = dbErrorCode(error) ?? (error ? "FAILED" : null);
+export type ApplyResult = { ok: true } | { ok: false; code: string; control: { kind: string; target: string } | null };
+const invalid = { ok: false, code: "INVALID", control: null } as const;
+
+/** Applies the staged review of one player. All of it saves, or none of it. */
+export async function applyPlayerChanges(userId: string, changes: unknown): Promise<ApplyResult> {
+  if (!UUID.test(userId) || !Array.isArray(changes) || changes.length === 0 || changes.length > MAX_CHANGES) return invalid;
+  const list = changes.map(clean);
+  if (list.some((c) => c === null)) return invalid;
+  const supabase = await createClient();
+  try {
+    const { error } = await supabase.rpc("admin_apply_player_changes", { p_user_id: userId, p_changes: list as Json[] });
+    if (error) {
+      // The RPC puts "<kind>:<target id>" in details.
+      const [kind, target] = typeof (error as { details?: unknown }).details === "string" ? (error as { details: string }).details.split(":") : [];
+      return { ok: false, code: dbErrorCode(error) ?? "FAILED", control: kind && target ? { kind, target } : null };
+    }
+  } catch {
+    return { ok: false, code: "FAILED", control: null };
+  }
   revalidatePath(`/admin/users/${userId}`);
-  redirect(`/admin/users/${userId}?${code ? `error=${code}` : `done=${done}`}`);
-}
-
-export async function setWhitelisted(formData: FormData) {
-  const userId = id(formData, "userId");
-  const registrationId = id(formData, "registrationId");
-  if (!userId || !registrationId) redirect("/admin");
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_set_whitelisted", {
-    p_registration_id: registrationId,
-    p_value: formData.get("value") === "true"
-  });
-  finish(userId, error, formData.get("value") === "true" ? "restored" : "removed");
-}
-
-export async function setRole(formData: FormData) {
-  const userId = id(formData, "userId");
-  if (!userId) redirect("/admin");
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_set_role", { p_user_id: userId, p_role: String(formData.get("role")) });
-  finish(userId, error, "role");
-}
-
-export async function resetChula(formData: FormData) {
-  const userId = id(formData, "userId");
-  if (!userId) redirect("/admin");
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_reset_chula", { p_user_id: userId });
-  finish(userId, error, "reset");
-}
-
-/** Days per duration option on the ban form; null is permanent. Not exported:
- *  a "use server" file may only export async functions. */
-const BAN_DURATIONS: Record<string, number | null> = { "1d": 1, "7d": 7, "30d": 30, permanent: null };
-
-export async function banUser(formData: FormData) {
-  const userId = id(formData, "userId");
-  if (!userId) redirect("/admin");
-  const days = BAN_DURATIONS[String(formData.get("duration"))];
-  if (days === undefined) finish(userId, { message: "INVALID" }, "");
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_ban_user", {
-    p_user_id: userId,
-    p_reason: String(formData.get("reason") ?? ""),
-    p_public_note: String(formData.get("publicNote") ?? ""),
-    p_expires_at: days ? new Date(Date.now() + days * 86_400_000).toISOString() : undefined,
-  });
-  finish(userId, error, "banned");
-}
-
-export async function liftBan(formData: FormData) {
-  const userId = id(formData, "userId");
-  const banId = id(formData, "banId");
-  if (!userId || !banId) redirect("/admin");
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_lift_ban", { p_ban_id: banId });
-  finish(userId, error, "lifted");
-}
-
-export async function markGuest(formData: FormData) {
-  const userId = id(formData, "userId");
-  if (!userId) redirect("/admin");
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_mark_guest", { p_user_id: userId });
-  finish(userId, error, "guest");
-}
-
-// Customer support: the same profile and privacy the player edits themselves.
-export type SupportProfileState = { errors?: ProfileErrors; failed?: boolean; code?: string };
-
-export async function saveProfileFor(userId: string, _prev: SupportProfileState, formData: FormData): Promise<SupportProfileState> {
-  if (!UUID.test(userId)) return { failed: true };
-  const v: ProfileDetails = {
-    first: String(formData.get("first") ?? "").trim(),
-    last: String(formData.get("last") ?? "").trim(),
-    nick: String(formData.get("nick") ?? "").trim(),
-    level: String(formData.get("level") ?? "") as ProfileDetails["level"],
-    faculty: String(formData.get("faculty") ?? ""),
-    major: String(formData.get("major") ?? "")
-  };
-  const errors = validateProfile(v);
-  if (Object.keys(errors).length) return { errors };
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_update_profile", {
-    p_user_id: userId, p_first_name: v.first, p_last_name: v.last, p_nickname: v.nick,
-    p_faculty: v.faculty, p_major: v.major, p_study_level: v.level
-  });
-  if (error) return { failed: true, code: dbErrorCode(error) ?? "FAILED" };
-  revalidatePath(`/admin/users/${userId}`);
-  redirect(`/admin/users/${userId}?done=profile`);
-}
-
-const PRIVACY_LEVELS = ["public", "friends", "private"];
-
-export async function setPrivacyFor(formData: FormData) {
-  const userId = id(formData, "userId");
-  if (!userId) redirect("/admin");
-  const levels = ["profile", "minecraft", "achievements", "friends"].map((field) => String(formData.get(field) ?? ""));
-  if (!levels.every((level) => PRIVACY_LEVELS.includes(level))) redirect(`/admin/users/${userId}?error=INVALID_LEVEL`);
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_set_privacy", {
-    p_user_id: userId, p_profile: levels[0], p_minecraft: levels[1], p_achievements: levels[2], p_friends: levels[3]
-  });
-  finish(userId, error, "privacy");
-}
-
-export async function grantBanner(formData: FormData) {
-  const userId = id(formData, "userId");
-  const bannerId = String(formData.get("bannerId") ?? "");
-  if (!userId || !/^[a-z0-9-]{2,32}$/.test(bannerId)) redirect("/admin");
-  const grant = formData.get("grant") === "true";
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_grant_banner", { p_user_id: userId, p_banner_id: bannerId, p_grant: grant });
-  finish(userId, error, grant ? "banner_given" : "banner_taken");
+  return { ok: true };
 }

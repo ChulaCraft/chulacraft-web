@@ -1,23 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Fragment } from "react";
 import { notFound } from "next/navigation";
-import { ConfirmAction } from "@/components/confirm-action";
 import { PixelIcon } from "@/components/icons";
-import { BannerStrip } from "@/components/profile-banner";
 import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
 import { describeChange } from "@/lib/change-log";
-import { MAX_MINECRAFT_ACCOUNTS, syncBadge, toSyncStatus } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "../../admin.module.css";
 import { when } from "../../overview";
-import { AboutYouForm } from "@/app/register/details/about-you-form";
-import { STUDY_LEVELS, toStudyLevel } from "@/lib/faculties";
+import { toStudyLevel } from "@/lib/faculties";
 import { ROLE_LABELS, staffCan } from "@/lib/staff";
-import { LEVEL_OPTIONS, PRIVACY_FIELDS, type Privacy } from "@/lib/privacy";
-import { banUser, grantBanner, liftBan, markGuest, resetChula, saveProfileFor, setPrivacyFor, setRole, setWhitelisted } from "./actions";
-import { RoleControl } from "./role-control";
-import { SubmitButton } from "@/components/submit-button";
+import type { Privacy } from "@/lib/privacy";
+import { PlayerEditor, type Can } from "./player-editor";
+import type { Snapshot } from "./staged";
 import { timed } from "@/lib/perf";
 
 export const metadata: Metadata = { title: "Player" };
@@ -41,40 +35,8 @@ type Detail = {
   log: { id: string; field: string; old_value: string | null; new_value: string | null; source: string; actor_user_id: string | null; created_at: string }[];
 };
 
-const ERRORS: Record<string, string> = {
-  FORBIDDEN: "You don't have permission to change this player.",
-  INVALID_LEVEL: "That privacy setting isn't one we know.",
-  LIMIT_REACHED: `This player already has ${MAX_MINECRAFT_ACCOUNTS} active Minecraft accounts.`,
-  SELF_ROLE_CHANGE: "You can't change your own role.",
-  OWNER_ROLE_PROTECTED: "Owners are peers, so you can't change another owner's role.",
-  NOT_FOUND: "That record no longer exists. Refresh and try again.",
-  ALREADY_VERIFIED: "This player is already Chula-verified.",
-  ALREADY_BANNED: "This player is already banned.",
-  SELF_BAN: "You can't ban yourself.",
-  BANNED: "This player is banned. Lift the ban to put accounts back on the whitelist.",
-  INVALID: "Give a reason and pick how long the ban lasts.",
-};
-
-const DONE: Record<string, string> = {
-  reset: "Verification reset. They'll be asked to verify again.",
-  guest: "Marked as verified (guest). They can add Minecraft accounts now.",
-  role: "Role changed.",
-  restored: "Account put back on the whitelist.",
-  removed: "Account removed from the whitelist.",
-  banned: "Player banned. Their accounts leave the whitelist and they're kicked within a few seconds.",
-  lifted: "Ban lifted. The accounts it removed are going back on the whitelist.",
-  profile: "Profile details saved.",
-  privacy: "Privacy settings saved.",
-  banner_given: "Banner given. They can pick it on their profile now.",
-  banner_taken: "Banner taken back. If they were using it, they're back on the default.",
-};
-
-export default async function AdminUserPage({ params, searchParams }: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; done?: string; edit?: string }>;
-}) {
+export default async function AdminUserPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { error: errorCode, done, edit } = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const supabase = await createClient();
@@ -111,16 +73,34 @@ export default async function AdminUserPage({ params, searchParams }: {
   const activeBan = bans?.find((b) => b.active);
   const profile = support as SupportProfile;
   const privacy: Privacy = profile?.privacy ?? { profile: "public", minecraft: "public", achievements: "public", friends: "public" };
-  const levelLabel = STUDY_LEVELS.find((l) => l.value === profile?.study_level)?.label;
-  const privacyLabel = (v: string) => LEVEL_OPTIONS.find((o) => o.value === v)?.label ?? v;
+  const isSelf = me?.id === target.id;
+
+  const can: Can = {
+    guest: canManage && detail.verification_kind === "unverified",
+    reset: canManage && Boolean(detail.chula || detail.guest),
+    role: canManage && isOwner && !isSelf && target.role !== "owner",
+    removeStaff: myRole === "admin" && (target.role === "moderator" || target.role === "event_staff"),
+    ban: canModerate && target.role === "user" && !isSelf && !activeBan,
+    lift: canModerate && Boolean(activeBan),
+    profile: canManage,
+    privacy: canManage,
+    banners: Boolean(banners),
+    whitelist: canManage,
+  };
+  const showBans = canModerate && (target.role === "user" || (bans?.length ?? 0) > 0);
+
+  const snapshot: Snapshot = {
+    role: target.role,
+    profile: { first: profile?.first_name ?? "", last: profile?.last_name ?? "", nick: profile?.nickname ?? "", level: toStudyLevel(profile?.study_level), faculty: profile?.faculty ?? "", major: profile?.major ?? "" },
+    privacy,
+    banners: (banners ?? []).map((b) => ({ id: b.id, name: b.name, granted: b.granted })),
+    registrations: detail.registrations.map((r) => ({ id: r.id, name: r.minecraft_username, desired: r.desired_whitelisted })),
+    activeBanId: activeBan?.id ?? null,
+    verification: detail.verification_kind,
+  };
 
   return <>
     <Link href="/admin/players" className="back-link"><PixelIcon name="back" />Players</Link>
-
-    <div aria-live="polite">
-      {errorCode && <div className="alert alert-error" role="alert"><PixelIcon name="warning" /><p className="alert-body">{ERRORS[errorCode] ?? "The change couldn't be saved. Please try again."}</p></div>}
-      {done && DONE[done] && <p className="alert alert-success" role="status"><PixelIcon name="check" />{DONE[done]}</p>}
-    </div>
 
     <section className={`panel ${styles.userHead}`} aria-labelledby="p-name">
       <span className={`avatar ${styles.avatarLg}`} aria-hidden="true">{name.charAt(0).toUpperCase()}</span>
@@ -135,8 +115,24 @@ export default async function AdminUserPage({ params, searchParams }: {
       </div>
     </section>
 
-    <div className={styles.columns}>
-      <div className={styles.sideCol}>
+    <PlayerEditor
+      userId={id}
+      name={name}
+      handle={handle}
+      targetRole={target.role}
+      snapshot={snapshot}
+      can={can}
+      chula={detail.chula ? { email: detail.chula.email } : null}
+      guest={Boolean(detail.guest)}
+      bans={showBans ? (bans ?? []).map((b) => ({
+        id: b.id, active: b.active, reason: b.reason, publicNote: b.public_note,
+        until: b.expires_at ? when(b.expires_at) : "Permanent", by: b.created_by_name ?? "a removed admin",
+        at: when(b.created_at), atIso: b.created_at,
+        outcome: b.lifted_by_name ? `lifted by ${b.lifted_by_name}` : b.expires_at ? "expired" : "lifted",
+      })) : []}
+      banners={banners ? banners.map((b) => ({ id: b.id, name: b.name, colors: b.colors, image: b.image_path, still: b.still_path, kind: b.kind, granted: b.granted, owned: b.owned, selected: b.selected, eventNames: b.event_names })) : null}
+      accounts={detail.registrations.map((r) => ({ id: r.id, name: r.minecraft_username, uuid: r.minecraft_uuid, desired: r.desired_whitelisted, active: r.is_active, syncStatus: r.sync_status }))}
+      details={
         <section className="panel" aria-labelledby="det-title">
           <h2 id="det-title" className={styles.sectionTitle}>Details</h2>
           <dl className={styles.facts}>
@@ -153,246 +149,9 @@ export default async function AdminUserPage({ params, searchParams }: {
             <dt>Joined</dt><dd>{when(target.created_at)}</dd>
           </dl>
         </section>
-
-        {canManage && (
-          <section className={`panel ${styles.actionsCard}`} aria-labelledby="act-title">
-            <h2 id="act-title" className={styles.sectionTitle}>Actions</h2>
-            {detail.verification_kind === "unverified" && (
-              <div className={styles.actionRow}>
-                <p className="hint">Let someone without a Chula account add Minecraft accounts.</p>
-                <ConfirmAction
-                  action={markGuest}
-                  fields={{ userId: target.id }}
-                  trigger="Mark as verified (guest)"
-                  triggerClassName="btn btn-sm"
-                  title={`Mark ${name} as verified (guest)?`}
-                  body={`${name} will be able to add Minecraft accounts without a Chula account. Only do this for people an admin has invited.`}
-                  confirmLabel="Mark as verified"
-                />
-              </div>
-            )}
-            {(detail.chula || detail.guest) && (
-              <div className={styles.actionRow}>
-                <p className="hint">Unlink their Chula account and guest status so they have to verify again.</p>
-                <ConfirmAction
-                  action={resetChula}
-                  fields={{ userId: target.id }}
-                  trigger="Reset Chula link"
-                  triggerClassName="btn btn-sm btn-danger-outline"
-                  title={`Reset ${name}'s Chula link?`}
-                  body={`${detail.chula ? `This unlinks ${detail.chula.email}${detail.guest ? " and removes guest status" : ""}.` : "This removes guest status."} ${name} goes back to Unverified and will be asked to verify their Chula account again.`}
-                  confirmLabel="Reset Chula link"
-                  confirmClassName="btn btn-danger"
-                />
-              </div>
-            )}
-            {isOwner && me?.id !== target.id && target.role !== "owner" && (
-              <div className={styles.roleRow}><RoleControl userId={target.id} role={target.role} name={name} handle={handle} /></div>
-            )}
-          </section>
-        )}
-
-        {myRole === "admin" && (target.role === "moderator" || target.role === "event_staff") && (
-          <section className={`panel ${styles.actionsCard}`} aria-labelledby="staff-title">
-            <h2 id="staff-title" className={styles.sectionTitle}>Staff role</h2>
-            <div className={styles.actionRow}>
-              <p className="hint">Admins can take a staff role away. Only an owner can give one.</p>
-              <ConfirmAction
-                action={setRole}
-                fields={{ userId: target.id, role: "user" }}
-                trigger="Remove staff role"
-                triggerClassName="btn btn-sm btn-danger-outline"
-                title={`Make ${name} a regular player?`}
-                body={`${name} loses their ${ROLE_LABELS[target.role]} tools straight away.`}
-                confirmLabel="Remove staff role"
-                confirmClassName="btn btn-danger"
-              />
-            </div>
-          </section>
-        )}
-
-        {canModerate && (target.role === "user" || (bans?.length ?? 0) > 0) && (
-          <section className={`panel ${styles.actionsCard}`} aria-labelledby="ban-title">
-            <h2 id="ban-title" className={styles.sectionTitle}>Ban</h2>
-            {activeBan ? (
-              <div className={styles.actionRow}>
-                <dl className={styles.facts}>
-                  <dt>Reason</dt><dd>{activeBan.reason}</dd>
-                  <dt>Player sees</dt><dd>{activeBan.public_note ?? <span className="hint">No note</span>}</dd>
-                  <dt>Until</dt><dd>{activeBan.expires_at ? when(activeBan.expires_at) : "Permanent"}</dd>
-                  <dt>By</dt><dd>{activeBan.created_by_name ?? "a removed admin"} · {when(activeBan.created_at)}</dd>
-                </dl>
-                <ConfirmAction
-                  action={liftBan}
-                  fields={{ userId: target.id, banId: activeBan.id }}
-                  trigger="Lift ban"
-                  triggerClassName="btn btn-sm"
-                  title={`Lift ${name}'s ban?`}
-                  body={`The Minecraft accounts the ban removed go back on the whitelist, and ${name} gets their Discord roles back.`}
-                  confirmLabel="Lift ban"
-                />
-              </div>
-            ) : target.role === "user" && me?.id !== target.id ? (
-              <details>
-                <summary className="btn btn-sm btn-danger-outline">Ban {name}</summary>
-                <form action={banUser} className="stack gap-10" style={{ marginTop: 12 }}>
-                  <input type="hidden" name="userId" value={target.id} />
-                  <label className="stack gap-6">
-                    <span className="label">Reason (admins only)</span>
-                    <textarea className={styles.textarea} name="reason" rows={2} maxLength={1000} required />
-                  </label>
-                  <label className="stack gap-6">
-                    <span className="label">Note to the player <span className="optional">optional</span></span>
-                    <textarea className={styles.textarea} name="publicNote" rows={2} maxLength={1000} />
-                  </label>
-                  <label className="stack gap-6">
-                    <span className="label">Length</span>
-                    <select className="input" name="duration" defaultValue="7d">
-                      <option value="1d">1 day</option>
-                      <option value="7d">7 days</option>
-                      <option value="30d">30 days</option>
-                      <option value="permanent">Permanent</option>
-                    </select>
-                  </label>
-                  <p className="hint">Every whitelisted account leaves the whitelist, they&apos;re kicked, and they lose their Discord roles until the ban ends.</p>
-                  <SubmitButton className="btn btn-sm btn-danger">Ban player</SubmitButton>
-                </form>
-              </details>
-            ) : null}
-            {bans && bans.some((b) => !b.active) && (
-              <ol className={styles.log}>
-                {bans.filter((b) => !b.active).map((b) => (
-                  <li key={b.id}>
-                    <time dateTime={b.created_at}>{when(b.created_at)}</time>
-                    <span>
-                      {b.reason} <span className="hint">· {b.lifted_by_name ? `lifted by ${b.lifted_by_name}` : b.expires_at ? "expired" : "lifted"}</span>
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </section>
-        )}
-      </div>
-
-      <div className={styles.mainCol}>
-        <section className="panel" aria-labelledby="profile-title">
-          <div className={styles.listHead}>
-            <h2 id="profile-title" className={styles.sectionTitle}>Profile</h2>
-            {canManage && edit !== "profile" && <Link href={`/admin/users/${id}?edit=profile`} scroll={false} className="link-button">Edit</Link>}
-          </div>
-          {edit === "profile" && canManage ? (
-            <AboutYouForm
-              save={saveProfileFor.bind(null, id)}
-              submitLabel="Save details"
-              cancelHref={`/admin/users/${id}`}
-              initial={{ first: profile?.first_name ?? "", last: profile?.last_name ?? "", nick: profile?.nickname ?? "", level: toStudyLevel(profile?.study_level), faculty: profile?.faculty ?? "", major: profile?.major ?? "" }}
-            />
-          ) : (
-            <dl className={styles.facts}>
-              <dt>Name</dt><dd>{[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || <span className="hint">Not set</span>}</dd>
-              <dt>Nickname</dt><dd>{profile?.nickname ?? <span className="hint">Not set</span>}</dd>
-              <dt>Study level</dt><dd>{levelLabel ?? <span className="hint">Not set</span>}</dd>
-              <dt>Faculty</dt><dd>{profile?.faculty ?? <span className="hint">Not set</span>}</dd>
-              <dt>Major</dt><dd>{profile?.major ?? <span className="hint">Not set</span>}</dd>
-            </dl>
-          )}
-        </section>
-
-        <section className="panel" aria-labelledby="privacy-title">
-          <h2 id="privacy-title" className={styles.sectionTitle}>Privacy</h2>
-          {canManage ? (
-            <form action={setPrivacyFor} className={styles.privacyGrid}>
-              <input type="hidden" name="userId" value={id} />
-              {PRIVACY_FIELDS.map(([field, label]) => (
-                <div className="field" key={field}>
-                  <label htmlFor={`privacy-${field}`}>{label}</label>
-                  <select id={`privacy-${field}`} name={field} className="input" defaultValue={privacy[field]}>
-                    {LEVEL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                  </select>
-                </div>
-              ))}
-              <div><SubmitButton className="btn btn-sm">Save privacy</SubmitButton></div>
-            </form>
-          ) : (
-            <dl className={styles.facts}>
-              {PRIVACY_FIELDS.map(([field, label]) => <Fragment key={field}><dt>{label}</dt><dd>{privacyLabel(privacy[field])}</dd></Fragment>)}
-            </dl>
-          )}
-        </section>
-
-        {banners && (
-          <section className="panel" aria-labelledby="banners-title">
-            <h2 id="banners-title" className={styles.sectionTitle}>Banners</h2>
-            <p className="hint">Defaults are free for everyone. These are earned at an event that rewards them, or given here.</p>
-            <ul className={styles.bannerList}>
-              {banners.filter((b) => b.kind === "unlock").map((banner) => (
-                <li key={banner.id}>
-                  <BannerStrip colors={banner.colors} image={banner.image_path} still={banner.still_path} className={styles.bannerSwatch} />
-                  <span className={styles.bannerText}>
-                    <strong>{banner.name}</strong>
-                    <span className="hint">
-                      {banner.granted ? "Given by staff" : banner.owned ? `Earned at ${banner.event_names.join(", ") || "an event"}` : "Locked"}
-                      {banner.selected && " · in use"}
-                    </span>
-                  </span>
-                  {(banner.granted || !banner.owned) && (
-                    <form action={grantBanner}>
-                      <input type="hidden" name="userId" value={id} />
-                      <input type="hidden" name="bannerId" value={banner.id} />
-                      <input type="hidden" name="grant" value={String(!banner.granted)} />
-                      <SubmitButton className={banner.granted ? "btn btn-sm btn-danger-outline" : "btn btn-sm"}>{banner.granted ? "Take back" : "Give"}</SubmitButton>
-                    </form>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        <section className={`panel ${styles.flush}`} aria-labelledby="mc-title">
-          <h2 id="mc-title" className={`${styles.sectionTitle} ${styles.flushTitle}`}>Minecraft accounts</h2>
-          {detail.registrations.length === 0 ? <p className={`muted ${styles.flushTitle}`}>No Minecraft accounts added yet.</p> : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead><tr><th scope="col">Name</th><th scope="col">UUID</th><th scope="col">Whitelist</th><th scope="col">Sync</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
-                <tbody>
-                  {detail.registrations.map((account) => {
-                    const badge = syncBadge({ desiredWhitelisted: account.desired_whitelisted, syncStatus: toSyncStatus(account.sync_status) });
-                    return (
-                      <tr key={account.id}>
-                        <td className="mono" data-dim={!account.desired_whitelisted || undefined}>{account.minecraft_username}</td>
-                        <td className="mono" title={account.minecraft_uuid}>{account.minecraft_uuid.slice(0, 8)}…{account.minecraft_uuid.slice(-4)}</td>
-                        <td>{account.desired_whitelisted ? <span className="tone-green">Active</span> : account.is_active ? "Removed by admin" : "Removed by player"}</td>
-                        <td>{account.desired_whitelisted ? <span className={`badge badge-${badge.tone}`}><PixelIcon name={badge.icon} />{badge.label}</span> : <span className="hint">—</span>}</td>
-                        <td className={styles.right}>
-                          {canManage && (
-                            <ConfirmAction
-                              action={setWhitelisted}
-                              fields={{ userId: target.id, registrationId: account.id, value: String(!account.desired_whitelisted) }}
-                              trigger={account.desired_whitelisted ? "Remove" : "Restore"}
-                              triggerLabel={`${account.desired_whitelisted ? "Remove" : "Restore"} ${account.minecraft_username}`}
-                              triggerClassName={account.desired_whitelisted ? "btn btn-sm btn-danger-outline" : "btn btn-sm btn-outline"}
-                              title={`${account.desired_whitelisted ? "Remove" : "Restore"} ${account.minecraft_username}?`}
-                              body={account.desired_whitelisted
-                                ? `${account.minecraft_username} leaves the whitelist and can't join until it's restored.`
-                                : `${account.minecraft_username} goes back on ${name}'s profile and the whitelist.`}
-                              confirmLabel={account.desired_whitelisted ? "Remove account" : "Restore account"}
-                              confirmClassName={account.desired_whitelisted ? "btn btn-danger" : "btn btn-primary"}
-                            />
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-
-        {/* Per-player history is audit data: owner/admin only, like /admin/audit. */}
-        {staffCan(myRole, "admin") && (
+      }
+      log={staffCan(myRole, "admin") ? (
+        // Per-player history is audit data: owner/admin only, like /admin/audit.
         <section className="panel" aria-labelledby="log-title">
           <div className={styles.listHead}>
             <h2 id="log-title" className={styles.sectionTitle}>Change log</h2>
@@ -412,8 +171,7 @@ export default async function AdminUserPage({ params, searchParams }: {
             </ol>
           )}
         </section>
-        )}
-      </div>
-    </div>
+      ) : null}
+    />
   </>;
 }
