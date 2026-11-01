@@ -37,7 +37,8 @@ test.afterAll(async () => {
 });
 
 test("loads with no enabled edit control and Edit reveals all eight for an owner", async ({ page }) => {
-  await expect(main(page).locator("input:not([disabled]), select:not([disabled]), textarea:not([disabled])")).toHaveCount(0);
+  // The admin sidebar search lives in the layout; only the player page itself must be inert.
+  await expect(main(page).locator('section :is(input, select, textarea):not([disabled])')).toHaveCount(0);
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   for (const control of [
     page.getByLabel("Mark as verified (guest)"), page.getByLabel("Reset Chula link"), page.getByLabel("Role", { exact: true }),
