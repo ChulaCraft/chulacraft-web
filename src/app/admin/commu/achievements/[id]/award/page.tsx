@@ -24,10 +24,10 @@ const ERRORS: Record<string, string> = {
 
 export default async function AdminAwardPage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; done?: string; count?: string; sel?: string }>;
+  searchParams: Promise<{ error?: string; done?: string; count?: string; sel?: string; n?: string }>;
 }) {
   const { id } = await params;
-  const { error: errorCode, done, count, sel } = await searchParams;
+  const { error: errorCode, done, count, sel, n } = await searchParams;
   if (!UUID.test(id)) notFound();
 
   const supabase = await createClient();
@@ -54,8 +54,9 @@ export default async function AdminAwardPage({ params, searchParams }: {
     </div>
 
     <AwardList
-      // A new key per award resets the ticks once the page reloads after saving.
-      key={`${id}:${done ?? ""}:${count ?? ""}`}
+      // A new key per award resets the ticks and the locked rows once the page reloads after
+      // saving; `n` differs on every redirect, so two awards in a row never share a key.
+      key={`${id}:${done ?? ""}:${count ?? ""}:${n ?? ""}`}
       achievementId={id}
       recipients={recipients}
       seed={selectionIds(sel)}

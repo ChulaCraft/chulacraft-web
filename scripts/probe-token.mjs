@@ -2,8 +2,10 @@
 // Prints one 60 s manager token carrying a single permission bit, minted with the
 // website's own mintToken (src/lib/mcsv-token.ts). For the Gate 2 token probe:
 //
-//   MCSV_JWT_PRIVATE_KEY=<production key> node scripts/probe-token.mjs status
-//   TOKEN=$(MCSV_JWT_PRIVATE_KEY=... node scripts/probe-token.mjs status)
+//   read -rs MCSV_JWT_PRIVATE_KEY && export MCSV_JWT_PRIVATE_KEY && node scripts/probe-token.mjs status
+//   TOKEN=$(node scripts/probe-token.mjs status)    # same shell, key already exported
+//
+// Never put the key on the command line: it would land in shell history and `ps`.
 //
 // The token goes to stdout, everything else to stderr. The key is only read from
 // the environment and is never printed.

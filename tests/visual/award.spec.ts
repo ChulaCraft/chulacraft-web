@@ -79,3 +79,16 @@ test("awarding reports only the players who were really added", async ({ page })
   await expect(page.getByRole("status").filter({ hasText: "Awarded to 1 new player" })).toBeVisible();
   await expect(box(page, "Player 030")).toBeDisabled();
 });
+
+test("a second award in a row locks its rows too, even with the same count", async ({ page }) => {
+  await page.goto(PAGE);
+  await box(page, "Player 040").check();
+  await page.getByRole("button", { name: "Award 1 player" }).click();
+  await expect(box(page, "Player 040")).toBeDisabled();
+  await box(page, "Player 041").check();
+  await page.getByRole("button", { name: "Award 1 player" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Awarded to 1 new player" })).toBeVisible();
+  await expect(box(page, "Player 041")).toBeDisabled();
+  await expect(box(page, "Player 040")).toBeDisabled();
+  await expect(count(page)).toHaveText("0 ticked");
+});

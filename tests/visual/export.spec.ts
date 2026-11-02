@@ -45,6 +45,26 @@ test.describe("admin CSV export", () => {
     });
   }
 
+  test("/admin/players: Export ticked follows select-all and clears when unticked", async ({ page }) => {
+    await visualSession(page, "admin");
+    await page.goto("/admin/players");
+    const all = page.getByRole("checkbox", { name: "Select all loaded players" });
+    await all.check();
+    await expect(page.getByRole("button", { name: /Export ticked \(1\)/ })).toBeEnabled();
+    await all.uncheck();
+    await expect(page.getByRole("button", { name: /Export ticked/ })).toBeDisabled();
+  });
+
+  for (const path of ["/admin/reports", "/admin/appeals", "/admin/commu/achievements", "/admin/commu/events"]) {
+    test(`${path}: a moderator or event staff sees no export controls`, async ({ page }) => {
+      await visualSession(page, path.includes("commu") ? "event_staff" : "moderator");
+      await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Export all" })).toHaveCount(0);
+      await expect(page.locator('input[name="id"][form="export-rows"]')).toHaveCount(0);
+    });
+  }
+
   test("GET returns the whole list as CSV for an admin and 403 for a moderator", async ({ page }) => {
     await visualSession(page, "admin");
     const ok = await page.request.get("/admin/reports/export");

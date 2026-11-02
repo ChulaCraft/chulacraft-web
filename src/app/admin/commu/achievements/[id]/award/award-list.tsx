@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { PixelIcon } from "@/components/icons";
 import { SubmitButton } from "@/components/submit-button";
 import adminStyles from "@/app/admin/admin.module.css";
@@ -25,7 +25,7 @@ type Props = {
 const plural = (n: number) => `${n} ${n === 1 ? "player" : "players"}`;
 
 export function AwardList({ achievementId, recipients, seed, events, initial, awardedOn }: Props) {
-  const existing = useRef(new Set(recipients)).current;
+  const existing = useMemo(() => new Set(recipients), [recipients]);
   const [selected, setSelected] = useState(() => new Set(seed));
   const [query, setQuery] = useState("");
   const [offset, setOffset] = useState(0);

@@ -80,6 +80,16 @@ The new `/admin/ops` calls only the manager's `/services` and `/service/:id/*` (
 4. Check: `curl -s -H "Authorization: Bearer $OPS_HEALTH_TOKEN" https://<site>/api/ops/health` returns `{"ok":true,"db":"ok",...}`. Without the header it returns 401.
 5. Rotate by changing both sides; the monitor shows the website down until they match.
 
+### Manager token probe (Gate 2)
+
+`scripts/probe-token.mjs` mints one 60 s token with a single permission bit. Enter the production key without echo, so it never reaches shell history or `ps`:
+
+```
+read -rs MCSV_JWT_PRIVATE_KEY && export MCSV_JWT_PRIVATE_KEY && node scripts/probe-token.mjs status
+```
+
+Unset it afterwards: `unset MCSV_JWT_PRIVATE_KEY`.
+
 ### Backups on the host: where things are and how to read them
 
 The backup script runs as root and is started by `chulacraft-backup@<target>.service` (targets `world`, `supabase`, `bot`), nightly at 04:00 host time by `chulacraft-backup-nightly.timer`, or from `/admin/ops`. Settings live in `/etc/chulacraft/backup/backup.env`.

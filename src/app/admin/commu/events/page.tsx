@@ -6,12 +6,15 @@ import styles from "@/app/admin/admin.module.css";
 import { timed } from "@/lib/perf";
 import local from "@/app/admin/export-ui.module.css";
 import { RowExport } from "@/components/row-export";
+import { staffCan } from "@/lib/staff";
+import { myRole } from "@/app/admin/staff-gate";
 
 export const metadata: Metadata = { title: "Events" };
 
 export default async function AdminEventsPage({ searchParams }: { searchParams: Promise<{ error?: string; done?: string }> }) {
   const { error: errorCode, done } = await searchParams;
   const supabase = await createClient();
+  const canExport = staffCan(await myRole(), "admin");
   const events = await timed("admin_list_events", supabase.rpc("admin_list_events"));
 
   const ERRORS: Record<string, string> = {
@@ -29,7 +32,7 @@ export default async function AdminEventsPage({ searchParams }: { searchParams: 
     <div className={styles.titleRow}>
       <h1 className={styles.title}>Events</h1>
       <div className={local.bar}>
-        <RowExport href="/admin/commu/events/export" className="btn btn-sm" />
+        {canExport && <RowExport href="/admin/commu/events/export" className="btn btn-sm" />}
         <Link href="/admin/commu/events/new" className="btn btn-sm"><PixelIcon name="plus" />New event</Link>
       </div>
     </div>
@@ -51,7 +54,7 @@ export default async function AdminEventsPage({ searchParams }: { searchParams: 
           <ul className={styles.catalog} aria-label="Events">
             {eventRows.map((event) => (
               <li key={event.id} className={local.withTick}>
-                <input type="checkbox" className={local.tick} name="id" value={event.id} form="export-rows" aria-label={`Select ${event.name} for export`} />
+                {canExport && <input type="checkbox" className={local.tick} name="id" value={event.id} form="export-rows" aria-label={`Select ${event.name} for export`} />}
                 <Link href={`/admin/commu/events/${event.id}`}>
                   <span className={styles.catalogText}>
                     <strong>{event.name}</strong>

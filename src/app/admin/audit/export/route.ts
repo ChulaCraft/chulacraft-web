@@ -19,7 +19,7 @@ async function run(request: Request) {
   const filters = {
     p_actor: actor && UUID.test(actor) ? actor : undefined,
     p_target: target && UUID.test(target) ? target : undefined,
-    p_entity: entity && entity in ENTITIES ? entity : undefined,
+    p_entity: entity && Object.hasOwn(ENTITIES, entity) ? entity : undefined,
     p_from: bangkokDay(params.get("from") ?? undefined) ?? undefined,
     p_to: bangkokDay(params.get("to") ?? undefined, 1) ?? undefined,
     p_ids: ids,

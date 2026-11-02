@@ -38,8 +38,8 @@ export function ReviewDialog({ action, fields = {}, trigger, triggerClassName, t
         {Object.entries(fields).map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)}
         <h2 className="dialog-title">{title}</h2>
         <ul className="review-rows" style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: "0.5rem" }}>
-          {rows.map((row) => (
-            <li key={row.label}>
+          {rows.map((row, i) => (
+            <li key={`${i}:${row.label}`}>
               <span className="muted">{row.label}</span>{" "}
               <span>{row.before}</span> <span aria-hidden="true">{"->"}</span><span className="sr-only"> changes to </span> <strong>{row.after}</strong>
             </li>

@@ -79,7 +79,7 @@ const forbidden = () => new Response("Forbidden", { status: 403 });
 export async function exportGate(request: Request): Promise<{ ok: true; supabase: Client } | { ok: false; response: Response }> {
   if (request.method === "POST") {
     const origin = request.headers.get("origin");
-    const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+    const host = request.headers.get("x-forwarded-host")?.split(",")[0].trim() || request.headers.get("host");
     let originHost: string | null = null;
     try { originHost = origin ? new URL(origin).host : null; } catch { /* malformed */ }
     if (!originHost || !host || originHost !== host) return { ok: false, response: forbidden() };

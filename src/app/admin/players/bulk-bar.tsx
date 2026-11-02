@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { selectionParam } from "@/app/admin/commu/achievements/selection";
 import { ReviewDialog, type ReviewRow } from "@/components/review-dialog";
 import styles from "../admin.module.css";
@@ -17,6 +17,8 @@ const say = (r: BulkResult) => "error" in r
 
 const SHOWN = 20;
 const AWARD_MAX = 200;
+/** bulkMarkGuest and bulkBan refuse more than this with TOO_MANY. */
+const BULK_MAX = 200;
 
 /** Actions for the ticked rows. Each player still goes through the same RPC as
  *  the single-player buttons, so the database applies every role rule. Guest and
@@ -25,13 +27,26 @@ export function BulkBar({ ids, names = {}, achievements, can, onClear, onResult 
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [award, setAward] = useState("");
-  const [pending, start] = useTransition();
+  const [pending, setPending] = useState(false);
+  const [problem, setProblem] = useState<{ action: "guest" | "ban"; message: string } | null>(null);
 
-  const run = (job: () => Promise<BulkResult>) => start(async () => {
-    const result = await job();
-    onResult(say(result));
-    if (!("error" in result)) { onClear(); router.refresh(); }
-  });
+  /** Awaited by the dialog's action, so Confirm stays pending until the job is done. A failure stays in the dialog. */
+  const run = async (action: "guest" | "ban", job: () => Promise<BulkResult>) => {
+    setPending(true);
+    setProblem(null);
+    try {
+      const result = await job();
+      if ("error" in result) { setProblem({ action, message: say(result) }); return; }
+      onResult(say(result));
+      onClear();
+      router.refresh();
+    } catch {
+      setProblem({ action, message: "The bulk action failed. Try again." });
+    } finally {
+      setPending(false);
+    }
+  };
+  const tooMany = ids.length > BULK_MAX;
 
   const rows = (before: string, after: string): ReviewRow[] => {
     const list = ids.slice(0, SHOWN).map((id) => ({ label: names[id] ?? id.slice(0, 8), before, after }));
@@ -44,8 +59,8 @@ export function BulkBar({ ids, names = {}, achievements, can, onClear, onResult 
       <strong>{ids.length} selected</strong>
       {can.guest && (
         <ReviewDialog
-          action={async () => { run(() => bulkMarkGuest(ids)); }}
-          trigger="Mark as guest" triggerClassName="btn btn-sm" disabled={pending}
+          action={() => run("guest", () => bulkMarkGuest(ids))} error={problem?.action === "guest" ? problem.message : null}
+          trigger="Mark as guest" triggerClassName="btn btn-sm" disabled={pending || tooMany}
           title={`Mark ${count} as verified (guest)?`}
           rows={rows("Not verified", "Verified (guest)")}
           warning="Players who already have a verified Chula link, and players you can't change, are skipped."
@@ -56,14 +71,15 @@ export function BulkBar({ ids, names = {}, achievements, can, onClear, onResult 
         <label htmlFor="bulk-reason" className="sr-only">Ban reason (admins only see this)</label>
         <input id="bulk-reason" className="input" placeholder="Ban reason" maxLength={1000} value={reason} onChange={(e) => setReason(e.target.value)} />
         <ReviewDialog
-          action={async () => { run(() => bulkBan(ids, reason)); }}
-          trigger="Ban…" triggerClassName="btn btn-sm" disabled={pending || !reason.trim()}
+          action={() => run("ban", () => bulkBan(ids, reason))} error={problem?.action === "ban" ? problem.message : null}
+          trigger="Ban…" triggerClassName="btn btn-sm" disabled={pending || tooMany || !reason.trim()}
           title={`Ban ${count}?`}
           rows={rows("Not banned", "Banned")}
           warning={`Reason: ${reason.trim()}. Their whitelisted Minecraft accounts are turned off. Admins and you are skipped.`}
           confirmLabel={`Ban ${ids.length}`} confirmClassName="btn btn-danger"
         />
       </>}
+      {tooMany && (can.guest || can.ban) && <span className="hint" role="status">Guest and ban work on {BULK_MAX} players or fewer. Untick some.</span>}
       {can.award && achievements.length > 0 && <>
         <label htmlFor="bulk-award" className="sr-only">Achievement to award</label>
         <select id="bulk-award" className="input" value={award} onChange={(e) => setAward(e.target.value)}>

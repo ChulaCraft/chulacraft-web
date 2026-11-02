@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { SortHeader } from "@/components/data-table";
+import { RowExport } from "@/components/row-export";
 import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
 import { ROLE_LABELS } from "@/lib/staff";
 import type { Filters, RawParams } from "@/lib/table-query";
+import local from "../export-ui.module.css";
 import styles from "../admin.module.css";
 import { loadPlayers } from "./actions";
 import { BulkBar, type AchievementOption, type BulkPermissions } from "./bulk-bar";
@@ -18,7 +20,7 @@ const WHITELIST: Record<string, [string, string]> = {
   whitelisted: ["Whitelisted", "badge-green"], pending: ["Pending sync", "badge-amber"], retrying: ["Retrying", "badge-danger"], none: ["None", "badge-muted"],
 };
 
-export function PlayerTable({ initial, total, search, achievements, can }: { initial: PlayerRow[]; total: number; search: RawParams; achievements: AchievementOption[]; can: BulkPermissions }) {
+export function PlayerTable({ initial, total, search, achievements, can, exportFilters }: { initial: PlayerRow[]; total: number; search: RawParams; achievements: AchievementOption[]; can: BulkPermissions; exportFilters?: [string, string][] }) {
   const state = readPlayers(search);
   const [rows, setRows] = useState(initial);
   const [failed, setFailed] = useState(false);
@@ -61,6 +63,7 @@ export function PlayerTable({ initial, total, search, achievements, can }: { ini
   const filtered = state.q !== "" || Object.keys(state.filters).length > 0;
 
   return <>
+    {exportFilters && <div className={local.bar}><RowExport href={`${BASE}/export`} className="btn btn-sm" filters={exportFilters} count={selected.size} /></div>}
     <p role="status" className="hint">{result}</p>
     {selected.size > 0 && <BulkBar ids={[...selected]} names={names} achievements={achievements} can={can} onClear={() => setSelected(new Set())} onResult={setResult} />}
     <div className={styles.tableWrap}>

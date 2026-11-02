@@ -9,6 +9,8 @@ import { SubmitButton } from "@/components/submit-button";
 import { timed } from "@/lib/perf";
 import local from "../export-ui.module.css";
 import { RowExport } from "@/components/row-export";
+import { staffCan } from "@/lib/staff";
+import { myRole } from "@/app/admin/staff-gate";
 
 export const metadata: Metadata = { title: "Appeals" };
 
@@ -25,6 +27,7 @@ export default async function AdminAppealsPage({ searchParams }: { searchParams:
   const { status: raw, error: errorCode, done } = await searchParams;
   const status = raw === "accepted" || raw === "rejected" ? raw : "open";
   const supabase = await createClient();
+  const canExport = staffCan(await myRole(), "admin");
   const { data, error } = await timed("admin_list_appeals", supabase.rpc("admin_list_appeals", { p_status: status }));
   const appeals = data ?? [];
 
@@ -37,7 +40,7 @@ export default async function AdminAppealsPage({ searchParams }: { searchParams:
           {s === status ? <strong>{s}</strong> : <Link href={s === "open" ? "/admin/appeals" : `/admin/appeals?status=${s}`}>{s}</Link>}
         </span>)}
       </nav>
-      <div className={local.bar}><RowExport href="/admin/appeals/export" filters={[["status", status]]} /></div>
+      {canExport && <div className={local.bar}><RowExport href="/admin/appeals/export" filters={[["status", status]]} /></div>}
     </div>
 
     <div aria-live="polite">
@@ -53,7 +56,7 @@ export default async function AdminAppealsPage({ searchParams }: { searchParams:
       <section key={a.id} className="panel stack gap-10" aria-label={`Appeal from ${a.user_name ?? "a player"}`}>
         <div className={styles.listHead}>
           <div className={local.head}>
-            <input type="checkbox" className={local.tick} name="id" value={a.id} form="export-rows" aria-label={`Select appeal from ${a.user_name ?? "a player"} for export`} />
+            {canExport && <input type="checkbox" className={local.tick} name="id" value={a.id} form="export-rows" aria-label={`Select appeal from ${a.user_name ?? "a player"} for export`} />}
             <h2><Link href={`/admin/users/${a.user_id}`}>{a.user_name ?? "A player"}</Link></h2>
           </div>
           <time className="hint" dateTime={a.created_at}>{when(a.created_at)}</time>

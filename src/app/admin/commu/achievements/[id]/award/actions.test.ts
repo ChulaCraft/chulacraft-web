@@ -116,7 +116,7 @@ describe("admin award actions", () => {
     const data = form({ achievementId: ID, sel: `${USER},${OTHER},junk`, awardedOn: "2026-10-20", eventId: "" });
     data.append("matchedId", USER);
     // One of the two already held it, so the database skipped them: the page says 1, not 2.
-    expect(await redirected(confirmAward, data)).toBe(`${target()}?done=awarded&count=1`);
+    expect(await redirected(confirmAward, data)).toMatch(new RegExp(`^${target()}\\?done=awarded&count=1&n=\\d+$`));
     expect(m.rpc).toHaveBeenCalledWith("admin_award", {
       p_achievement_id: ID, p_event_id: null, p_awarded_on: "2026-10-20", p_user_ids: [USER, OTHER]
     });
@@ -126,7 +126,7 @@ describe("admin award actions", () => {
   it("lets an event set the award date and keeps the date otherwise", async () => {
     m.rpc.mockResolvedValue({ data: 1, error: null });
     const data = form({ achievementId: ID, sel: USER, awardedOn: "2026-10-20", eventId: EVENT });
-    expect(await redirected(confirmAward, data)).toBe(`${target()}?done=awarded&count=1`);
+    expect(await redirected(confirmAward, data)).toMatch(new RegExp(`^${target()}\\?done=awarded&count=1&n=\\d+$`));
     expect(m.rpc).toHaveBeenCalledWith("admin_award", expect.objectContaining({ p_event_id: EVENT, p_awarded_on: "2026-10-20" }));
 
     m.rpc.mockReset().mockResolvedValue({ data: 1, error: null });

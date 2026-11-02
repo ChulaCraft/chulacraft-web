@@ -104,5 +104,5 @@ export async function confirmAward(formData: FormData) {
   revalidatePath("/admin/commu/achievements");
   revalidatePath(`/admin/commu/achievements/${id}`);
   if (error) redirect(`/admin/commu/achievements/${id}/award?error=${dbErrorCode(error) ?? "FAILED"}`);
-  redirect(`/admin/commu/achievements/${id}/award?done=awarded&count=${added ?? 0}`);
+  redirect(`/admin/commu/achievements/${id}/award?done=awarded&count=${added ?? 0}&n=${Date.now()}`);
 }
