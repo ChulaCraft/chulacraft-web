@@ -1,7 +1,7 @@
 -- v1.1 T1.2: export RPCs, player id list, award skip-existing, staged apply,
 -- gallery cover (migrations 20261101000001..5).
 begin;
-select plan(71);
+select plan(78);
 
 create function pg_temp.login(p_user uuid) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub', p_user, 'role', 'authenticated')::text, true);
@@ -113,6 +113,23 @@ select throws_ok($$ select public.admin_apply_player_changes('00000000-0000-0000
 select pg_temp.login('00000000-0000-0000-0000-000000000003');
 select throws_ok($$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000006', '[{"kind":"guest"}]') $$, 'FORBIDDEN', 'moderator: inner gate refuses');
 
+-- Outer gate admits moderation and community staff; each inner RPC still gates its step.
+reset role;
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-000000000009', 'nine@test.local');
+select pg_temp.login('00000000-0000-0000-0000-000000000003');
+select lives_ok($$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000009',
+  '[{"kind":"ban","reason":"moderator ban","public_note":null,"expires_at":null}]') $$, 'moderator can ban through a staged review');
+select ok(public.is_banned('00000000-0000-0000-0000-000000000009'), 'moderator ban applied');
+select lives_ok(format($f$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000009',
+  '[{"kind":"lift_ban","ban_id":"%s"}]') $f$, (select id from public.bans where user_id = '00000000-0000-0000-0000-000000000009' and lifted_at is null)),
+  'moderator can lift a ban through a staged review');
+select ok(not public.is_banned('00000000-0000-0000-0000-000000000009'), 'moderator lift applied');
+select pg_temp.login('00000000-0000-0000-0000-000000000004');
+select lives_ok($$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000009',
+  '[{"kind":"banner","banner_id":"sakura","grant":true}]') $$, 'event staff can grant a banner through a staged review');
+select is((select count(*)::int from public.account_change_log where entity = 'banner_grants' and target_user_id = '00000000-0000-0000-0000-000000000009'), 1, 'event staff banner grant logged');
+select throws_ok($$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000009', '[{"kind":"guest"}]') $$, 'FORBIDDEN', 'event staff: guest refused by the inner gate');
+
 -- Rollback: role is applied first, then a bad privacy level fails; nothing sticks.
 select pg_temp.login('00000000-0000-0000-0000-000000000001');
 select is(pg_temp.detail_of($$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000006',
@@ -143,7 +160,7 @@ select ok((select guest_verified_at is not null from public.profiles where user_
 select is((select count(*)::int from public.account_change_log where field = 'privacy_profile' and target_user_id = '00000000-0000-0000-0000-000000000006'), 1, 'privacy: one row for one changed level');
 select is((select count(*)::int from public.account_change_log where entity = 'banner_grants' and target_user_id = '00000000-0000-0000-0000-000000000006'), 1, 'banner: one row');
 select cmp_ok((select count(*)::int from public.account_change_log where entity = 'profiles' and field in ('first_name','last_name') and target_user_id = '00000000-0000-0000-0000-000000000006'), '=', 2, 'profile: one row per changed field');
-select cmp_ok((pg_temp.logn() - (select n from l0))::int, '>=', 6, 'role + privacy + banner + profile + guest are all logged');
+select is((pg_temp.logn() - (select n from l0))::int, 8, 'role + privacy + banner + 4 profile fields + guest: exactly 8 rows');
 
 -- Admin actor demotes a moderator and stages a follow-up (D1a ordering).
 select pg_temp.login('00000000-0000-0000-0000-000000000002');
@@ -189,7 +206,7 @@ select lives_ok($$ select public.admin_apply_player_changes('00000000-0000-0000-
   jsonb_build_object('kind','lift_ban','ban_id',(select id from public.bans where user_id = '00000000-0000-0000-0000-000000000007')))) $$,
   'lift then whitelist, input order reversed');
 select ok(not public.is_banned('00000000-0000-0000-0000-000000000007'), 'ban lifted');
-select cmp_ok((pg_temp.logn() - (select n from l2))::int, '>=', 1, 'lift_ban logs 1 + restored registrations, whitelist 0-2');
+select is((pg_temp.logn() - (select n from l2))::int, 2, 'lift_ban: 1 row + 1 restored registration; whitelist no-op');
 create temporary table l3 as select pg_temp.logn() as n;
 select lives_ok($$ select public.admin_apply_player_changes('00000000-0000-0000-0000-000000000008', '[{"kind":"guest"},{"kind":"chula_reset"}]') $$,
   'reset plus guest in one review (reset runs first)');
