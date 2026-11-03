@@ -21,6 +21,11 @@ describe("probe-token", () => {
     expect(verify(null, Buffer.from(`${h}.${p}`), publicKey, Buffer.from(s, "base64url"))).toBe(true);
   });
 
+  it("accepts the one-line PEM with literal \\n escapes", () => {
+    const oneLine = pem.trim().replace(/\n/g, "\\n");
+    expect(run(["status"], { PATH: process.env.PATH, MCSV_JWT_PRIVATE_KEY: oneLine }).status).toBe(0);
+  });
+
   it("takes any permission name, case-insensitively", () => {
     const token = run(["Backup_Read"]).stdout.trim();
     expect(JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString()).permission).toBe(128);
@@ -35,8 +40,13 @@ describe("probe-token", () => {
   it("fails without a key and never prints a key", () => {
     const missing = run(["status"], { PATH: process.env.PATH });
     expect(missing.status).toBe(2);
+    expect(missing.stderr).toContain("No key");
+    const empty = run(["status"], { PATH: process.env.PATH, MCSV_JWT_PRIVATE_KEY: "  \n" });
+    expect(empty.status).toBe(2);
+    expect(empty.stdout).toBe("");
     const bad = run(["status"], { PATH: process.env.PATH, MCSV_JWT_PRIVATE_KEY: "not-a-key-SECRET" });
     expect(bad.status).toBe(1);
+    expect(bad.stderr).toContain("Could not sign");
     expect(bad.stdout + bad.stderr).not.toContain("SECRET");
   });
 });

@@ -82,11 +82,17 @@ The new `/admin/ops` calls only the manager's `/services` and `/service/:id/*` (
 
 ### Manager token probe (Gate 2)
 
-`scripts/probe-token.mjs` mints one 60 s token with a single permission bit. Enter the production key without echo, so it never reaches shell history or `ps`:
+`scripts/probe-token.mjs` mints one 60 s token with a single permission bit. The key is a multi-line PEM, so do **not** use `read -rs`: it reads one line and the rest of a paste runs in your shell as commands (and lands in history). Use one of:
 
 ```
-read -rs MCSV_JWT_PRIVATE_KEY && export MCSV_JWT_PRIVATE_KEY && node scripts/probe-token.mjs status
+# key saved in a 0600 file
+export MCSV_JWT_PRIVATE_KEY="$(cat /path/key.pem)"
+# or paste with no echo, then press Ctrl-D on an empty line
+stty -echo; MCSV_JWT_PRIVATE_KEY="$(cat)"; stty echo; export MCSV_JWT_PRIVATE_KEY
+node scripts/probe-token.mjs status
 ```
+
+The one-line form with literal `\n` between the PEM lines also works. With no key or an unusable one, the script prints a clear error and exits non-zero (2 for no key, 1 for a key that cannot sign).
 
 Unset it afterwards: `unset MCSV_JWT_PRIVATE_KEY`.
 

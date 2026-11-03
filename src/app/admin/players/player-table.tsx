@@ -63,7 +63,7 @@ export function PlayerTable({ initial, total, search, achievements, can, exportF
   const filtered = state.q !== "" || Object.keys(state.filters).length > 0;
 
   return <>
-    {exportFilters && <div className={local.bar}><RowExport href={`${BASE}/export`} className="btn btn-sm" filters={exportFilters} count={selected.size} /></div>}
+    {exportFilters && <div className={`${local.bar} ${local.end}`}><RowExport href={`${BASE}/export`} className="btn btn-sm" filters={exportFilters} count={selected.size} /></div>}
     <p role="status" className="hint">{result}</p>
     {selected.size > 0 && <BulkBar ids={[...selected]} names={names} achievements={achievements} can={can} onClear={() => setSelected(new Set())} onResult={setResult} />}
     <div className={styles.tableWrap}>
@@ -80,7 +80,7 @@ export function PlayerTable({ initial, total, search, achievements, can, exportF
             const [wlLabel, wlClass] = WHITELIST[r.whitelist] ?? WHITELIST.none;
             return (
               <tr key={r.user_id} aria-selected={selected.has(r.user_id)}>
-                {selectable && <td><input type="checkbox" name="id" value={r.user_id} form="export-rows" aria-label={`Select ${r.display_name ?? r.handle}`} checked={selected.has(r.user_id)} onChange={() => toggle(r.user_id)} /></td>}
+                {selectable && <td><input type="checkbox" name="id" value={r.user_id} form={exportFilters ? "export-rows" : undefined} aria-label={`Select ${r.display_name ?? r.handle}`} checked={selected.has(r.user_id)} onChange={() => toggle(r.user_id)} /></td>}
                 <td>
                   <Link href={`/admin/users/${r.user_id}`}><strong>{r.display_name ?? r.handle}</strong></Link><br />
                   <Link href={`/admin/users/${r.user_id}`} className={styles.small}>{r.handle}</Link>

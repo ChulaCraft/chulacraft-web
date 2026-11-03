@@ -23,16 +23,18 @@ type Props = {
   error?: string | null;
   disabled?: boolean;
   danger?: boolean;
+  /** Called when the dialog closes, however it was closed. */
+  onClose?: () => void;
 };
 
 /** Native <dialog> that lists staged changes for review before a server action applies them. */
-export function ReviewDialog({ action, fields = {}, trigger, triggerClassName, triggerLabel, title, rows, warning, confirmLabel, confirmClassName = "btn btn-primary", error, disabled, danger }: Props) {
+export function ReviewDialog({ action, fields = {}, trigger, triggerClassName, triggerLabel, title, rows, warning, confirmLabel, confirmClassName = "btn btn-primary", error, disabled, danger, onClose }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { if (error && ref.current && !ref.current.open) ref.current.showModal(); }, [error]);
 
   return <>
     <button type="button" className={triggerClassName} aria-label={triggerLabel} disabled={disabled} onClick={() => ref.current?.showModal()}>{trigger}</button>
-    <dialog ref={ref} className="dialog" data-danger={danger || undefined} aria-label={title} onClick={(e) => { if (e.target === e.currentTarget) ref.current?.close(); }}>
+    <dialog ref={ref} className="dialog" data-danger={danger || undefined} aria-label={title} onClose={onClose} onClick={(e) => { if (e.target === e.currentTarget) ref.current?.close(); }}>
       {danger && <div className="dialog-banner">Highest level</div>}
       <form action={action} className="dialog-body">
         {Object.entries(fields).map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)}

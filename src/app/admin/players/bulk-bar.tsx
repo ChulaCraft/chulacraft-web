@@ -7,18 +7,17 @@ import { selectionParam } from "@/app/admin/commu/achievements/selection";
 import { ReviewDialog, type ReviewRow } from "@/components/review-dialog";
 import styles from "../admin.module.css";
 import { bulkBan, bulkMarkGuest, type BulkResult } from "./actions";
+import { MAX_BULK } from "./params";
 
 export type AchievementOption = { id: string; name: string };
 export type BulkPermissions = { guest: boolean; ban: boolean; award: boolean };
 
 const say = (r: BulkResult) => "error" in r
-  ? (r.error === "TOO_MANY" ? "Select 200 players or fewer." : "That selection can't be used. Reload and try again.")
+  ? (r.error === "TOO_MANY" ? `Select ${MAX_BULK} players or fewer.` : "That selection can't be used. Reload and try again.")
   : `${r.done} done${r.skipped.length ? `, ${r.skipped.length} skipped (${[...new Set(r.skipped.map((s) => s.code))].join(", ")})` : ""}.`;
 
 const SHOWN = 20;
 const AWARD_MAX = 200;
-/** bulkMarkGuest and bulkBan refuse more than this with TOO_MANY. */
-const BULK_MAX = 200;
 
 /** Actions for the ticked rows. Each player still goes through the same RPC as
  *  the single-player buttons, so the database applies every role rule. Guest and
@@ -28,7 +27,10 @@ export function BulkBar({ ids, names = {}, achievements, can, onClear, onResult 
   const [reason, setReason] = useState("");
   const [award, setAward] = useState("");
   const [pending, setPending] = useState(false);
-  const [problem, setProblem] = useState<{ action: "guest" | "ban"; message: string } | null>(null);
+  const [problem, setProblem] = useState<{ action: "guest" | "ban"; message: string; key: string } | null>(null);
+  /** A failure belongs to the selection it came from; a different selection starts clean. */
+  const key = ids.join(",");
+  const shown = problem?.key === key ? problem : null;
 
   /** Awaited by the dialog's action, so Confirm stays pending until the job is done. A failure stays in the dialog. */
   const run = async (action: "guest" | "ban", job: () => Promise<BulkResult>) => {
@@ -36,17 +38,17 @@ export function BulkBar({ ids, names = {}, achievements, can, onClear, onResult 
     setProblem(null);
     try {
       const result = await job();
-      if ("error" in result) { setProblem({ action, message: say(result) }); return; }
+      if ("error" in result) { setProblem({ action, message: say(result), key }); return; }
       onResult(say(result));
       onClear();
       router.refresh();
     } catch {
-      setProblem({ action, message: "The bulk action failed. Try again." });
+      setProblem({ action, message: "The bulk action failed. Try again.", key });
     } finally {
       setPending(false);
     }
   };
-  const tooMany = ids.length > BULK_MAX;
+  const tooMany = ids.length > MAX_BULK;
 
   const rows = (before: string, after: string): ReviewRow[] => {
     const list = ids.slice(0, SHOWN).map((id) => ({ label: names[id] ?? id.slice(0, 8), before, after }));
@@ -59,7 +61,7 @@ export function BulkBar({ ids, names = {}, achievements, can, onClear, onResult 
       <strong>{ids.length} selected</strong>
       {can.guest && (
         <ReviewDialog
-          action={() => run("guest", () => bulkMarkGuest(ids))} error={problem?.action === "guest" ? problem.message : null}
+          action={() => run("guest", () => bulkMarkGuest(ids))} error={shown?.action === "guest" ? shown.message : null} onClose={() => setProblem(null)}
           trigger="Mark as guest" triggerClassName="btn btn-sm" disabled={pending || tooMany}
           title={`Mark ${count} as verified (guest)?`}
           rows={rows("Not verified", "Verified (guest)")}
@@ -71,7 +73,7 @@ export function BulkBar({ ids, names = {}, achievements, can, onClear, onResult 
         <label htmlFor="bulk-reason" className="sr-only">Ban reason (admins only see this)</label>
         <input id="bulk-reason" className="input" placeholder="Ban reason" maxLength={1000} value={reason} onChange={(e) => setReason(e.target.value)} />
         <ReviewDialog
-          action={() => run("ban", () => bulkBan(ids, reason))} error={problem?.action === "ban" ? problem.message : null}
+          action={() => run("ban", () => bulkBan(ids, reason))} error={shown?.action === "ban" ? shown.message : null} onClose={() => setProblem(null)}
           trigger="Ban…" triggerClassName="btn btn-sm" disabled={pending || tooMany || !reason.trim()}
           title={`Ban ${count}?`}
           rows={rows("Not banned", "Banned")}
@@ -79,7 +81,7 @@ export function BulkBar({ ids, names = {}, achievements, can, onClear, onResult 
           confirmLabel={`Ban ${ids.length}`} confirmClassName="btn btn-danger"
         />
       </>}
-      {tooMany && (can.guest || can.ban) && <span className="hint" role="status">Guest and ban work on {BULK_MAX} players or fewer. Untick some.</span>}
+      {tooMany && (can.guest || can.ban) && <span className="hint" role="status">Guest and ban work on {MAX_BULK} players or fewer. Untick some.</span>}
       {can.award && achievements.length > 0 && <>
         <label htmlFor="bulk-award" className="sr-only">Achievement to award</label>
         <select id="bulk-award" className="input" value={award} onChange={(e) => setAward(e.target.value)}>
