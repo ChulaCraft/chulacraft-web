@@ -54,6 +54,9 @@ select is(pg_temp.done('d-3', '111111111111111111', 'add', true), 1, 'write-back
 select is(pg_temp.queue(), '{}', 'an ok add clears it');
 select public.admin_award('00000000-0000-0000-0000-0000000000a1', null, null, '{00000000-0000-0000-0000-000000000003}');
 select is(pg_temp.queue(), '{}', 'a second award of the same badge adds nothing');
+-- admin_award now skips holders; older databases can still hold a duplicate row, so insert one.
+insert into public.achievement_awards (user_id, achievement_id, awarded_on)
+  values ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-0000000000a1', current_date);
 
 -- Revokes
 select public.admin_revoke_award((select id from public.achievement_awards

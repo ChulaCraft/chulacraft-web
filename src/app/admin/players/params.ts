@@ -4,6 +4,8 @@ import { readTable, tableHref, type Column, type Filters, type RawParams, type T
 // The players table, per docs/admin-tables.md. Keys match admin_list_players.
 export const BASE = "/admin/players";
 export const PAGE_SIZE = 50;
+/** Most players one bulk guest or ban call accepts (bulkMarkGuest and bulkBan answer TOO_MANY above it). */
+export const MAX_BULK = 200;
 
 export const COLUMNS: Column[] = [
   { key: "player", label: "Player", sort: true, filter: "text" },

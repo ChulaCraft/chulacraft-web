@@ -77,10 +77,43 @@ jobs:
       - name: Run database security tests
         run: supabase test db
 
+  contract:
+    name: Manager contract (mock)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CI: "true"
+      MANAGER_URL: http://127.0.0.1:3212
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start the manager mock with the test-only key
+        run: |
+          export MCSV_JWT_PRIVATE_KEY="$(node -e 'import("./tests/visual/helpers/manager-key.mjs").then((m) => process.stdout.write(m.visualManagerKey))')"
+          MOCK_MANAGER_PORT=3212 nohup node scripts/local-mocks.mjs --manager-only > mock-manager.log 2>&1 &
+          for i in $(seq 50); do curl -s -o /dev/null http://127.0.0.1:3212/services && break; sleep 0.2; done
+
+      - name: Run the contract suite against the mock
+        run: npx vitest run --config vitest.contract.config.ts
+
+      - name: Show the mock's log on failure
+        if: failure()
+        run: cat mock-manager.log
+
   browser-audit:
     name: Browser audit
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     env:
       CI: "true"
       VISUAL_CYCLE: cycle-${{ github.run_id }}

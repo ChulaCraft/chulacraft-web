@@ -46,6 +46,14 @@ describe("ops actions", () => {
     });
   });
 
+  it("starts a bot backup", async () => {
+    expect(await redirected(form({ action: "backup", target: "bot" }))).toBe("NEXT_REDIRECT:/admin/ops?done=backup");
+    expect(m.opsGrant).toHaveBeenCalledWith("backup_run", 256, "bot");
+    expect(m.managerFetch).toHaveBeenCalledWith("/backups", "tok", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ target: "bot" })
+    });
+  });
+
   it("never reaches the manager for a bad service, target or action", async () => {
     for (const fields of <Record<string, string>[]>[
       { service: "../status", action: "restart" }, { service: "..", action: "restart" }, { service: "survival", action: "cmd" },

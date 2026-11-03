@@ -146,6 +146,12 @@ insert into expected values
   ('authenticated', 'admin_list_attendance(p_event_id uuid)'),
   ('authenticated', 'admin_remove_attendance(p_event_id uuid, p_user_id uuid)'),
   ('authenticated', 'admin_award_attendees(p_event_id uuid, p_achievement_id uuid)'),
+  ('authenticated', 'admin_export_reports(p_status text, p_ids uuid[])'),
+  ('authenticated', 'admin_export_appeals(p_status text, p_ids uuid[])'),
+  ('authenticated', 'admin_export_audit(p_actor uuid, p_target uuid, p_entity text, p_from timestamp with time zone, p_to timestamp with time zone, p_ids uuid[], p_before_at timestamp with time zone, p_before_id uuid, p_limit integer)'),
+  ('authenticated', 'admin_list_player_ids(p_filters jsonb, p_query text)'),
+  ('authenticated', 'admin_apply_player_changes(p_user_id uuid, p_changes jsonb)'),
+  ('authenticated', 'admin_set_gallery_cover(p_id uuid, p_path text)'),
   -- 20261028000001_event_reminders.sql
   ('authenticated', 'admin_set_event_reminders(p_id uuid, p_offsets integer[])'),
   ('authenticated', 'admin_event_reminders(p_id uuid)'),

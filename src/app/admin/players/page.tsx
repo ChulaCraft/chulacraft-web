@@ -76,9 +76,8 @@ export default async function AdminPlayersPage({ searchParams }: { searchParams:
           <FilterPanel key={hrefFor(state)} columns={COLUMNS} {...ctx} />
           <p className={styles.tableCount} aria-live="polite"><strong>{first.total.toLocaleString("en-GB")}</strong> {first.total === 1 ? "player" : "players"}</p>
           <FilterChips columns={COLUMNS} {...ctx} />
-          {isAdmin && <a href={hrefFor(state).replace(BASE, `${BASE}/export`)} className="btn btn-sm" download><PixelIcon name="arrow" />Export CSV</a>}
         </div>
-        <PlayerTable key={hrefFor(state)} initial={first.rows} total={first.total} search={search} achievements={achievements} can={can} />
+        <PlayerTable key={hrefFor(state)} initial={first.rows} total={first.total} search={search} achievements={achievements} can={can} exportFilters={isAdmin ? [...new URLSearchParams(hrefFor(state).split("?")[1] ?? "")] : undefined} />
       </>}
   </>;
 }

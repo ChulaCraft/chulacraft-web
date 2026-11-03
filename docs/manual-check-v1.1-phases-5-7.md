@@ -93,8 +93,8 @@ Browser at 375 px and 1280 px, keyboard only, and with reduced motion on:
 
 ### Known follow-ups (not blocking, from review)
 
-- Manager mock never returns 409 for start/stop/restart/update; contract is silent on images with no
-  `RepoDigests` — settle before the manager implements `image`.
+- Done: the mock now returns 409 for an action on a busy service, and the contract settles images with no
+  `RepoDigests` (`<image:tag>@unknown`, `latest` equals `current`).
 - `bot_register('[]','[]')` retires every setting and job (values kept; bot falls back to `.env`).
 - Charts are focusable before hydration, so a very early key press is dropped.
 - 192/512 px icons are upscaled from a 160 px logo; replace with a larger source when available.

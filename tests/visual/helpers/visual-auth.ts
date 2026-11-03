@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { stubUrl } from "./ports.mjs";
 
 // The visual user's Supabase session cookie (the stub accepts any signature) and
 // the stub's role switch, shared by the a11y and seo specs.
@@ -27,7 +28,7 @@ const authCookieValue = `base64-${encode({
 
 /** role null = logged out. Also stubs Vercel Analytics, which only Vercel serves. */
 export async function visualSession(page: Page, role: string | null) {
-  const res = await fetch(`http://127.0.0.1:3211/__visual/state?authenticated=${role !== null}&role=${role ?? ""}`, { method: "POST" });
+  const res = await fetch(`${stubUrl}/__visual/state?authenticated=${role !== null}&role=${role ?? ""}`, { method: "POST" });
   if (!res.ok) throw new Error(`Could not set visual auth state: ${res.status}`);
   if (role !== null) {
     await page.context().addCookies([{
@@ -38,7 +39,7 @@ export async function visualSession(page: Page, role: string | null) {
   await page.route("**/_vercel/insights/**", (route) => route.fulfill({ contentType: "text/javascript", body: "" }));
 }
 
-export const resetVisualSession = () => fetch("http://127.0.0.1:3211/__visual/state?authenticated=false", { method: "POST" });
+export const resetVisualSession = () => fetch(`${stubUrl}/__visual/state?authenticated=false`, { method: "POST" });
 
 /** Fixtures in helpers/supabase-stub.mjs. */
 export const VISUAL_EVENT_ID = "00000000-0000-4000-8000-0000000000e1";

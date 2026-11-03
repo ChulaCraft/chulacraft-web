@@ -12,6 +12,8 @@ const BASE = "/admin/commu/gallery";
 /** Back to `page` with the error code or the done message. */
 function finish(page: string, error: { message: string } | null, done: string): never {
   revalidatePath(BASE, "layout");
+  // Public cards, category pages and the sitemap read the same rows.
+  revalidatePath("/gallery", "layout");
   redirect(`${page}?${error ? `error=${dbErrorCode(error) ?? "FAILED"}` : `done=${done}`}`);
 }
 
@@ -53,9 +55,35 @@ export async function deleteGalleryGroup(formData: FormData) {
   const id = postedId(formData, "groupId");
   if (!id) redirect(BASE);
   const supabase = await createClient();
+  // The delete function returns the pictures' objects but not the cover's.
+  const cover = (await supabase.rpc("list_gallery_groups")).data?.find((g) => g.id === id)?.cover_path;
   const { data, error } = await supabase.rpc("admin_delete_gallery_group", { p_id: id });
-  if (!error && data?.length) await supabase.storage.from(BUCKET).remove(data);
+  if (!error) {
+    const paths = [...(data ?? []), ...(cover ? [cover] : [])];
+    if (paths.length) await supabase.storage.from(BUCKET).remove(paths);
+  }
   finish(BASE, error, "group-deleted");
+}
+
+/** Sets or removes a group's cover. The database returns the previous path; the
+ *  old object is removed only after the new one is saved, and a failed save
+ *  removes the fresh upload instead. */
+export async function setGalleryCover(formData: FormData) {
+  const id = postedId(formData, "groupId");
+  if (!id) redirect(BASE);
+  const page = `${BASE}/${id}`;
+  const removing = formData.get("removeCover") === "on";
+  const supabase = await createClient();
+  const picture = removing ? { key: null, error: null } : await uploadPicture(supabase.storage, formData, "cover", "gallery");
+  if (picture.error) finish(page, fail(picture.error), "cover-saved");
+  if (!removing && !picture.key) finish(page, fail("NO_FILE"), "cover-saved");
+  const { data: previous, error } = await supabase.rpc("admin_set_gallery_cover", { p_id: id, p_path: picture.key as string });
+  if (error) {
+    if (picture.key) await supabase.storage.from(BUCKET).remove([picture.key]);
+    finish(page, error, "cover-saved");
+  }
+  if (previous && previous !== picture.key) await supabase.storage.from(BUCKET).remove([previous]);
+  finish(page, null, removing ? "cover-removed" : "cover-saved");
 }
 
 // ---------------------------------------------------------------- pictures

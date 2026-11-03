@@ -33,11 +33,11 @@ export default async function AdminGalleryPage({ searchParams }: { searchParams:
       <h2 id="add-title" className={styles.sectionTitle}>New group</h2>
       <p className="hint">One group per event or build, e.g. &ldquo;Lobby building day&rdquo;. Then add pictures to it.</p>
       <div className="field">
-        <label htmlFor="g-name">Name</label>
+        <label htmlFor="g-name">Topic</label>
         <input id="g-name" className="input" name="name" required maxLength={60} />
       </div>
       <div className="field">
-        <label htmlFor="g-description">Description <span className="optional">(optional)</span></label>
+        <label htmlFor="g-description">Detail <span className="optional">(optional)</span></label>
         <input id="g-description" className="input" name="description" maxLength={300} />
       </div>
       <div className={styles.formButtons}>

@@ -36,9 +36,10 @@ describe("players CSV export", () => {
     const row = { user_id: "a", display_name: "=cmd", handle: "h", role: "user", verification_kind: "guest", banned: false, whitelist: "none", email: "e", chula_email: null, minecraft_usernames: null, created_at: "t" };
     m.rpc.mockResolvedValueOnce({ data: "admin", error: null }).mockResolvedValueOnce({ data: Array(1000).fill(row), error: null }).mockResolvedValueOnce({ data: [row], error: null });
     const res = await get("?status=guest&status=verified&q=kai");
-    expect(m.rpc).toHaveBeenNthCalledWith(3, "admin_list_players", { p_filters: { status: ["guest", "verified"] }, p_query: "kai", p_sort: "joined", p_desc: true, p_offset: 1000, p_limit: 1000 });
     const lines = (await res.text()).trim().split("\r\n");
     expect(lines).toHaveLength(1002);
     expect(lines[1]).toContain("'=cmd");
+    expect(m.rpc).toHaveBeenNthCalledWith(3, "admin_list_players", { p_filters: { status: ["guest", "verified"] }, p_query: "kai", p_sort: "joined", p_desc: true, p_offset: 1000, p_limit: 1000 });
+    expect(m.rpc).toHaveBeenCalledTimes(4);
   });
 });

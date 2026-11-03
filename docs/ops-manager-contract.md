@@ -80,7 +80,7 @@ Missing samples (manager was down) are omitted, not zero-filled.
 
 ### `GET /service/:id/rlog` (LOGS)
 
-Same body as today's `GET /server/:id/rlog` (`?max_lines=200`, newest first, `[{ "message": string }]`, extra fields allowed).
+Same body as today's `GET /server/:id/rlog` (`?max_lines=200`, newest first, `[{ "message": string }]`, extra fields allowed). Optional `?until=<RFC 3339 UTC>` returns only lines at or before that time; it defaults to now.
 
 ### Console WebSocket `/service/:id/console` (CONSOLE_READ; CONSOLE_WRITE to send)
 
@@ -99,11 +99,16 @@ Newest first.
    "created_at": "2026-10-22T09:01:20Z", "status": "ok" }]
 ```
 
-`target`: `"world"` (the Minecraft world) or `"supabase"` (database dump). `kind`: `"manual" | "nightly"`. `status`: `"running" | "ok" | "failed"`. Retention (keep the last N per target) and the nightly time are manager config; the API never deletes.
+`target`: `"world"` (the Minecraft world), `"supabase"` (database dump) or `"bot"` (the Discord bot's `db.json`). `kind`: `"manual" | "nightly"`. `status`: `"running" | "ok" | "failed"`. `GET /backups` merges the manifests the backup units write with a `running` entry for any pending request whose unit is active. The API never deletes; retention is done by the backup script (see [Backups](#backups)).
 
 ### `POST /backups` (BACKUP_RUN)
 
-Body `{ "target": "world" | "supabase" }`. Returns `202 { "id": "bk-..." }`; the new entry appears in `GET /backups` as `running`. `400` for another target, `409` if that target is already running.
+Body `{ "target": "world" | "supabase" | "bot" }`. Returns `202 { "id": "bk-<utc>-<target>" }`; the new entry appears in `GET /backups` as `running`. `400` for another target, `409` if that target is already running. The manager never runs a dump itself; it hands the request to a root-owned unit:
+
+1. It makes the id `bk-<utc>-<target>` and writes it to `/var/lib/mcsv_manager/backup-requests/<target>.id`.
+2. It starts `chulacraft-backup@<target>.service` over D-Bus.
+3. If starting the unit fails, it deletes the file and answers `500`.
+4. The script, as root, reads the file, validates the id against `^bk-[0-9TZ]+-(world|supabase|bot)$`, deletes the file, and writes that id into the manifest with kind `manual`. With no file the script makes its own id and kind `nightly`.
 
 ### `GET /service/:id/image` (STATUS)
 
@@ -112,7 +117,7 @@ Body `{ "target": "world" | "supabase" }`. Returns `202 { "id": "bk-..." }`; the
   "checked_at": "2026-10-22T11:51:20Z" }
 ```
 
-`current` and `latest` are `<image:tag>@<short digest>` (first 8 hex of the sha256). `current` is the running container's image: its tag plus the matching `RepoDigests` entry. `latest` is the digest the registry holds for the same tag, found with a read-only registry lookup (`GET /distribution/{name}/json` through the socket proxy, no pull). Equal strings mean up to date. `checked_at` is when that registry lookup last ran; the manager caches it (about hourly) and this endpoint never triggers a pull. If the registry is unreachable, serve the cached value; with no cache, `latest` equals `current`. `404` unless `updatable`.
+`current` and `latest` are `<image:tag>@<short digest>` (first 8 hex of the sha256). An image with no `RepoDigests` (built locally, never pushed) has `current` = `<image:tag>@unknown` and `latest` equal to `current`, so it reads as up to date. `current` is the running container's image: its tag plus the matching `RepoDigests` entry. `latest` is the digest the registry holds for the same tag, found with a read-only registry lookup (`GET /distribution/{name}/json` through the socket proxy, no pull). Equal strings mean up to date. `checked_at` is when that registry lookup last ran; the manager caches it (about hourly) and this endpoint never triggers a pull. If the registry is unreachable, serve the cached value; with no cache, `latest` equals `current`. `404` unless `updatable`.
 
 ### `POST /service/:id/update` (UPDATE)
 
@@ -142,11 +147,13 @@ compose_file = "/srv/chulacraft/discord/compose.yaml"   # required for updatable
 compose_service = "bot"
 
 [backups]
-nightly_at = "04:00"      # host local time
-keep = 7                  # per target
-world_dir = "/srv/minecraft/data"
-supabase_dump_cmd = "pg_dump ..."   # reads its credentials from the manager host, never from the website
+nightly_at = "04:00"      # host local time; the timer, not the manager, fires it
+keep_daily = 7            # per target
+keep_weekly = 4           # per target
+world_dir = "/srv/minecraft/instances/<id>"   # one per Minecraft instance, matching minecraft@<id>.service
 ```
+
+Backup commands and credentials live in the root-owned `backup.env`, never in the manager config and never on the website.
 
 `id` must match the id pattern. `website` and `bot` are reserved: `/admin/ops/website` and `/admin/ops/bot` are fixed pages, so the website drops services with those ids (and every repeat of an id after the first). `console` is true for systemd services with a command pipe; docker services get it only if the manager implements attach. `updatable` is true iff `compose_file` and `compose_service` are set. `actions` defaults to all three.
 
@@ -156,16 +163,27 @@ Metrics: systemd from cgroup properties over D-Bus (`CPUUsageNSec`, `MemoryCurre
 
 The manager never gets `/var/run/docker.sock` (root-equivalent). It talks to a filtering proxy that allows only:
 
-| Method and path | Use |
-| --- | --- |
-| `GET /containers/json`, `GET /containers/{id}/json` | list, inspect state |
-| `GET /containers/{id}/logs` | rlog |
-| `GET /containers/{id}/stats` (`stream=false`) | metrics |
-| `POST /containers/{id}/start`, `/stop`, `/restart` | actions |
-| `GET /images/{name}/json` | running image inspect (`RepoDigests`) |
-| `GET /distribution/{name}/json` | registry digest lookup for `latest`, no pull |
+The proxy is a small binary shipped with the manager (`mcsv-docker-proxy`). It allows only:
 
-Everything else (exec, create, delete, build, pull, volumes, networks, `POST /containers/create`) is denied. The manager user is not in the `docker` group; the proxy serves only the read and lifecycle calls above.
+| Method and path | Use | Narrowing |
+| --- | --- | --- |
+| `GET /containers/json` | list | Filtered to the containers named in the manager config |
+| `GET /containers/{id}/json` | inspect state | `{id}` must be a configured container; `Config.Env` is removed from the response |
+| `GET /containers/{id}/logs` | rlog | Configured container only |
+| `GET /containers/{id}/stats` (`stream=false`) | metrics | Configured container only |
+| `POST /containers/{id}/start`, `/stop`, `/restart` | actions | Configured container only |
+| `GET /images/{name}/json` | running image inspect (`RepoDigests`) | Configured images only |
+| `GET /distribution/{name}/json` | registry digest lookup for `latest`, no pull | Configured images only |
+
+`{id}` may be a container name or id, and is resolved to a name before the check.
+
+Deny list, each answered `403`:
+
+- Any container not named in the manager config, on every path above.
+- Any response that would carry `Config.Env` (it holds the bot's tokens). The proxy strips it from `GET /containers/{id}/json` and never returns it elsewhere.
+- Everything else: exec, create, delete, build, pull, volumes, networks, `POST /containers/create`.
+
+The manager user is not in the `docker` group; the proxy serves only the read and lifecycle calls above.
 
 ## Updates
 
@@ -180,12 +198,22 @@ ExecStart=/bin/sh -c 'docker compose -f "$COMPOSE_FILE" pull "$COMPOSE_SERVICE" 
 ```
 
 - `/etc/chulacraft/update/<service-id>.env` (`COMPOSE_FILE=...`, `COMPOSE_SERVICE=...`) is generated from the manager config at deploy time. Nothing from a request ever reaches the command line; the request only picks which `<service-id>` instance to start, and only ids with `updatable` services have an env file.
-- The manager starts `chulacraft-update@<service-id>.service` over D-Bus like any other unit. A polkit rule allows the manager user to start units matching `chulacraft-update@*.service` only.
+- The manager starts `chulacraft-update@<service-id>.service` over D-Bus like any other unit. The shipped polkit rule (`config/polkit-1/rules.d/mcsv-manager.rules` in the manager repo) allows the manager user to manage every unit, not only `chulacraft-update@*`. Narrowing it is out of scope here. The limit that matters is in the unit: it takes only its instance name from the request, and only instances with an env file do anything.
 - While that unit is `active`, the manager answers `409`. A failed unit shows in `journalctl -u chulacraft-update@<service-id>`.
+
+## Backups
+
+Backups are one implementation, run by root, never by the manager (the same pattern as [Updates](#updates)).
+
+- `chulacraft-backup@<target>.service` (target `world`, `supabase` or `bot`) and `chulacraft-backup-nightly.timer` (04:00 host time, `Persistent=true`). The timer starts the three targets; `POST /backups` starts one.
+- Archives go to `/var/backups/chulacraft/` (`0700 root`). Manifests go to `/var/lib/chulacraft-backup/manifest/` (`0750 root:mcsv-mgr`), so the manager can read sizes and status but no archive.
+- Retention is `keep_daily = 7` and `keep_weekly = 4` per target, applied by the script after a successful run.
+- Target `world` makes one archive per Minecraft instance under one backup id, and `size_bytes` is their sum. The instances come from `WORLD_INSTANCES` in `backup.env`; preflight lists them with `systemctl list-units 'minecraft@*'`. The disk-space guard uses that sum.
+- A run that fails always posts to the alert webhook, because `/admin/ops` cannot show backups until the manager is deployed.
 
 ## Health probe: `GET /api/ops/health` (website)
 
-Served by the website, not the manager. `Authorization: Bearer <OPS_HEALTH_TOKEN>`, compared in constant time; wrong or missing token is `401`.
+Served by the website, not the manager. `Authorization: Bearer <OPS_HEALTH_TOKEN>`, compared in constant time; wrong or missing token is `401`. Probe the `www` host, `https://www.chulacraft.com/api/ops/health`: the bare domain answers `308` to `www`, and `fetch` drops `Authorization` on a cross-origin redirect, so the probe would see `401`. A probe must not follow redirects.
 
 ```json
 { "ok": true, "db": "ok", "errors_5m": 0, "version": "d071e91" }

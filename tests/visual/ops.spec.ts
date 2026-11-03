@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { managerUrl, stubUrl } from "./helpers/ports.mjs";
 
 // /admin/ops against two stand-ins: the Supabase stub (helpers/supabase-stub.mjs,
 // role switch + admin_ops_access) and the manager mock (scripts/local-mocks.mjs
@@ -27,10 +28,10 @@ const authCookieValue = `base64-${encode({
     created_at: "2026-01-01T00:00:00.000Z",
   },
 })}`;
-const MANAGER = "http://127.0.0.1:3212";
+const MANAGER = managerUrl;
 
 async function signInAs(page: Page, role: string, fail = "") {
-  const res = await fetch(`http://127.0.0.1:3211/__visual/state?authenticated=true&role=${role}&fail=${fail}`, { method: "POST" });
+  const res = await fetch(`${stubUrl}/__visual/state?authenticated=true&role=${role}&fail=${fail}`, { method: "POST" });
   if (!res.ok) throw new Error(`Could not set visual auth state: ${res.status}`);
   await page.context().addCookies([{
     name: "sb-127-auth-token", value: authCookieValue, domain: "127.0.0.1", path: "/",
@@ -55,7 +56,7 @@ test.afterEach(async () => {
   await managerMode("ok");
 });
 test.afterAll(async () => {
-  await fetch("http://127.0.0.1:3211/__visual/state?authenticated=false", { method: "POST" });
+  await fetch(`${stubUrl}/__visual/state?authenticated=false`, { method: "POST" });
 });
 
 test("owner sees every manager service plus the website; only the broken one shows an error", async ({ page }) => {
@@ -103,7 +104,7 @@ test("discord-bot detail offers Pull & restart to the owner", async ({ page }) =
   await signInAs(page, "owner");
   await page.goto("/admin/ops/discord-bot");
   await expect(heading(page, "Discord bot")).toBeVisible();
-  await expect(page.getByText("ghcr.io/chulacraft/discord-bot:latest@sha256:1a2b3c4d")).toBeVisible();
+  await expect(page.getByText("ghcr.io/chulacraft/discord-bot:latest@1a2b3c4d")).toBeVisible();
   await expect(page.getByRole("button", { name: /Pull & restart/ })).toBeVisible();
 });
 
@@ -111,7 +112,7 @@ test("admin sees the image tags but no Pull & restart", async ({ page }) => {
   await signInAs(page, "admin");
   await page.goto("/admin/ops/discord-bot");
   await expect(heading(page, "Discord bot")).toBeVisible();
-  await expect(page.getByText("ghcr.io/chulacraft/discord-bot:latest@sha256:1a2b3c4d")).toBeVisible();
+  await expect(page.getByText("ghcr.io/chulacraft/discord-bot:latest@1a2b3c4d")).toBeVisible();
   await expect(page.getByRole("button", { name: /Pull & restart/ })).toHaveCount(0);
   // Admin may restart but never start or stop.
   await expect(page.getByRole("button", { name: /Restart/ })).toBeVisible();

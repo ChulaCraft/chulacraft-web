@@ -315,6 +315,16 @@ npm run test:visual:list
 
 Run `npm run test:visual` when changing layouts, assets, routing behavior, or authentication-page rendering. The SQL cases in `supabase/tests/database_security.test.sql` require an auth-enabled Supabase test project and are not executed by `npm test`.
 
+### Old-site compatibility (release check)
+
+`tests/compat/old-site.mjs` proves the pre-v1.1 site (`ca8fb70`) and the G1 build (`ca8fb70` plus Next 16.4.3, `94bfa96`) still run on the final v1.1 schema. Build each in its own git worktree against the **local** Supabase stack (full migrations plus `supabase/dev-seed.sql`), serve with `next start -H 127.0.0.1 -p <port>`, then:
+
+```bash
+SUPABASE_ANON_KEY=<local anon key> OLD_SITES='ca8fb70=../cc-wt/old-ca8fb70=3360,g1=../cc-wt/old-g1=3361' node tests/compat/old-site.mjs
+```
+
+It refuses non-loopback Supabase URLs, needs `docker exec` access to the local db container (`DB_CONTAINER`), and removes the rows it creates. The only expected break is `/admin/server` (dropped `admin_server_console_access`).
+
 ## Deployment
 
 1. Apply the reviewed Supabase migration to the target project.

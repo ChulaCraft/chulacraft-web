@@ -33,23 +33,37 @@ function finish(achievementId: string | null, error: { message: string } | null,
   redirect(`/admin/commu/achievements/${achievementId}${code ? `?error=${code}` : `?done=${done}`}`);
 }
 
-export async function saveAchievement(formData: FormData) {
-  const achievementId = postedId(formData, "achievementId");
-  const name = String(formData.get("name") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const status = toStatus(String(formData.get("status") ?? "draft"));
-  // The RPC checks both (INVALID, ROLE_NOT_ALLOWED); blank role clears it.
-  const tier = String(formData.get("tier") ?? "common");
-  const role = String(formData.get("discordRoleId") ?? "").trim();
+type Fields = { name: string; description: string; status: string; tier: string; discordRoleId: string };
+
+function fields(formData: FormData): Fields {
+  return {
+    name: String(formData.get("name") ?? "").trim(),
+    description: String(formData.get("description") ?? "").trim(),
+    status: toStatus(String(formData.get("status") ?? "draft")),
+    // The RPC checks both (INVALID, ROLE_NOT_ALLOWED); blank role clears it.
+    tier: String(formData.get("tier") ?? "common"),
+    discordRoleId: String(formData.get("discordRoleId") ?? "").trim()
+  };
+}
+
+/** The part of a save that edit and create share. `error.message` is a page
+ *  error code or a raw database error; `id` is the row the page should land on.
+ *  With `compensate`, a refused tier or role removes the row it just made,
+ *  because the create form stays open and a resubmit would otherwise add a
+ *  second copy (D11). */
+async function persist(achievementId: string | null, formData: FormData, compensate: boolean, codes = { name: "FAILED", description: "FAILED" }) {
+  const { name, description, status, tier, discordRoleId } = fields(formData);
   const file = formData.get("image");
   // An untouched file input still posts an empty File; that means "keep the current image".
   const upload = file instanceof File && file.size > 0 ? file : null;
+  const fail = (message: string, id: string | null = achievementId) => ({ error: { message }, id, created: false });
 
   const invalid = imageError(upload);
-  if (invalid) finish(achievementId, { message: invalid }, "saved");
+  if (invalid) return fail(invalid);
   // The database checks these too (20261006000001:51-52); trimming here stops
   // an obviously empty name from being sent at all.
-  if (!name || name.length > 80 || description.length > 500) finish(achievementId, { message: "FAILED" }, "saved");
+  if (!name || name.length > 80) return fail(codes.name);
+  if (description.length > 500) return fail(codes.description);
 
   const supabase = await createClient();
   // The image this row has now comes from the database, never the form: a
@@ -60,7 +74,7 @@ export async function saveAchievement(formData: FormData) {
   if (upload) {
     key = imageKey("achievements", upload.type);
     const { error } = await supabase.storage.from(BUCKET).upload(key, upload, { contentType: upload.type });
-    if (error) finish(achievementId, { message: "UPLOAD_FAILED" }, "saved");
+    if (error) return fail("UPLOAD_FAILED");
   }
 
   // The id this save asks for, which is the one admin_upsert_achievement echoes
@@ -83,16 +97,38 @@ export async function saveAchievement(formData: FormData) {
   // (20261026000001).
   if (!error && data) {
     // The generated type does not mark the optional role as nullable.
-    const { error: metaError } = await supabase.rpc("admin_set_achievement_meta", { p_id: data, p_tier: tier, p_discord_role_id: (role || null)! });
-    if (metaError) finish(achievementId ?? data, metaError, "saved");
+    const { error: metaError } = await supabase.rpc("admin_set_achievement_meta", { p_id: data, p_tier: tier, p_discord_role_id: (discordRoleId || null)! });
+    if (metaError && compensate) {
+      await supabase.rpc("admin_delete_achievement", { p_id: data });
+      if (upload) await supabase.storage.from(BUCKET).remove([key]);
+    }
+    if (metaError) return { error: metaError, id: achievementId ?? data, created: false };
   }
-  if (error) finish(achievementId, error, "saved");
+  if (error) return { error, id: achievementId, created: false };
+  return { error: null, id: achievementId ?? data, created: !achievementId && !!data };
+}
 
-  if (!achievementId && data) {
+export async function saveAchievement(formData: FormData) {
+  const achievementId = postedId(formData, "achievementId");
+  const result = await persist(achievementId, formData, false);
+  if (!result.error && result.created) {
     revalidatePath("/admin/commu/achievements");
-    redirect(`/admin/commu/achievements/${data}?done=created`);
+    redirect(`/admin/commu/achievements/${result.id}?done=created`);
   }
-  finish(achievementId, null, "saved");
+  finish(result.id, result.error, "saved");
+}
+
+export type CreateAchievementState = { code: string | null; values: Fields };
+
+/** The New page's action for `useActionState`. A failure returns its code and
+ *  the typed text instead of redirecting, so the form stays where it is. */
+export async function createAchievement(_prev: CreateAchievementState, formData: FormData): Promise<CreateAchievementState> {
+  const result = await persist(null, formData, true, { name: "NAME_INVALID", description: "DESCRIPTION_TOO_LONG" });
+  if (!result.error) {
+    revalidatePath("/admin/commu/achievements");
+    redirect(`/admin/commu/achievements/${result.id}?done=created`);
+  }
+  return { code: dbErrorCode(result.error) ?? "FAILED", values: fields(formData) };
 }
 
 export async function deleteAchievement(formData: FormData) {

@@ -9,7 +9,7 @@ import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import styles from "@/app/admin/admin.module.css";
 import { IMAGE_TYPES, publicImageUrl } from "@/app/admin/commu/achievements/images";
-import { addGalleryImage, deleteGalleryImage, moveGalleryImage, saveGalleryGroup, updateGalleryImage } from "../actions";
+import { addGalleryImage, deleteGalleryImage, moveGalleryImage, saveGalleryGroup, setGalleryCover, updateGalleryImage } from "../actions";
 import { GALLERY_DONE, GALLERY_ERRORS } from "../messages";
 import { GroupPreview } from "./group-preview";
 import { timed } from "@/lib/perf";
@@ -48,16 +48,38 @@ export default async function AdminGalleryGroupPage({ params, searchParams }: {
       <input type="hidden" name="groupId" value={group.id} />
       <div className={styles.formRow}>
         <div className="field">
-          <label htmlFor="g-name">Name</label>
+          <label htmlFor="g-name">Topic</label>
           <input id="g-name" className="input" name="name" defaultValue={group.name} required maxLength={60} />
         </div>
         <div className="field">
-          <label htmlFor="g-description">Description <span className="optional">(optional)</span></label>
+          <label htmlFor="g-description">Detail <span className="optional">(optional)</span></label>
           <input id="g-description" className="input" name="description" defaultValue={group.description} maxLength={300} />
         </div>
       </div>
       <div className={styles.formButtons}>
         <SubmitButton className="btn btn-sm">Save group</SubmitButton>
+      </div>
+    </form>
+
+    <form action={setGalleryCover} className={`panel ${styles.catalogForm}`} aria-labelledby="cover-title">
+      <h2 id="cover-title" className={styles.sectionTitle}>Cover</h2>
+      <input type="hidden" name="groupId" value={group.id} />
+      {group.cover_path
+        ? <Image className={styles.previewImage} src={publicImageUrl(group.cover_path)} alt="Current cover" width={192} height={108} />
+        : <p className="hint">No cover. The card on /gallery uses the group&apos;s first picture.</p>}
+      <div className="field">
+        <label htmlFor="g-cover">{group.cover_path ? "Replace cover" : "Cover picture"}</label>
+        <input id="g-cover" className="input" type="file" name="cover" accept={IMAGE_TYPES.join(",")} aria-describedby="g-cover-help" />
+        <p id="g-cover-help" className="field-help">Shown on the group&apos;s card. PNG, JPEG, WebP or GIF, up to 2 MB. The previous cover is deleted.</p>
+      </div>
+      {group.cover_path && (
+        <label className={styles.tick}>
+          <input type="checkbox" name="removeCover" />
+          <span><strong>Remove the cover</strong><span className="hint">Leave the file empty and tick this to fall back to the first picture.</span></span>
+        </label>
+      )}
+      <div className={styles.formButtons}>
+        <SubmitButton className="btn btn-sm">Save cover</SubmitButton>
       </div>
     </form>
 

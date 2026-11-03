@@ -5,7 +5,7 @@ import { dbErrorCode } from "@/lib/db-error";
 import { UUID } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 import type { RawParams } from "@/lib/table-query";
-import { PAGE_SIZE, readPlayers, rpcArgs } from "./params";
+import { MAX_BULK, PAGE_SIZE, readPlayers, rpcArgs } from "./params";
 
 export async function loadPlayers(search: RawParams, offset: number) {
   const supabase = await createClient();
@@ -16,7 +16,6 @@ export async function loadPlayers(search: RawParams, offset: number) {
   return { rows: data, total: Number(data[0]?.total ?? 0) };
 }
 
-const MAX_BULK = 200;
 export type BulkResult = { done: number; skipped: { id: string; code: string }[] } | { error: "INVALID" | "TOO_MANY" };
 
 // One RPC per player on purpose: each call re-applies that RPC's role rules

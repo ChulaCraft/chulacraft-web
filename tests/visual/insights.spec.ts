@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
+import { stubUrl } from "./helpers/ports.mjs";
 
 // Same sign-in as visual-audit.spec.ts: a fake session cookie that the
 // Supabase stub (helpers/supabase-stub.mjs) accepts. The stub answers
@@ -28,7 +29,7 @@ const authCookieValue = `base64-${encode({
 })}`;
 
 async function signInAs(page: Page, role: string, fail = "") {
-  const res = await fetch(`http://127.0.0.1:3211/__visual/state?authenticated=true&role=${role}&fail=${fail}`, { method: "POST" });
+  const res = await fetch(`${stubUrl}/__visual/state?authenticated=true&role=${role}&fail=${fail}`, { method: "POST" });
   if (!res.ok) throw new Error(`Could not set visual auth state: ${res.status}`);
   await page.context().addCookies([{
     name: "sb-127-auth-token", value: authCookieValue, domain: "127.0.0.1", path: "/",
@@ -44,7 +45,7 @@ const caption = (page: Page, text: string) => page.locator("figcaption", { hasTe
 const heading = (page: Page) => page.getByRole("heading", { level: 1, name: "Insights" });
 
 test.afterAll(async () => {
-  await fetch("http://127.0.0.1:3211/__visual/state?authenticated=false", { method: "POST" });
+  await fetch(`${stubUrl}/__visual/state?authenticated=false`, { method: "POST" });
 });
 
 test("owner sees all five tabs", async ({ page }) => {

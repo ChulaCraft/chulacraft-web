@@ -52,11 +52,14 @@ select is(pg_temp.n('00000000-0000-0000-0000-000000000004', 'banner'), 1, 'grant
 
 -- Banners through awards
 delete from public.notifications;
+delete from public.achievement_awards; -- admin_award skips holders, so start from nobody holding a1
 select public.admin_award('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000e1', null,
   '{00000000-0000-0000-0000-000000000003,00000000-0000-0000-0000-000000000004}');
 select is((select array_agg(user_id::text || ' ' || (payload ->> 'banner_id')) from public.notifications where kind = 'banner'),
   '{"00000000-0000-0000-0000-000000000003 sakura"}'::text[], 'a badge at a banner event notifies only the player who did not own the banner');
-select public.admin_award('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000e2', null, '{00000000-0000-0000-0000-000000000003}');
+-- a second award of a1 would be skipped now; insert the row directly to reach the same trigger path
+insert into public.achievement_awards (user_id, achievement_id, event_id, awarded_on)
+  select '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000e2', current_date;
 select is(pg_temp.n('00000000-0000-0000-0000-000000000003', 'banner'), 1, 'owning it through another banner event means no new banner row');
 select public.admin_award('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000e3', null, '{00000000-0000-0000-0000-000000000006}');
 select is(pg_temp.n('00000000-0000-0000-0000-000000000006', 'banner'), 0, 'a default banner is never news');

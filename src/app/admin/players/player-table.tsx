@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { SortHeader } from "@/components/data-table";
+import { RowExport } from "@/components/row-export";
 import { VerificationBadge, type VerificationKind } from "@/components/verification-badge";
 import { ROLE_LABELS } from "@/lib/staff";
 import type { Filters, RawParams } from "@/lib/table-query";
+import local from "../export-ui.module.css";
 import styles from "../admin.module.css";
 import { loadPlayers } from "./actions";
 import { BulkBar, type AchievementOption, type BulkPermissions } from "./bulk-bar";
@@ -18,7 +20,7 @@ const WHITELIST: Record<string, [string, string]> = {
   whitelisted: ["Whitelisted", "badge-green"], pending: ["Pending sync", "badge-amber"], retrying: ["Retrying", "badge-danger"], none: ["None", "badge-muted"],
 };
 
-export function PlayerTable({ initial, total, search, achievements, can }: { initial: PlayerRow[]; total: number; search: RawParams; achievements: AchievementOption[]; can: BulkPermissions }) {
+export function PlayerTable({ initial, total, search, achievements, can, exportFilters }: { initial: PlayerRow[]; total: number; search: RawParams; achievements: AchievementOption[]; can: BulkPermissions; exportFilters?: [string, string][] }) {
   const state = readPlayers(search);
   const [rows, setRows] = useState(initial);
   const [failed, setFailed] = useState(false);
@@ -56,11 +58,14 @@ export function PlayerTable({ initial, total, search, achievements, can }: { ini
   const toggle = (id: string) => setSelected((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const selectable = can.guest || can.ban || can.award;
   const allOnScreen = rows.length > 0 && rows.every((r) => selected.has(r.user_id));
+  /** id to display name for the bulk review; only rows loaded so far, others fall back to a short id. */
+  const names = Object.fromEntries(rows.map((r) => [r.user_id, r.display_name ?? r.handle]));
   const filtered = state.q !== "" || Object.keys(state.filters).length > 0;
 
   return <>
+    {exportFilters && <div className={`${local.bar} ${local.end}`}><RowExport href={`${BASE}/export`} className="btn btn-sm" filters={exportFilters} count={selected.size} /></div>}
     <p role="status" className="hint">{result}</p>
-    {selected.size > 0 && <BulkBar ids={[...selected]} achievements={achievements} can={can} onClear={() => setSelected(new Set())} onResult={setResult} />}
+    {selected.size > 0 && <BulkBar ids={[...selected]} names={names} achievements={achievements} can={can} onClear={() => setSelected(new Set())} onResult={setResult} />}
     <div className={styles.tableWrap}>
       <table className={styles.table}>
         <thead>
@@ -75,7 +80,7 @@ export function PlayerTable({ initial, total, search, achievements, can }: { ini
             const [wlLabel, wlClass] = WHITELIST[r.whitelist] ?? WHITELIST.none;
             return (
               <tr key={r.user_id} aria-selected={selected.has(r.user_id)}>
-                {selectable && <td><input type="checkbox" aria-label={`Select ${r.display_name ?? r.handle}`} checked={selected.has(r.user_id)} onChange={() => toggle(r.user_id)} /></td>}
+                {selectable && <td><input type="checkbox" name="id" value={r.user_id} form={exportFilters ? "export-rows" : undefined} aria-label={`Select ${r.display_name ?? r.handle}`} checked={selected.has(r.user_id)} onChange={() => toggle(r.user_id)} /></td>}
                 <td>
                   <Link href={`/admin/users/${r.user_id}`}><strong>{r.display_name ?? r.handle}</strong></Link><br />
                   <Link href={`/admin/users/${r.user_id}`} className={styles.small}>{r.handle}</Link>

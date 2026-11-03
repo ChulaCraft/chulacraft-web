@@ -5,7 +5,7 @@ import { PERMISSION, managerUrl } from "@/lib/mcsv-token";
 import { SERVICE_ID, managerErrorCode, managerFetch, opsGrant } from "@/lib/ops";
 
 const SERVICE_ACTIONS = { start: PERMISSION.START, stop: PERMISSION.STOP, restart: PERMISSION.RESTART, update: PERMISSION.UPDATE } as const;
-const TARGETS = ["world", "supabase"];
+const TARGETS = ["world", "supabase", "bot"];
 
 /** Start, stop, restart or update one service, or back up one target. Every
  *  outcome comes back as ?done= or ?error= (a contract code) for the page to word. */
