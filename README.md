@@ -6,6 +6,8 @@ Players can explore the server, sign in, submit a Java Edition username, and fol
 
 ## Patch notes
 
+Full v1.0 → v1.1 notes, grouped by players, staff and operators: [docs/patch-notes-v1.1.md](docs/patch-notes-v1.1.md).
+
 ### v1.1 (2026-10-31)
 
 **Security**
